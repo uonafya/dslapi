@@ -117,9 +117,10 @@ public class Edmprovider extends CsdlAbstractEdmProvider {
 
             // navigation property: one-to-many
             CsdlNavigationProperty navProp = new CsdlNavigationProperty().setName("Cadres")
-                    .setType(ET_CADRE_FQN).setCollection(true).setPartner("CadreCategories");
+                    .setType(ES_CADRES_NAME).setCollection(true).setPartner("CadreCategory");
             List<CsdlNavigationProperty> navPropList = new ArrayList<CsdlNavigationProperty>();
             navPropList.add(navProp);
+            
 
             // configure EntityType
             entityType = new CsdlEntityType();
@@ -141,8 +142,8 @@ public class Edmprovider extends CsdlAbstractEdmProvider {
             propertyRef.setName("ID");
 
             // navigation property: one-to-many
-            CsdlNavigationProperty navProp = new CsdlNavigationProperty().setName("IndicatorGroups")
-                    .setType(ES_INDICATORSGROUP_NAME).setCollection(true).setPartner("CadreCategories");
+            CsdlNavigationProperty navProp = new CsdlNavigationProperty().setName("indicatorGroup")
+                    .setType(ET_INDICATORGROUP_FQN).setNullable(false).setPartner("indicators");
             List<CsdlNavigationProperty> navPropList = new ArrayList<CsdlNavigationProperty>();
             navPropList.add(navProp);
 
@@ -152,7 +153,7 @@ public class Edmprovider extends CsdlAbstractEdmProvider {
             entityType.setProperties(Arrays.asList(id, name, description));
             entityType.setKey(Arrays.asList(propertyRef));
         }////////// ------ start here
-        else if (entityTypeName.equals(ET_CADRECATEGORY_FQN)) {
+        else if (entityTypeName.equals(ET_INDICATORGROUP_FQN)) {
             // create EntityType properties
             CsdlProperty id = new CsdlProperty().setName("ID")
                     .setType(EdmPrimitiveTypeKind.Int32.getFullQualifiedName());
@@ -164,21 +165,160 @@ public class Edmprovider extends CsdlAbstractEdmProvider {
             propertyRef.setName("ID");
 
             // navigation property: one-to-many
-            CsdlNavigationProperty navProp = new CsdlNavigationProperty().setName("Cadres")
-                    .setType(ET_CADRE_FQN).setCollection(true).setPartner("CadreCategories");
+            CsdlNavigationProperty navProp = new CsdlNavigationProperty().setName("indicators")
+                    .setType(ES_INDICATORS_NAME).setCollection(true).setPartner("indicatorGroup");
             List<CsdlNavigationProperty> navPropList = new ArrayList<CsdlNavigationProperty>();
             navPropList.add(navProp);
 
             // configure EntityType
             entityType = new CsdlEntityType();
-            entityType.setName(ET_CADRECATEGORY_NAME);
+            entityType.setName(ET_INDICATORGROUP_NAME);
             entityType.setProperties(Arrays.asList(id, name));
             entityType.setKey(Arrays.asList(propertyRef));
             entityType.setNavigationProperties(navPropList);
+        } else if (entityTypeName.equals(ET_COUNTRY_FQN)) {
+            // create EntityType properties
+            CsdlProperty id = new CsdlProperty().setName("ID")
+                    .setType(EdmPrimitiveTypeKind.Int32.getFullQualifiedName());
+            CsdlProperty name = new CsdlProperty().setName("Name")
+                    .setType(EdmPrimitiveTypeKind.String.getFullQualifiedName());
+
+            // create PropertyRef for Key element
+            CsdlPropertyRef propertyRef = new CsdlPropertyRef();
+            propertyRef.setName("ID");
+
+            // navigation property: one-to-many
+            CsdlNavigationProperty navProp = new CsdlNavigationProperty().setName("counties")
+                    .setType(ES_COUNTIES_NAME).setCollection(true).setPartner("country");
+            List<CsdlNavigationProperty> navPropList = new ArrayList<CsdlNavigationProperty>();
+            navPropList.add(navProp);
+
+            // configure EntityType
+            entityType = new CsdlEntityType();
+            entityType.setName(ET_COUNTRY_NAME);
+            entityType.setProperties(Arrays.asList(id, name));
+            entityType.setKey(Arrays.asList(propertyRef));
+            entityType.setNavigationProperties(navPropList);
+        } if (entityTypeName.equals(ET_COUNTY_FQN)) {
+            // create EntityType properties
+            CsdlProperty id = new CsdlProperty().setName("ID")
+                    .setType(EdmPrimitiveTypeKind.Int32.getFullQualifiedName());
+            CsdlProperty name = new CsdlProperty().setName("Name")
+                    .setType(EdmPrimitiveTypeKind.String.getFullQualifiedName());
+
+            // create PropertyRef for Key element
+            CsdlPropertyRef propertyRef = new CsdlPropertyRef();
+            propertyRef.setName("ID");
+
+            // navigation property: one-to-many
+            CsdlNavigationProperty navProp = new CsdlNavigationProperty().setName("country")
+                    .setType(ET_COUNTRY_FQN).setNullable(false).setPartner("counties");
+            CsdlNavigationProperty navPropSubCounties = new CsdlNavigationProperty().setName("subcounties")
+                    .setType(ES_SUBCOUNTIES_NAME).setCollection(false).setPartner("county");
+            List<CsdlNavigationProperty> navPropList = new ArrayList<CsdlNavigationProperty>();
+            navPropList.add(navProp);
+            navPropList.add(navPropSubCounties);
+            
+            // configure EntityType
+            entityType = new CsdlEntityType();
+            entityType.setName(ET_COUNTY_NAME);
+            entityType.setProperties(Arrays.asList(id, name));
+            entityType.setKey(Arrays.asList(propertyRef));
+            entityType.setNavigationProperties(navPropList);
+        }if (entityTypeName.equals(ET_SUBCOUNTY_FQN)) {
+            // create EntityType properties
+            CsdlProperty id = new CsdlProperty().setName("ID")
+                    .setType(EdmPrimitiveTypeKind.Int32.getFullQualifiedName());
+            CsdlProperty name = new CsdlProperty().setName("Name")
+                    .setType(EdmPrimitiveTypeKind.String.getFullQualifiedName());
+
+            // create PropertyRef for Key element
+            CsdlPropertyRef propertyRef = new CsdlPropertyRef();
+            propertyRef.setName("ID");
+
+            // navigation property: one-to-many
+            CsdlNavigationProperty navProp = new CsdlNavigationProperty().setName("county")
+                    .setType(ET_COUNTY_FQN).setNullable(false).setPartner("subcounties");
+            CsdlNavigationProperty navPropWards = new CsdlNavigationProperty().setName("wards")
+                    .setType(ES_WARDS_NAME).setCollection(true).setPartner("subcounty");
+            List<CsdlNavigationProperty> navPropList = new ArrayList<CsdlNavigationProperty>();
+            navPropList.add(navProp);
+            navPropList.add(navPropWards);
+
+            // configure EntityType
+            entityType = new CsdlEntityType();
+            entityType.setName(ET_SUBCOUNTY_NAME);
+            entityType.setProperties(Arrays.asList(id, name));
+            entityType.setKey(Arrays.asList(propertyRef));
+            entityType.setNavigationProperties(navPropList);
+        }if (entityTypeName.equals(ET_WARD_FQN)) {
+            // create EntityType properties
+            CsdlProperty id = new CsdlProperty().setName("ID")
+                    .setType(EdmPrimitiveTypeKind.Int32.getFullQualifiedName());
+            CsdlProperty name = new CsdlProperty().setName("Name")
+                    .setType(EdmPrimitiveTypeKind.String.getFullQualifiedName());
+
+            // create PropertyRef for Key element
+            CsdlPropertyRef propertyRef = new CsdlPropertyRef();
+            propertyRef.setName("ID");
+
+            // navigation property: one-to-many
+            CsdlNavigationProperty navProp = new CsdlNavigationProperty().setName("subcounty")
+                    .setType(ET_SUBCOUNTY_FQN).setNullable(false).setPartner("wards");
+            CsdlNavigationProperty navPropFacilities = new CsdlNavigationProperty().setName("facilities")
+                    .setType(ES_FACIITIES_NAME).setCollection(true).setPartner("facility");
+            List<CsdlNavigationProperty> navPropList = new ArrayList<CsdlNavigationProperty>();
+            navPropList.add(navProp);
+            navPropList.add(navPropFacilities);
+
+            // configure EntityType
+            entityType = new CsdlEntityType();
+            entityType.setName(ET_WARD_NAME);
+            entityType.setProperties(Arrays.asList(id, name));
+            entityType.setKey(Arrays.asList(propertyRef));
+            entityType.setNavigationProperties(navPropList);
+        }if (entityTypeName.equals(ET_FACILITY_FQN)) {
+            // create EntityType properties
+            CsdlProperty id = new CsdlProperty().setName("ID")
+                    .setType(EdmPrimitiveTypeKind.Int32.getFullQualifiedName());
+            CsdlProperty name = new CsdlProperty().setName("Name")
+                    .setType(EdmPrimitiveTypeKind.String.getFullQualifiedName());
+
+            // create PropertyRef for Key element
+            CsdlPropertyRef propertyRef = new CsdlPropertyRef();
+            propertyRef.setName("ID");
+
+            // navigation property: one-to-many
+            CsdlNavigationProperty navProp = new CsdlNavigationProperty().setName("ward")
+                    .setType(ET_WARD_FQN).setNullable(false).setPartner("facilities");
+            List<CsdlNavigationProperty> navPropList = new ArrayList<CsdlNavigationProperty>();
+            navPropList.add(navProp);
+
+            // configure EntityType
+            entityType = new CsdlEntityType();
+            entityType.setName(ET_FACILITY_NAME);
+            entityType.setProperties(Arrays.asList(id, name));
+            entityType.setKey(Arrays.asList(propertyRef));
+            entityType.setNavigationProperties(navPropList);
+        }if (entityTypeName.equals(ET_COMMODITY_FQN)) {
+            // create EntityType properties
+            CsdlProperty id = new CsdlProperty().setName("ID")
+                    .setType(EdmPrimitiveTypeKind.Int32.getFullQualifiedName());
+            CsdlProperty name = new CsdlProperty().setName("Name")
+                    .setType(EdmPrimitiveTypeKind.String.getFullQualifiedName());
+
+            // create PropertyRef for Key element
+            CsdlPropertyRef propertyRef = new CsdlPropertyRef();
+            propertyRef.setName("ID");
+            
+            // configure EntityType
+            entityType = new CsdlEntityType();
+            entityType.setName(ET_COMMODITY_NAME);
+            entityType.setProperties(Arrays.asList(id, name));
+            entityType.setKey(Arrays.asList(propertyRef));
         }
-
+        
         return entityType;
-
     }
 
     @Override
@@ -213,7 +353,7 @@ public class Edmprovider extends CsdlAbstractEdmProvider {
                 // navigation
                 CsdlNavigationPropertyBinding navPropBinding = new CsdlNavigationPropertyBinding();
                 navPropBinding.setTarget("Categories"); // the target entity set, where the navigation property points to
-                navPropBinding.setPath("Category"); // the path from entity type to navigation property
+                navPropBinding.setPath("CadreCategories"); // the path from entity type to navigation property
                 List<CsdlNavigationPropertyBinding> navPropBindingList = new ArrayList<CsdlNavigationPropertyBinding>();
                 navPropBindingList.add(navPropBinding);
                 entitySet.setNavigationPropertyBindings(navPropBindingList);
@@ -265,21 +405,8 @@ public class Edmprovider extends CsdlAbstractEdmProvider {
 
                 // navigation
                 CsdlNavigationPropertyBinding navPropBinding = new CsdlNavigationPropertyBinding();
-                navPropBinding.setTarget("Products"); // the target entity set, where the navigation property points to
-                navPropBinding.setPath("Products"); // the path from entity type to navigation property
-                List<CsdlNavigationPropertyBinding> navPropBindingList = new ArrayList<CsdlNavigationPropertyBinding>();
-                navPropBindingList.add(navPropBinding);
-                entitySet.setNavigationPropertyBindings(navPropBindingList);
-            } else if (entitySetName.equals(ES_SUBCOUNTIES_NAME)) {
-
-                entitySet = new CsdlEntitySet();
-                entitySet.setName(ES_SUBCOUNTIES_NAME);
-                entitySet.setType(ET_SUBCOUNTY_FQN);
-
-                // navigation
-                CsdlNavigationPropertyBinding navPropBinding = new CsdlNavigationPropertyBinding();
-                navPropBinding.setTarget("Products"); // the target entity set, where the navigation property points to
-                navPropBinding.setPath("Products"); // the path from entity type to navigation property
+                navPropBinding.setTarget("CadreCategory"); // the target entity set, where the navigation property points to
+                navPropBinding.setPath("CadreCategories"); // the path from entity type to navigation property
                 List<CsdlNavigationPropertyBinding> navPropBindingList = new ArrayList<CsdlNavigationPropertyBinding>();
                 navPropBindingList.add(navPropBinding);
                 entitySet.setNavigationPropertyBindings(navPropBindingList);
@@ -291,8 +418,8 @@ public class Edmprovider extends CsdlAbstractEdmProvider {
 
                 // navigation
                 CsdlNavigationPropertyBinding navPropBinding = new CsdlNavigationPropertyBinding();
-                navPropBinding.setTarget("Products"); // the target entity set, where the navigation property points to
-                navPropBinding.setPath("Products"); // the path from entity type to navigation property
+                navPropBinding.setTarget("Cadres"); // the target entity set, where the navigation property points to
+                navPropBinding.setPath("Cadres"); // the path from entity type to navigation property
                 List<CsdlNavigationPropertyBinding> navPropBindingList = new ArrayList<CsdlNavigationPropertyBinding>();
                 navPropBindingList.add(navPropBinding);
                 entitySet.setNavigationPropertyBindings(navPropBindingList);
