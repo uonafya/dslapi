@@ -30,7 +30,7 @@
         
         <dependency>
             <groupId>com.healthit</groupId>
-            <artifactId>DSL_Service</artifactId>
+            <artifactId>DSL_API_Implementation</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
         
