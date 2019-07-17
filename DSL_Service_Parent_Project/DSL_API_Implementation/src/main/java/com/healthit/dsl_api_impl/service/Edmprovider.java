@@ -215,7 +215,7 @@ public class Edmprovider extends CsdlAbstractEdmProvider {
             CsdlNavigationProperty navProp = new CsdlNavigationProperty().setName("country")
                     .setType(ET_COUNTRY_FQN).setNullable(false).setPartner("counties");
             CsdlNavigationProperty navPropSubCounties = new CsdlNavigationProperty().setName("subcounties")
-                    .setType(ES_SUBCOUNTIES_NAME).setCollection(false).setPartner("county");
+                    .setType(ES_SUBCOUNTIES_NAME).setCollection(true).setPartner("county");
             List<CsdlNavigationProperty> navPropList = new ArrayList<CsdlNavigationProperty>();
             navPropList.add(navProp);
             navPropList.add(navPropSubCounties);
