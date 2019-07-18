@@ -118,7 +118,7 @@ public class Edmprovider extends CsdlAbstractEdmProvider {
 
             // navigation property: one-to-many
             CsdlNavigationProperty navProp = new CsdlNavigationProperty().setName("Cadres")
-                    .setType(ES_CADRES_NAME).setCollection(true).setPartner("CadreCategory");
+                    .setType(ET_CADRE_FQN).setCollection(true).setPartner("CadreCategory");
             List<CsdlNavigationProperty> navPropList = new ArrayList<CsdlNavigationProperty>();
             navPropList.add(navProp);
 
@@ -152,6 +152,7 @@ public class Edmprovider extends CsdlAbstractEdmProvider {
             entityType.setName(ET_INDICATOR_NAME);
             entityType.setProperties(Arrays.asList(id, name, description));
             entityType.setKey(Arrays.asList(propertyRef));
+            entityType.setNavigationProperties(navPropList);
         }////////// ------ start here
         else if (entityTypeName.equals(ET_INDICATORGROUP_FQN)) {
             // create EntityType properties
@@ -166,7 +167,7 @@ public class Edmprovider extends CsdlAbstractEdmProvider {
 
             // navigation property: one-to-many
             CsdlNavigationProperty navProp = new CsdlNavigationProperty().setName("indicators")
-                    .setType(ES_INDICATORS_NAME).setCollection(true).setPartner("indicatorGroup");
+                    .setType(ET_INDICATOR_FQN).setCollection(true).setPartner("indicatorGroup");
             List<CsdlNavigationProperty> navPropList = new ArrayList<CsdlNavigationProperty>();
             navPropList.add(navProp);
 
@@ -189,7 +190,7 @@ public class Edmprovider extends CsdlAbstractEdmProvider {
 
             // navigation property: one-to-many
             CsdlNavigationProperty navProp = new CsdlNavigationProperty().setName("counties")
-                    .setType(ES_COUNTIES_NAME).setCollection(true).setPartner("country");
+                    .setType(ET_COUNTY_FQN).setCollection(true).setPartner("country");
             List<CsdlNavigationProperty> navPropList = new ArrayList<CsdlNavigationProperty>();
             navPropList.add(navProp);
 
@@ -215,7 +216,7 @@ public class Edmprovider extends CsdlAbstractEdmProvider {
             CsdlNavigationProperty navProp = new CsdlNavigationProperty().setName("country")
                     .setType(ET_COUNTRY_FQN).setNullable(false).setPartner("counties");
             CsdlNavigationProperty navPropSubCounties = new CsdlNavigationProperty().setName("subcounties")
-                    .setType(ES_SUBCOUNTIES_NAME).setCollection(true).setPartner("county");
+                    .setType(ET_SUBCOUNTY_FQN).setCollection(true).setPartner("county");
             List<CsdlNavigationProperty> navPropList = new ArrayList<CsdlNavigationProperty>();
             navPropList.add(navProp);
             navPropList.add(navPropSubCounties);
@@ -242,7 +243,7 @@ public class Edmprovider extends CsdlAbstractEdmProvider {
             CsdlNavigationProperty navProp = new CsdlNavigationProperty().setName("county")
                     .setType(ET_COUNTY_FQN).setNullable(false).setPartner("subcounties");
             CsdlNavigationProperty navPropWards = new CsdlNavigationProperty().setName("wards")
-                    .setType(ES_WARDS_NAME).setCollection(true).setPartner("subcounty");
+                    .setType(ET_WARD_FQN).setCollection(true).setPartner("subcounty");
             List<CsdlNavigationProperty> navPropList = new ArrayList<CsdlNavigationProperty>();
             navPropList.add(navProp);
             navPropList.add(navPropWards);
@@ -269,7 +270,7 @@ public class Edmprovider extends CsdlAbstractEdmProvider {
             CsdlNavigationProperty navProp = new CsdlNavigationProperty().setName("subcounty")
                     .setType(ET_SUBCOUNTY_FQN).setNullable(false).setPartner("wards");
             CsdlNavigationProperty navPropFacilities = new CsdlNavigationProperty().setName("facilities")
-                    .setType(ES_FACIITIES_NAME).setCollection(true).setPartner("facility");
+                    .setType(ET_FACILITY_FQN).setCollection(true).setPartner("ward");
             List<CsdlNavigationProperty> navPropList = new ArrayList<CsdlNavigationProperty>();
             navPropList.add(navProp);
             navPropList.add(navPropFacilities);
@@ -354,9 +355,6 @@ public class Edmprovider extends CsdlAbstractEdmProvider {
                 entitySet = new CsdlEntitySet();
                 entitySet.setName(ES_COUNTIES_NAME);
                 entitySet.setType(ET_COUNTY_FQN);
-
-                CsdlNavigationProperty navPropSubCounties = new CsdlNavigationProperty().setName("subcounties")
-                        .setType(ES_SUBCOUNTIES_NAME).setCollection(false).setPartner("county");
 
                 // navigation
                 CsdlNavigationPropertyBinding navPropBinding = new CsdlNavigationPropertyBinding();
@@ -485,18 +483,11 @@ public class Edmprovider extends CsdlAbstractEdmProvider {
                 entitySet.setName(ES_COMMODITIES_NAME);
                 entitySet.setType(ET_COMMODITY_FQN);
 
-                // navigation
-                CsdlNavigationPropertyBinding navPropBinding = new CsdlNavigationPropertyBinding();
-                navPropBinding.setTarget("Products"); // the target entity set, where the navigation property points to
-                navPropBinding.setPath("Products"); // the path from entity type to navigation property
-                List<CsdlNavigationPropertyBinding> navPropBindingList = new ArrayList<CsdlNavigationPropertyBinding>();
-                navPropBindingList.add(navPropBinding);
-                entitySet.setNavigationPropertyBindings(navPropBindingList);
             } else if (entitySetName.equals(ES_COUNTRIES_NAME)) {
 
                 entitySet = new CsdlEntitySet();
                 entitySet.setName(ES_COUNTRIES_NAME);
-                entitySet.setType(ET_COUNTRY_NAME);
+                entitySet.setType(ET_COUNTRY_FQN);
 
                 // navigation
                 CsdlNavigationPropertyBinding navPropBinding = new CsdlNavigationPropertyBinding();
@@ -515,7 +506,7 @@ public class Edmprovider extends CsdlAbstractEdmProvider {
 
     @Override
     public CsdlEntityContainerInfo getEntityContainerInfo(FullQualifiedName entityContainerName) {
-
+        
         // This method is invoked when displaying the service document at
         // e.g. http://localhost:8080/DemoService/DemoService.svc
         if (entityContainerName == null || entityContainerName.equals(CONTAINER)) {
@@ -544,6 +535,7 @@ public class Edmprovider extends CsdlAbstractEdmProvider {
         entityTypes.add(getEntityType(ET_WARD_FQN));
         entityTypes.add(getEntityType(ET_FACILITY_FQN));
         entityTypes.add(getEntityType(ET_COMMODITY_FQN));
+        entityTypes.add(getEntityType(ET_COUNTRY_FQN)); 
 
         schema.setEntityTypes(entityTypes);
 
@@ -575,7 +567,8 @@ public class Edmprovider extends CsdlAbstractEdmProvider {
         entitySets.add(getEntitySet(CONTAINER, ES_INDICATORS_NAME));
         entitySets.add(getEntitySet(CONTAINER, ES_INDICATORSGROUP_NAME));
         entitySets.add(getEntitySet(CONTAINER, ES_COMMODITIES_NAME));
-
+        entitySets.add(getEntitySet(CONTAINER, ES_COUNTRIES_NAME));
+        
         // create EntityContainer
         CsdlEntityContainer entityContainer = new CsdlEntityContainer();
         entityContainer.setName(CONTAINER_NAME);
