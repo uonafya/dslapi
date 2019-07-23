@@ -362,8 +362,8 @@ public class Edmprovider extends CsdlAbstractEdmProvider {
                 navPropBinding.setPath("country"); // the path from entity type to navigation property
 
                 CsdlNavigationPropertyBinding navPropBindingSub = new CsdlNavigationPropertyBinding();
-                navPropBinding.setTarget("Subcounties"); // the target entity set, where the navigation property points to
-                navPropBinding.setPath("subcounties"); // the path from entity type to navigation property
+                navPropBindingSub.setTarget("Subcounties"); // the target entity set, where the navigation property points to
+                navPropBindingSub.setPath("subcounties"); // the path from entity type to navigation property
 
                 List<CsdlNavigationPropertyBinding> navPropBindingList = new ArrayList<CsdlNavigationPropertyBinding>();
                 navPropBindingList.add(navPropBinding);
@@ -383,8 +383,8 @@ public class Edmprovider extends CsdlAbstractEdmProvider {
                 navPropBinding.setPath("county"); // the path from entity type to navigation property
                 
                 CsdlNavigationPropertyBinding navPropBindingWards = new CsdlNavigationPropertyBinding();
-                navPropBinding.setTarget("Wards"); // the target entity set, where the navigation property points to
-                navPropBinding.setPath("wards"); // the path from entity type to navigation property
+                navPropBindingWards.setTarget("Wards"); // the target entity set, where the navigation property points to
+                navPropBindingWards.setPath("wards"); // the path from entity type to navigation property
                 
                 List<CsdlNavigationPropertyBinding> navPropBindingList = new ArrayList<CsdlNavigationPropertyBinding>();
                 navPropBindingList.add(navPropBinding);
@@ -403,8 +403,8 @@ public class Edmprovider extends CsdlAbstractEdmProvider {
                 
                 // navigation
                 CsdlNavigationPropertyBinding navPropBindingFacilities = new CsdlNavigationPropertyBinding();
-                navPropBinding.setTarget("Facilities"); // the target entity set, where the navigation property points to
-                navPropBinding.setPath("facilities");
+                navPropBindingFacilities.setTarget("Facilities"); // the target entity set, where the navigation property points to
+                navPropBindingFacilities.setPath("facilities");
                 
                 
                 List<CsdlNavigationPropertyBinding> navPropBindingList = new ArrayList<CsdlNavigationPropertyBinding>();
