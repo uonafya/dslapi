@@ -9,4 +9,11 @@
     <artifactId>DSL_JDBC_Service</artifactId>
     <name>DSL JDBC Service</name>
     <packaging>jar</packaging>
+    <dependencies>
+        <dependency>
+            <groupId>postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <version>9.1-901-1.jdbc4</version>
+        </dependency>
+    </dependencies>
 </project>

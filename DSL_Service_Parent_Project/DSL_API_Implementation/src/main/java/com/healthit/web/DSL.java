@@ -1,6 +1,7 @@
 package com.healthit.web;
 
 
+import com.healthit.dsl_api_impl.service.DSLEntityCollectionProcessor;
 import com.healthit.dsl_api_impl.service.Edmprovider;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,7 +39,7 @@ public class DSL extends HttpServlet {
       OData odata = OData.newInstance();
       ServiceMetadata edm = odata.createServiceMetadata(new Edmprovider(), new ArrayList<EdmxReference>());
       ODataHttpHandler handler = odata.createHandler(edm);
-      //handler.register(new DemoEntityCollectionProcessor(storage));
+      handler.register(new DSLEntityCollectionProcessor());
       //handler.register(new DemoEntityProcessor(storage));
       //handler.register(new DemoPrimitiveProcessor(storage));
 

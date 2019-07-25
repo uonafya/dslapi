@@ -18,6 +18,7 @@
  */
 package com.healthit.dsl_api_impl.service;
 
+import com.healthit.dsl_api_impl.model.humanresource.IhrisDao;
 import java.util.List;
 import java.util.Locale;
 
@@ -95,9 +96,10 @@ public class DSLEntityCollectionProcessor implements EntityCollectionProcessor {
 
     if (segmentCount == 1) { // this is the case for: DemoService/DemoService.svc/Categories
       responseEdmEntitySet = startEdmEntitySet; // the response body is built from the first (and only) entitySet
-
+      IhrisDao ihrisDaoObj=new IhrisDao();
+        responseEntityCollection =ihrisDaoObj.getAllCadres();
       // 2nd: fetch the data from backend for this requested EntitySetName and deliver as EntitySet
-      //responseEntityCollection = storage.readEntitySetData(startEdmEntitySet);
+//      responseEntityCollection = storage.readEntitySetData(startEdmEntitySet);
     } else if (segmentCount == 2) { // in case of navigation: DemoService.svc/Categories(3)/Products
 
       UriResource lastSegment = resourceParts.get(1); // in our example we don't support more complex URIs
@@ -127,7 +129,8 @@ public class DSLEntityCollectionProcessor implements EntityCollectionProcessor {
         // then fetch the entity collection where the entity navigates to
         // note: we don't need to check uriResourceNavigation.isCollection(),
         // because we are the EntityCollectionProcessor
-        responseEntityCollection =null;
+        IhrisDao ihrisDaoObj=new IhrisDao();
+        responseEntityCollection =ihrisDaoObj.getAllCadres();
         //responseEntityCollection = storage.getRelatedEntityCollection(sourceEntity, targetEntityType);
       }
     } else { // this would be the case for e.g. Products(1)/Category/Products

@@ -49,6 +49,16 @@
             <artifactId>odata-commons-core</artifactId>
             <version>${odata.version}</version>
         </dependency>-->
+        <dependency>
+            <groupId>com.healthit</groupId>
+            <artifactId>DSL_JDBC_Service</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.healthit</groupId>
+            <artifactId>DSL_System_Support</artifactId>
+            <version>1.0-SNAPSHOT</version>
+        </dependency>
     </dependencies>
     
     
