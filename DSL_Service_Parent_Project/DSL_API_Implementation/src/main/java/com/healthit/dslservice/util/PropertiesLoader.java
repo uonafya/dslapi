@@ -7,9 +7,11 @@ package com.healthit.dslservice.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import org.apache.log4j.Logger;
 import java.util.Properties;
 import java.util.Set;
+import org.json.JSONArray;
 
 /**
  *
@@ -43,5 +45,20 @@ public class PropertiesLoader {
     public Set<Object> getAllKeys(Properties prop) {
         Set<Object> keys = prop.keySet();
         return keys;
+    }
+    
+    /**
+     * Checks the request body for indicators/subjects with available metadata
+     * and calls relevant functions to process meta info.
+     *
+     * @param pBody
+     * @return
+     */
+    public static List<RequestEntity> _sort(JSONArray pBody) {
+        log.info("metadata sorting");
+        RequestBodyDissolver requestBodyDissolver = new RequestBodyDissolver();
+        List<RequestEntity> rqtEntities = requestBodyDissolver.dissolve(pBody);
+        log.info("The meta list " + rqtEntities);
+        return rqtEntities;
     }
 }

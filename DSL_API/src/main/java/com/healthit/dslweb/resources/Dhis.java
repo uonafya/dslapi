@@ -9,6 +9,7 @@ import com.healthit.dslservice.dto.dhis.Indicator;
 import com.healthit.dslservice.dto.ihris.Cadre;
 import com.healthit.dslservice.dto.ihris.CadreGroup;
 import com.healthit.dslservice.message.Message;
+import com.healthit.dslweb.service.JsonBuilder;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -30,8 +31,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class Dhis {
     @ResponseBody
     @RequestMapping(value = "/kpi2", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getAllCadres(@RequestParam String msisdn) {
-        
+    public ResponseEntity<?> getAllCadres() {
+        JsonBuilder jsBUilder=new JsonBuilder();
+        jsBUilder.init();
         if (true) {
             return new ResponseEntity<String>("No Content found for this number", HttpStatus.NOT_FOUND);
         } else {
