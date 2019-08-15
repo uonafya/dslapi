@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 import org.apache.log4j.Logger;
 
 /**
@@ -22,21 +23,24 @@ import org.apache.log4j.Logger;
 public class Database {
 
     private Connection conn = null;
-    private final String url = "jdbc:postgresql://41.89.93.180:5432/mohdsl";
-    private final String user = "dsl";
-    private final String password = "dsl2015";
+    private static final String url = "jdbc:postgresql://41.89.93.180:5432/mohdsl";
+    private static final String user = "dsl";
+    private static final String password = "dsl2015";
     final static Logger log
             = Logger.getLogger(Database.class.getCanonicalName());
-
+    
+    public Database(){
+        connect();
+    }
+    
     private Boolean connect() {
         Boolean isConneced = false;
         try {
             Class.forName("org.postgresql.Driver");
-            Database db = new Database();
             try {
                 log.info("Making database connection");
-                conn = DriverManager.getConnection(db.url, db.user,
-                        db.password);
+                conn = DriverManager.getConnection(Database.url, Database.user,
+                        Database.password);
                 log.info("Connected to the PostgreSQL server successfully.");
             } catch (SQLException e) {
                 log.error(e.getMessage());
@@ -49,10 +53,13 @@ public class Database {
         return isConneced;
     }
 
+    public Connection getConn() {
+        return conn;
+    }
+
     public ResultSet executeQuery(String sql) {
         PreparedStatement ps;
         ResultSet rs = null;
-        connect();
         try {
             ps = conn.prepareStatement(sql);
             rs = ps.executeQuery();
@@ -73,7 +80,6 @@ public class Database {
         Map<String, Object> reslts = new HashMap();
         PreparedStatement ps;
         ResultSet rs = null;
-        connect();
         try {
 
             Statement s

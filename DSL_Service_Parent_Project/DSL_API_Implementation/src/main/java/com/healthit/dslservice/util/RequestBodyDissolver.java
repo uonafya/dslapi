@@ -59,9 +59,6 @@ public class RequestBodyDissolver {
      * @return
      */
     private List<String> getRequestSubject(JSONArray requestBody) {
-        System.out.println("===============nu leave this");
-        System.out.println(requestBody);
-        System.out.println("===============nu leave this");
         List<String> subjects = new ArrayList();
         for (Object o : requestBody) {
 

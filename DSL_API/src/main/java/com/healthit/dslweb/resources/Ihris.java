@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -44,8 +45,23 @@ public class Ihris {
     
     
     @ResponseBody
+    @RequestMapping(value = "/cadregroups/{cadreGroupId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAllCadresGroup(@PathVariable("cadreGroupId") int cadreGroupId) {
+        System.out.println("by group");
+        try {
+            IhrisDao ihris=new IhrisDao();
+            List<Cadre> cadreGroupList = ihris.getCadresByGroup(cadreGroupId);
+            return new ResponseEntity<List>(cadreGroupList, HttpStatus.OK);
+        } catch (DslException ex) {
+            return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+    
+    @ResponseBody
     @RequestMapping(value = "/cadregroups", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getAllCadresGroup() {
+    public ResponseEntity<?> getCadreGroups() {
+        System.out.println("without group");
         try {
             IhrisDao ihris=new IhrisDao();
             List<CadreGroup> cadreGroupList = ihris.getAllCadresGroup();
@@ -56,9 +72,8 @@ public class Ihris {
 
     }
     
-    
     @ResponseBody
-    @RequestMapping(value = "/cadre", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/cadres", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAllCadres() {
         try {
             IhrisDao ihris=new IhrisDao();

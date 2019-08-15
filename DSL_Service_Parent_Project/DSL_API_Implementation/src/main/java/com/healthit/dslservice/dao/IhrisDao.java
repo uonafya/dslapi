@@ -15,10 +15,13 @@ import com.healthit.dslservice.dto.ihris.CadreGroup;
 import com.healthit.dslservice.util.CacheKeys;
 import com.healthit.dslservice.util.Database;
 import com.healthit.dslservice.util.DslCache;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Element;
 import org.apache.log4j.Logger;
@@ -32,14 +35,15 @@ public class IhrisDao {
     final static Logger log = Logger.getLogger(FacilityDao.class);
     Cache cache = DslCache.getCache();
 
-    private String getALlCadreGroup = "Select cadreid,cadrename from dim_ihris_cadre";
-    private String getALlCadre = "Select dataelementid as id,dataelementname as cadrename, cadreid as cadre_group_id from dim_ihris_dataelement";
-    private String getCadreAllocation = "Select dataelementid as cadreid,periodid,mflcode,value from fact_ihris_datavalue where periodid is not null";
+    private String aLlCadreGroup = "Select cadreid,cadrename from dim_ihris_cadre";
+    private String aLlCadre = "Select dataelementid as id,dataelementname as cadrename, cadreid as cadre_group_id from dim_ihris_dataelement";
+    private String cadresByGroup = "Select dataelementid as id,dataelementname as cadrename, cadreid as cadre_group_id from dim_ihris_dataelement where cadreid=?";
+    private String cadreAllocation = "Select dataelementid as cadreid,periodid,mflcode,value from fact_ihris_datavalue where periodid is not null";
         
     public List<CadreAllocation> getCadreAllocation() throws DslException {
         List<CadreAllocation> cadreGroupList = new ArrayList();
         Database db = new Database();
-        ResultSet rs = db.executeQuery(getCadreAllocation);
+        ResultSet rs = db.executeQuery(cadreAllocation);
         log.info("Fetching cadre groups");
         try {
             while (rs.next()) {
@@ -65,7 +69,7 @@ public class IhrisDao {
         if (ele == null) {
             long startTime = System.nanoTime();
             Database db = new Database();
-            ResultSet rs = db.executeQuery(getALlCadreGroup);
+            ResultSet rs = db.executeQuery(aLlCadreGroup);
             log.info("Fetching cadre groups");
             try {
                 while (rs.next()) {
@@ -94,7 +98,7 @@ public class IhrisDao {
         Element ele = cache.get(CacheKeys.cadres);
         if (ele == null) {
             Database db = new Database();
-            ResultSet rs = db.executeQuery(getALlCadre);
+            ResultSet rs = db.executeQuery(aLlCadre);
             log.info("Fetching cadres");
             try {
                 while (rs.next()) {
@@ -109,6 +113,44 @@ public class IhrisDao {
                 log.error(ex);
             } finally {
                 db.CloseConnection();
+            }
+        } else {
+            long startTime = System.nanoTime();
+            cadreList = (List<Cadre>) ele.getObjectValue();
+            long endTime = System.nanoTime();
+            log.info("Time taken to fetch data from cache " + (endTime - startTime) / 1000000);
+        }
+        return cadreList;
+    }
+    
+    public List<Cadre> getCadresByGroup(int groupId) throws DslException {
+        List<Cadre> cadreList = new ArrayList();
+        
+        Element ele = cache.get("cadresByGroup"+groupId);
+        if (ele == null) {
+            try {
+                Database db = new Database();
+                Connection conn=db.getConn(); 
+                PreparedStatement ps=conn.prepareStatement(cadresByGroup);
+                ps.setInt(1, groupId);
+                ResultSet rs=ps.executeQuery();
+                log.info("Fetching cadres");
+                try {
+                    while (rs.next()) {
+                        Cadre cadre = new Cadre();
+                        cadre.setId(rs.getString("id"));
+                        cadre.setName(rs.getString("cadrename"));
+                        cadre.setCadreGroupId(rs.getString("cadre_group_id"));
+                        cadreList.add(cadre);
+                    }
+                    cache.put(new Element("cadresByGroup"+groupId, cadreList));
+                } catch (SQLException ex) {
+                    log.error(ex);
+                } finally {
+                    db.CloseConnection();
+                }
+            } catch (SQLException ex) {
+                java.util.logging.Logger.getLogger(IhrisDao.class.getName()).log(Level.SEVERE, null,ex);
             }
         } else {
             long startTime = System.nanoTime();

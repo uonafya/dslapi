@@ -125,8 +125,6 @@ public class JsonBuilder {
         Map queryPropertiesToSubmit = prepareQueryPropertiesToSubmit();
         QueryProcessor qProcessor=new QueryProcessor();
         String queryResults=qProcessor.prepareResponse(queryPropertiesToSubmit);
-        System.out.println("============================>>>>>");
-        System.out.println(queryResults);
         
     }
 
