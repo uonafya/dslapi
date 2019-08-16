@@ -53,7 +53,7 @@ public class LocationDao {
                     Ward ward = new Ward();
                     ward.setId(rs.getString("ward_id"));
                     ward.setName(rs.getString("name"));
-                    //ward.setConstituencyId(rs.getString("constituency_sk"));
+                    ward.setSubcountyId(rs.getString("parentid"));
                     wardList.add(ward);
                 }
                 cache.put(new Element(CacheKeys.wards, wardList));
@@ -100,7 +100,7 @@ public class LocationDao {
         return countyList;
     }
 
-    public List<Constituency> getConstituencies() throws DslException {
+    public List<Constituency> getSubCounties() throws DslException {
         List<Constituency> constituencyList = new ArrayList();
         Element ele = cache.get(CacheKeys.constituencies);
         if (ele == null) {

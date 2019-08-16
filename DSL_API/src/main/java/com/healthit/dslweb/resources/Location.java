@@ -42,11 +42,11 @@ public class Location {
     
     
     @ResponseBody
-    @RequestMapping(value = "/constituency", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/subcounty", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getConstituencies() {
         try {
             LocationDao locationDao=new LocationDao();
-            List<Constituency> constituencyList = locationDao.getConstituencies();
+            List<Constituency> constituencyList = locationDao.getSubCounties();
             return new ResponseEntity<List>(constituencyList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);

@@ -10,14 +10,14 @@ package com.healthit.dslservice.dto.adminstrationlevel;
  * @author duncan
  */
 public class Ward extends Adminstration{
-    private String constituencyId;
+    private String subcountyId;
 
-    public String getConstituencyId() {
-        return constituencyId;
+    public String getSubcountyId() {
+        return subcountyId;
     }
 
-    public void setConstituencyId(String constituencyId) {
-        this.constituencyId = constituencyId;
+    public void setSubcountyId(String subcountyId) {
+        this.subcountyId = subcountyId;
     }
 
     
