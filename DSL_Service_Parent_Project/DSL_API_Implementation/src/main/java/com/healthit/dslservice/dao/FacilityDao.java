@@ -15,6 +15,8 @@ import com.healthit.dslservice.message.MessageType;
 import com.healthit.dslservice.util.CacheKeys;
 import com.healthit.dslservice.util.Database;
 import com.healthit.dslservice.util.DslCache;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -31,9 +33,12 @@ public class FacilityDao {
 
     final static Logger log = Logger.getLogger(FacilityDao.class);
     private String getALlFacilties = "Select dhis_organisation_unit_id as id,dhis_organisation_unit_name as name,parentid from common_organisation_unit where level='facility' order by name desc";
-    
+
+    private String getALlFaciltiesByType = "Select dhis_organisation_unit_id as id,dhis_organisation_unit_name as name,parentid from"
+            + " common_organisation_unit commorg inner join facilities_facility ff on ff.code=commorg.dhis_organisation_unit_id where level='facility' and ff.facilitytype_sk=? order by name desc";
+
     private String getFacilityLevels = "SELECT kephlevel_sk as id,name  FROM public.facilities_kephlevel";
-    
+
     private String getFacilityTypes = "SELECT facilitytype_sk as id,name  FROM public.facilities_facilitytype";
 
     Cache cache = DslCache.getCache();
@@ -65,7 +70,7 @@ public class FacilityDao {
 
             } catch (SQLException ex) {
                 log.error(ex);
-                Message msg=new Message();
+                Message msg = new Message();
                 msg.setMessageType(MessageType.SQL_QUERY_ERROR);
                 msg.setMesageContent(ex.getMessage());
                 throw new DslException(msg);
@@ -105,7 +110,7 @@ public class FacilityDao {
 
             } catch (SQLException ex) {
                 log.error(ex);
-                Message msg=new Message();
+                Message msg = new Message();
                 msg.setMessageType(MessageType.SQL_QUERY_ERROR);
                 msg.setMesageContent(ex.getMessage());
                 throw new DslException(msg);
@@ -122,8 +127,7 @@ public class FacilityDao {
         }
         return facilityLevelList;
     }
-    
-    
+
     public List<FacilityType> getFacilitiesType() throws DslException {
         List<FacilityType> facilityTypeList = new ArrayList();
 
@@ -146,11 +150,11 @@ public class FacilityDao {
 
             } catch (SQLException ex) {
                 log.error(ex);
-                Message msg=new Message();
+                Message msg = new Message();
                 msg.setMessageType(MessageType.SQL_QUERY_ERROR);
                 msg.setMesageContent(ex.getMessage());
                 throw new DslException(msg);
-                
+
             } finally {
                 db.CloseConnection();
             }
@@ -164,5 +168,54 @@ public class FacilityDao {
         }
         return facilityTypeList;
     }
-    
+
+    public List<Facility> getFacilitiesByType(int typeId) throws DslException {
+        List<Facility> facilityList = new ArrayList();
+
+        log.info("Fetching facilities by type");
+        Element ele = cache.get("faclitiesByType" + typeId);
+        String output = (ele == null ? null : ele.getObjectValue().toString());
+        //log.info("Element from cache " + output);
+        if (ele == null) {
+            long startTime = System.nanoTime();
+            Database db = new Database();
+            try {
+               
+                Connection conn = db.getConn();
+                PreparedStatement ps = conn.prepareStatement(getALlFaciltiesByType);
+                ps.setInt(1, typeId);
+                ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    Facility facility = new Facility();
+                    facility.setWardId(rs.getString("parentid"));
+                    //facility.setFacilityOwner(rs.getString("owner_id"));
+                    facility.setId(rs.getString("id"));
+                    //KephLevel l = KephLevel.getKephLevel(Integer.parseInt(rs.getString("kephlevel_sk")));
+                    //facility.setKephLevel(l);
+                    facility.setName(rs.getString("name"));
+                    //facility.setSubCountyId(rs.getString("sub_county_id"));
+                    facilityList.add(facility);
+                }
+                cache.put(new Element("faclitiesByType" + typeId, facilityList));
+
+            } catch (SQLException ex) {
+                log.error(ex);
+                Message msg = new Message();
+                msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+                msg.setMesageContent(ex.getMessage());
+                throw new DslException(msg);
+            } finally {
+                db.CloseConnection();
+            }
+            long endTime = System.nanoTime();
+            log.info("Time taken to fetch data " + (endTime - startTime) / 1000000);
+        } else {
+            long startTime = System.nanoTime();
+            facilityList = (List<Facility>) ele.getObjectValue();
+            long endTime = System.nanoTime();
+            log.info("Time taken to fetch data from cache " + (endTime - startTime) / 1000000);
+        }
+        return facilityList;
+    }
+
 }

@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -56,7 +57,7 @@ public class Kmfl {
     
     
     @ResponseBody
-    @RequestMapping(value = "/facility-levels", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/facilitylevel", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAllFacilityLevels() {
         try {
             FacilityDao facilityDao=new FacilityDao();
@@ -69,11 +70,26 @@ public class Kmfl {
     }
     
     @ResponseBody
-    @RequestMapping(value = "/facility-type", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/facilitytype", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAllFacilityTypes() {
         try {
             FacilityDao facilityDao=new FacilityDao();
             List<FacilityType> facilityList = facilityDao.getFacilitiesType();
+            return new ResponseEntity<List>(facilityList, HttpStatus.OK);
+        } catch (DslException ex) {
+            return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+    
+    
+    @ResponseBody
+    @RequestMapping(value = "/facilitytype/{facilityTypeId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAllCadresGroup(@PathVariable("facilityTypeId") int facilityTypeId) {
+        System.out.println("by group");
+        try {
+            FacilityDao facilityDao=new FacilityDao();
+            List<Facility> facilityList  = facilityDao.getFacilitiesByType(facilityTypeId);
             return new ResponseEntity<List>(facilityList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
