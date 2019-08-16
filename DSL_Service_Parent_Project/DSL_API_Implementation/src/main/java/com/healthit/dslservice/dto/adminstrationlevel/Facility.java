@@ -14,9 +14,9 @@ import com.healthit.dslservice.dto.KephLevel;
 public class Facility extends Adminstration {
 
     private String wardId;
-    private String subCountyId;
-    private String facilityOwner;
-    private KephLevel kephLevel;
+//    private String subCountyId;
+//    private String facilityOwner;
+//    private KephLevel kephLevel;
 
     public String getWardId() {
         return wardId;
@@ -25,29 +25,4 @@ public class Facility extends Adminstration {
     public void setWardId(String wardId) {
         this.wardId = wardId;
     }
-
-    public String getSubCountyId() {
-        return subCountyId;
-    }
-
-    public void setSubCountyId(String subCountyId) {
-        this.subCountyId = subCountyId;
-    }
-
-    public String getFacilityOwner() {
-        return facilityOwner;
-    }
-
-    public void setFacilityOwner(String facilityOwner) {
-        this.facilityOwner = facilityOwner;
-    }
-
-    public KephLevel getKephLevel() {
-        return kephLevel;
-    }
-
-    public void setKephLevel(KephLevel kephLevel) {
-        this.kephLevel = kephLevel;
-    }
-
 }

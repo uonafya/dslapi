@@ -52,7 +52,7 @@ public class FacilityDao {
             try {
                 while (rs.next()) {
                     Facility facility = new Facility();
-                    //facility.setWardId(rs.getString("ward_id"));
+                    facility.setWardId(rs.getString("parentid"));
                     //facility.setFacilityOwner(rs.getString("owner_id"));
                     facility.setId(rs.getString("id"));
                     //KephLevel l = KephLevel.getKephLevel(Integer.parseInt(rs.getString("kephlevel_sk")));
