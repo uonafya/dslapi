@@ -87,8 +87,22 @@ public class Kmfl {
     @RequestMapping(value = "/facilitytype", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getFacilityTypes() {
         try {
-            FacilityDao facilityDao=new FacilityDao();
+            FacilityDao facilityDao = new FacilityDao();
             List<FacilityType> facilityList = facilityDao.getFacilitiesType();
+            return new ResponseEntity<List>(facilityList, HttpStatus.OK);
+        } catch (DslException ex) {
+            return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/facilitytype/{facilityTypeId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getFacilitiesByType(@PathVariable("facilityTypeId") int facilityTypeId) {
+        System.out.println("by group");
+        try {
+            FacilityDao facilityDao = new FacilityDao();
+            List<Facility> facilityList = facilityDao.getFacilitiesByType(facilityTypeId);
             return new ResponseEntity<List>(facilityList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -98,17 +112,61 @@ public class Kmfl {
     
     
     @ResponseBody
-    @RequestMapping(value = "/facilitytype/{facilityTypeId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getFacilitiesByType(@PathVariable("facilityTypeId") int facilityTypeId) {
-        System.out.println("by group");
+    @RequestMapping(value = "/facilityregulatingbody", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getFacilityRegulatingBodies() {
         try {
-            FacilityDao facilityDao=new FacilityDao();
-            List<Facility> facilityList  = facilityDao.getFacilitiesByType(facilityTypeId);
+            FacilityDao facilityDao = new FacilityDao();
+            List<FacilityType> facilityList = facilityDao.getFacilitiesRegulatingBody();
             return new ResponseEntity<List>(facilityList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
     }
+
+    @ResponseBody
+    @RequestMapping(value = "/facilityregulatingbody/{regulatingBodyId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getFacilitiesByRegulatingBody(@PathVariable("regulatingBodyId") int regulatingBodyId) {
+        System.out.println("by group");
+        try {
+            FacilityDao facilityDao = new FacilityDao();
+            List<Facility> facilityList = facilityDao.getFacilitiesByRegulatingBody(regulatingBodyId);
+            return new ResponseEntity<List>(facilityList, HttpStatus.OK);
+        } catch (DslException ex) {
+            return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+    
+    
+    
+    
+     @ResponseBody
+    @RequestMapping(value = "/facilityownertype", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getFacilityOwnerType() {
+        try {
+            FacilityDao facilityDao = new FacilityDao();
+            List<FacilityType> facilityList = facilityDao.getFacilitiesOwnerType();
+            return new ResponseEntity<List>(facilityList, HttpStatus.OK);
+        } catch (DslException ex) {
+            return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/facilityownertype/{onwerTypeId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getFacilitiesByOwnerType(@PathVariable("onwerTypeId") int onwerTypeId) {
+        System.out.println("by group");
+        try {
+            FacilityDao facilityDao = new FacilityDao();
+            List<Facility> facilityList = facilityDao.getFacilitiesByOwnerType(onwerTypeId);
+            return new ResponseEntity<List>(facilityList, HttpStatus.OK);
+        } catch (DslException ex) {
+            return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+    
     
 }

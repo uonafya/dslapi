@@ -43,7 +43,23 @@ public class FacilityDao {
     private String getFacilityLevels = "SELECT kephlevel_sk as id,name  FROM public.facilities_kephlevel";
 
     private String getFacilityTypes = "SELECT facilitytype_sk as id,name  FROM public.facilities_facilitytype";
-
+    
+    private String getFacilityRegulatingBody = "SELECT regulatingbody_sk as id,name  FROM public.facilities_regulatingbody";
+    
+    private String getFaciltiesByRegulatingBody = "Select dhis_organisation_unit_id as id,dhis_organisation_unit_name as name,parentid from"
+            + " common_organisation_unit commorg inner join facilities_facility ff on ff.code=commorg.dhis_organisation_unit_id where level='facility' and ff.regulatingbody_sk=? order by name desc";
+    
+    
+    private String getFacilityOwnerType = "SELECT ownertype_sk as id,name  FROM public.facilities_ownertype";
+    
+    private String getFaciltiesByOwnerType = "Select dhis_organisation_unit_id as id,dhis_organisation_unit_name as name,parentid from"
+            + " common_organisation_unit commorg inner join facilities_facility ff on ff.code=commorg.dhis_organisation_unit_id "
+            + "inner join facilities_owner fo on fo.owner_sk=ff.owner_sk inner join facilities_ownertype fot on fot.id=fo.owner_type_id  where "
+            + "level='facility' and fot.ownertype_sk=? order by name desc";
+    
+    
+    
+    
     Cache cache = DslCache.getCache();
 
     public List<Facility> getFacilities() throws DslException {
@@ -256,4 +272,176 @@ public class FacilityDao {
     }
     
 
+    
+    
+    
+    
+    public List<FacilityType> getFacilitiesRegulatingBody() throws DslException {
+         
+        List<FacilityType> facilityTypeList = new ArrayList();
+
+        log.info("Fetching facilities Regulating Body");
+        Element ele = cache.get(CacheKeys.facilityRegulatingBody);
+        String output = (ele == null ? null : ele.getObjectValue().toString());
+        //log.info("Element from cache " + output);
+        if (ele == null) {
+            long startTime = System.nanoTime();
+            Database db = new Database();
+            ResultSet rs = db.executeQuery(getFacilityRegulatingBody);
+            try {
+                while (rs.next()) {
+                    FacilityType facilityType = new FacilityType();
+                    facilityType.setId(rs.getString("id"));
+                    facilityType.setName(rs.getString("name"));
+                    facilityTypeList.add(facilityType);
+                }
+                cache.put(new Element(CacheKeys.facilityRegulatingBody, facilityTypeList));
+
+            } catch (SQLException ex) {
+                log.error(ex);
+                Message msg = new Message();
+                msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+                msg.setMesageContent(ex.getMessage());
+                throw new DslException(msg);
+
+            } finally {
+                db.CloseConnection();
+            }
+            long endTime = System.nanoTime();
+            log.info("Time taken to fetch data " + (endTime - startTime) / 1000000);
+        } else {
+            long startTime = System.nanoTime();
+            facilityTypeList = (List<FacilityType>) ele.getObjectValue();
+            long endTime = System.nanoTime();
+            log.info("Time taken to fetch data from cache " + (endTime - startTime) / 1000000);
+        }
+        return facilityTypeList;
+    }
+    
+    public List<Facility> getFacilitiesByRegulatingBody(int regulatingBodyId) throws DslException {
+        List<Facility> facilityList = new ArrayList();
+        log.info("Fetching facilities by level");
+        Element ele = cache.get("faciltiesByregulatingBody" + regulatingBodyId);
+        String output = (ele == null ? null : ele.getObjectValue().toString());
+        if (ele == null) {
+            long startTime = System.nanoTime();
+            Database db = new Database();
+            try {
+                Connection conn = db.getConn();
+                PreparedStatement ps = conn.prepareStatement(getFaciltiesByRegulatingBody);
+                ps.setInt(1, regulatingBodyId);
+                ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    Facility facility = new Facility();
+                    facility.setWardId(rs.getString("parentid"));
+                    facility.setId(rs.getString("id"));
+                    facility.setName(rs.getString("name"));
+                    facilityList.add(facility);
+                }
+                cache.put(new Element("faciltiesByregulatingBody" + regulatingBodyId, facilityList));
+            } catch (SQLException ex) {
+                log.error(ex);
+                Message msg = new Message();
+                msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+                msg.setMesageContent(ex.getMessage());
+                throw new DslException(msg);
+            } finally {
+                db.CloseConnection();
+            }
+            long endTime = System.nanoTime();
+            log.info("Time taken to fetch data " + (endTime - startTime) / 1000000);
+        } else {
+            long startTime = System.nanoTime();
+            facilityList = (List<Facility>) ele.getObjectValue();
+            long endTime = System.nanoTime();
+            log.info("Time taken to fetch data from cache " + (endTime - startTime) / 1000000);
+        }
+        return facilityList;
+    }
+    
+    
+    
+    public List<FacilityType> getFacilitiesOwnerType() throws DslException {
+         
+        List<FacilityType> facilityTypeList = new ArrayList();
+
+        log.info("Fetching facilities owner type");
+        Element ele = cache.get(CacheKeys.facilityOwnerType);
+        String output = (ele == null ? null : ele.getObjectValue().toString());
+        //log.info("Element from cache " + output);
+        if (ele == null) {
+            long startTime = System.nanoTime();
+            Database db = new Database();
+            ResultSet rs = db.executeQuery(getFacilityOwnerType);
+            try {
+                while (rs.next()) {
+                    FacilityType facilityType = new FacilityType();
+                    facilityType.setId(rs.getString("id"));
+                    facilityType.setName(rs.getString("name"));
+                    facilityTypeList.add(facilityType);
+                }
+                cache.put(new Element(CacheKeys.facilityOwnerType, facilityTypeList));
+
+            } catch (SQLException ex) {
+                log.error(ex);
+                Message msg = new Message();
+                msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+                msg.setMesageContent(ex.getMessage());
+                throw new DslException(msg);
+
+            } finally {
+                db.CloseConnection();
+            }
+            long endTime = System.nanoTime();
+            log.info("Time taken to fetch data " + (endTime - startTime) / 1000000);
+        } else {
+            long startTime = System.nanoTime();
+            facilityTypeList = (List<FacilityType>) ele.getObjectValue();
+            long endTime = System.nanoTime();
+            log.info("Time taken to fetch data from cache " + (endTime - startTime) / 1000000);
+        }
+        return facilityTypeList;
+    }
+    
+    public List<Facility> getFacilitiesByOwnerType(int ownerTypeId) throws DslException {
+        List<Facility> facilityList = new ArrayList();
+        log.info("Fetching facilities by owner type");
+        Element ele = cache.get("faciltiesOwnerType" + ownerTypeId);
+        String output = (ele == null ? null : ele.getObjectValue().toString());
+        if (ele == null) {
+            long startTime = System.nanoTime();
+            Database db = new Database();
+            try {
+                Connection conn = db.getConn();
+                PreparedStatement ps = conn.prepareStatement(getFaciltiesByOwnerType);
+                ps.setInt(1, ownerTypeId);
+                ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    Facility facility = new Facility();
+                    facility.setWardId(rs.getString("parentid"));
+                    facility.setId(rs.getString("id"));
+                    facility.setName(rs.getString("name"));
+                    facilityList.add(facility);
+                }
+                cache.put(new Element("faciltiesOwnerType" + ownerTypeId, facilityList));
+            } catch (SQLException ex) {
+                log.error(ex);
+                Message msg = new Message();
+                msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+                msg.setMesageContent(ex.getMessage());
+                throw new DslException(msg);
+            } finally {
+                db.CloseConnection();
+            }
+            long endTime = System.nanoTime();
+            log.info("Time taken to fetch data " + (endTime - startTime) / 1000000);
+        } else {
+            long startTime = System.nanoTime();
+            facilityList = (List<Facility>) ele.getObjectValue();
+            long endTime = System.nanoTime();
+            log.info("Time taken to fetch data from cache " + (endTime - startTime) / 1000000);
+        }
+        return facilityList;
+    }
+    
 }

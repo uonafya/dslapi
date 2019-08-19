@@ -13,6 +13,8 @@ public class CacheKeys {
     public static String facilityList="FACILITYLIST";
     public static String facilityLevel="FACILITYLEVEL";
     public static String facilityType="FACILITYTYPES";
+    public static String facilityRegulatingBody="FacilityRegulatingBody";
+    public static String facilityOwnerType="FacilityOwnerType";
     public static String indicatorName="INDICATORNAMES";
     public static String indicatorGroup="INDICATORGROUP";
     public static String cadreGroups="CADREGROUPS";
