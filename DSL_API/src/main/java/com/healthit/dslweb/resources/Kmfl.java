@@ -70,8 +70,22 @@ public class Kmfl {
     }
     
     @ResponseBody
+    @RequestMapping(value = "/facilitylevel/{facilityLevelId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getFacilitiesByLevel(@PathVariable("facilityLevelId") int facilityLevelId) {
+        System.out.println("by group");
+        try {
+            FacilityDao facilityDao=new FacilityDao();
+            List<Facility> facilityList  = facilityDao.getFacilitiesByLevel(facilityLevelId);
+            return new ResponseEntity<List>(facilityList, HttpStatus.OK);
+        } catch (DslException ex) {
+            return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+    
+    @ResponseBody
     @RequestMapping(value = "/facilitytype", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getAllFacilityTypes() {
+    public ResponseEntity<?> getFacilityTypes() {
         try {
             FacilityDao facilityDao=new FacilityDao();
             List<FacilityType> facilityList = facilityDao.getFacilitiesType();
@@ -85,7 +99,7 @@ public class Kmfl {
     
     @ResponseBody
     @RequestMapping(value = "/facilitytype/{facilityTypeId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getAllCadresGroup(@PathVariable("facilityTypeId") int facilityTypeId) {
+    public ResponseEntity<?> getFacilitiesByType(@PathVariable("facilityTypeId") int facilityTypeId) {
         System.out.println("by group");
         try {
             FacilityDao facilityDao=new FacilityDao();

@@ -36,7 +36,10 @@ public class FacilityDao {
 
     private String getALlFaciltiesByType = "Select dhis_organisation_unit_id as id,dhis_organisation_unit_name as name,parentid from"
             + " common_organisation_unit commorg inner join facilities_facility ff on ff.code=commorg.dhis_organisation_unit_id where level='facility' and ff.facilitytype_sk=? order by name desc";
-
+    
+    private String getFaciltiesByLevels = "Select dhis_organisation_unit_id as id,dhis_organisation_unit_name as name,parentid from"
+            + " common_organisation_unit commorg inner join facilities_facility ff on ff.code=commorg.dhis_organisation_unit_id where level='facility' and ff.kephlevel_sk=? order by name desc";
+    
     private String getFacilityLevels = "SELECT kephlevel_sk as id,name  FROM public.facilities_kephlevel";
 
     private String getFacilityTypes = "SELECT facilitytype_sk as id,name  FROM public.facilities_facilitytype";
@@ -171,16 +174,13 @@ public class FacilityDao {
 
     public List<Facility> getFacilitiesByType(int typeId) throws DslException {
         List<Facility> facilityList = new ArrayList();
-
         log.info("Fetching facilities by type");
         Element ele = cache.get("faclitiesByType" + typeId);
         String output = (ele == null ? null : ele.getObjectValue().toString());
-        //log.info("Element from cache " + output);
         if (ele == null) {
             long startTime = System.nanoTime();
             Database db = new Database();
             try {
-               
                 Connection conn = db.getConn();
                 PreparedStatement ps = conn.prepareStatement(getALlFaciltiesByType);
                 ps.setInt(1, typeId);
@@ -188,12 +188,8 @@ public class FacilityDao {
                 while (rs.next()) {
                     Facility facility = new Facility();
                     facility.setWardId(rs.getString("parentid"));
-                    //facility.setFacilityOwner(rs.getString("owner_id"));
                     facility.setId(rs.getString("id"));
-                    //KephLevel l = KephLevel.getKephLevel(Integer.parseInt(rs.getString("kephlevel_sk")));
-                    //facility.setKephLevel(l);
                     facility.setName(rs.getString("name"));
-                    //facility.setSubCountyId(rs.getString("sub_county_id"));
                     facilityList.add(facility);
                 }
                 cache.put(new Element("faclitiesByType" + typeId, facilityList));
@@ -217,5 +213,47 @@ public class FacilityDao {
         }
         return facilityList;
     }
+    
+    public List<Facility> getFacilitiesByLevel(int levelId) throws DslException {
+        List<Facility> facilityList = new ArrayList();
+        log.info("Fetching facilities by level");
+        Element ele = cache.get("faciltiesByLevels" + levelId);
+        String output = (ele == null ? null : ele.getObjectValue().toString());
+        if (ele == null) {
+            long startTime = System.nanoTime();
+            Database db = new Database();
+            try {
+                Connection conn = db.getConn();
+                PreparedStatement ps = conn.prepareStatement(getFaciltiesByLevels);
+                ps.setInt(1, levelId);
+                ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    Facility facility = new Facility();
+                    facility.setWardId(rs.getString("parentid"));
+                    facility.setId(rs.getString("id"));
+                    facility.setName(rs.getString("name"));
+                    facilityList.add(facility);
+                }
+                cache.put(new Element("faciltiesByLevels" + levelId, facilityList));
+            } catch (SQLException ex) {
+                log.error(ex);
+                Message msg = new Message();
+                msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+                msg.setMesageContent(ex.getMessage());
+                throw new DslException(msg);
+            } finally {
+                db.CloseConnection();
+            }
+            long endTime = System.nanoTime();
+            log.info("Time taken to fetch data " + (endTime - startTime) / 1000000);
+        } else {
+            long startTime = System.nanoTime();
+            facilityList = (List<Facility>) ele.getObjectValue();
+            long endTime = System.nanoTime();
+            log.info("Time taken to fetch data from cache " + (endTime - startTime) / 1000000);
+        }
+        return facilityList;
+    }
+    
 
 }
