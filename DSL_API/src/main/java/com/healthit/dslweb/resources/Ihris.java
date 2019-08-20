@@ -32,24 +32,24 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @Controller
 public class Ihris {
+
     @ResponseBody
     @RequestMapping(value = "/cadre2", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAllCadres(@RequestParam String msisdn) {
-        
+
         if (true) {
             return new ResponseEntity<String>("No Content found for this number", HttpStatus.NOT_FOUND);
         } else {
             return new ResponseEntity(HttpStatus.OK);
         }
     }
-    
-    
+
     @ResponseBody
     @RequestMapping(value = "/cadregroups/{cadreGroupId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAllCadresGroup(@PathVariable("cadreGroupId") int cadreGroupId) {
         System.out.println("by group");
         try {
-            IhrisDao ihris=new IhrisDao();
+            IhrisDao ihris = new IhrisDao();
             List<Cadre> cadreGroupList = ihris.getCadresByGroup(cadreGroupId);
             return new ResponseEntity<List>(cadreGroupList, HttpStatus.OK);
         } catch (DslException ex) {
@@ -57,45 +57,57 @@ public class Ihris {
         }
 
     }
-    
+
     @ResponseBody
     @RequestMapping(value = "/cadregroups", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getCadreGroups() {
+    public ResponseEntity<?> getCadreGroups(
+            @RequestParam(value = "pe", required = false) String pe,
+            @RequestParam(value = "ou", required = false) String ou,
+            @RequestParam(value = "cadreGroup", required = false) String cadreGroup) {
         System.out.println("without group");
         try {
-            IhrisDao ihris=new IhrisDao();
-            List<CadreGroup> cadreGroupList = ihris.getAllCadresGroup();
-            return new ResponseEntity<List>(cadreGroupList, HttpStatus.OK);
+
+            IhrisDao ihris = new IhrisDao();
+            if (    pe == null
+                    && ou == null
+                    && cadreGroup == null) {
+                List<CadreGroup> cadreGroupList = ihris.getAllCadresGroup();
+                return new ResponseEntity<List>(cadreGroupList, HttpStatus.OK);
+            } else {
+                List<CadreAllocation> cadreAllocationList = ihris.getCadreGroupAllocation( pe,  ou,  cadreGroup);
+                return new ResponseEntity<List>(cadreAllocationList, HttpStatus.OK);
+            }
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
     }
-    
+
     @ResponseBody
     @RequestMapping(value = "/cadres", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getAllCadres() {
+    public ResponseEntity<?> getAllCadres(
+            @RequestParam(value = "pe", required = false) String pe,
+            @RequestParam(value = "ou", required = false) String ou,
+            @RequestParam(value = "cadre", required = false) String cadre,
+            @RequestParam(value = "cadreGroup", required = false) String cadreGroup
+    ) {
         try {
-            IhrisDao ihris=new IhrisDao();
-            List<Cadre> cadreList = ihris.getAllCadres();
-            return new ResponseEntity<List>(cadreList, HttpStatus.OK);
+            IhrisDao ihris = new IhrisDao();
+            if (pe == null
+                    && ou == null
+                    && cadre == null
+                    && cadreGroup == null) {
+                List<Cadre> cadreList = ihris.getAllCadres();
+                return new ResponseEntity<List>(cadreList, HttpStatus.OK);
+            } else {
+                List<CadreAllocation> cadreAllocationList = ihris.getCadreAllocation(pe, ou, cadre, cadreGroup);
+                return new ResponseEntity<List>(cadreAllocationList, HttpStatus.OK);
+            }
+
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
     }
-    
-    @ResponseBody
-    @RequestMapping(value = "/cadreallocation", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getCadreAllocation() {
-        try {
-            IhrisDao ihris=new IhrisDao();
-            List<CadreAllocation> cadreAllocationList = ihris.getCadreAllocation();
-            return new ResponseEntity<List>(cadreAllocationList, HttpStatus.OK);
-        } catch (DslException ex) {
-            return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
 
-    }
-    
 }

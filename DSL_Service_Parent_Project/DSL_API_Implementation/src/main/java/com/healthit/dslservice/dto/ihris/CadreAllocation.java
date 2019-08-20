@@ -10,44 +10,33 @@ package com.healthit.dslservice.dto.ihris;
  * @author duncan
  */
 public class CadreAllocation {
-    private String cadreid;
-    private String cadreNumber; //total number allocated
-    private String mflcode;
-    private String period;
+    private String cadre;
+    private String cadreCount; //total number allocated
+    private String id;
 
-    public String getPeriod() {
-        return period;
-    }
-
-    public void setPeriod(String period) {
-        this.period = period;
-    }
-    
-    public String getCadreid() {
-        return cadreid;
+    public String getCadre() {
+        return cadre;
     }
 
-    public void setCadreid(String cadreid) {
-        this.cadreid = cadreid;
-    }
-    
-
-    public String getCadreNumber() {
-        return cadreNumber;
+    public void setCadre(String cadre) {
+        this.cadre = cadre;
     }
 
-    public void setCadreNumber(String cadreNumber) {
-        this.cadreNumber = cadreNumber;
+    public String getCadreCount() {
+        return cadreCount;
     }
 
-    public String getMflcode() {
-        return mflcode;
+    public void setCadreCount(String cadreCount) {
+        this.cadreCount = cadreCount;
     }
 
-    public void setMflcode(String mflcode) {
-        this.mflcode = mflcode;
+    public String getId() {
+        return id;
     }
-    
+
+    public void setId(String id) {
+        this.id = id;
+    }
     
     
 }

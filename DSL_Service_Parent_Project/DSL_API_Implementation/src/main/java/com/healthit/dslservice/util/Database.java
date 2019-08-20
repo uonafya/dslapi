@@ -62,6 +62,7 @@ public class Database {
         ResultSet rs = null;
         try {
             ps = conn.prepareStatement(sql);
+            log.info("Query to run: "+ps.toString());
             rs = ps.executeQuery();
         } catch (SQLException ex) {
             log.error(ex);
