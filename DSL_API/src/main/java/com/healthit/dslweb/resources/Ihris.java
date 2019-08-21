@@ -63,7 +63,7 @@ public class Ihris {
     public ResponseEntity<?> getCadreGroups(
             @RequestParam(value = "pe", required = false) String pe,
             @RequestParam(value = "ou", required = false) String ou,
-            @RequestParam(value = "cadreGroup", required = false) String cadreGroup) {
+            @RequestParam(value = "cadregroupid", required = false) String cadreGroup) {
         System.out.println("without group");
         try {
 
@@ -88,7 +88,7 @@ public class Ihris {
     public ResponseEntity<?> getAllCadres(
             @RequestParam(value = "pe", required = false) String pe,
             @RequestParam(value = "ou", required = false) String ou,
-            @RequestParam(value = "cadre", required = false) String cadre,
+            @RequestParam(value = "cadreid", required = false) String cadre,
             @RequestParam(value = "cadreGroup", required = false) String cadreGroup
     ) {
         try {
