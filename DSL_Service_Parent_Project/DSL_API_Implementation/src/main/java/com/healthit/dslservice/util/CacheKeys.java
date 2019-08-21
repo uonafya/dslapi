@@ -19,6 +19,7 @@ public class CacheKeys {
     public static String indicatorGroup="INDICATORGROUP";
     public static String cadreGroups="CADREGROUPS";
     public static String cadres="CADRES";
+    public static String orgUnitLevelToId="ORGLEVELTOID";
     public static String counties="COUNTIES";
     public static String wards="WARDS";
     public static String constituencies="CONSTITUENCIES";

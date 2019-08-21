@@ -36,7 +36,7 @@ import org.apache.log4j.Logger;
  */
 public class IhrisDao {
 
-    final static Logger log = Logger.getLogger(FacilityDao.class);
+    final static Logger log = Logger.getLogger(IhrisDao.class);
     Cache cache = DslCache.getCache();
 
     private String aLlCadreGroup = "Select cadreid,cadrename from dim_ihris_cadre";
@@ -45,11 +45,97 @@ public class IhrisDao {
 
     private String nationalCadreGroupCount = "select count(*) as cadre_count,cadre_group.cadreid as id,cadre_group.cadrename as cadre from fact_ihris ihris \n"
             + "inner join dim_ihris_dataelement cadree on cast(cadree.dataelementid as varchar) = cast(ihris.job_category_id as varchar) \n"
-            + "inner join dim_ihris_cadre cadre_group on cadre_group.cadreid=cadree.cadreid  \n"
-            + "where ihris.hire_date<='@end_year@-12-31' \n"
+            + "inner join dim_ihris_cadre cadre_group on cadre_group.cadreid=cadree.cadreid  @ou_join@\n"
+            + "where @pe@ @ou@ @cadreGroup@ \n"
             + "group by cadre,cadre_group.cadreid order by cadre desc";
 
+    private boolean appendAnd = false;
+
     /**
+     *
+     * @param pe period from http request
+     * @return qeuery string appended with period patameter
+     * @throws DslException
+     */
+    private String insertPeriodPart(String pe) throws DslException {
+        String periodString = "";
+        RequestParameters.isValidPeriod(pe);
+        if (pe.length() == 4) {
+            String replacement = " ihris.hire_date<='@end_year@-12-31' ".replace("@end_year@", pe);
+            periodString = replacement;
+        } else {
+            String paramYear = pe.substring(0, 4);
+            String paramMonth = pe.substring(4, 6);
+            String replacement = " ihris.hire_date<='@end_year@-@month@-31' ".replace("@end_year@", paramYear).replace("@month@", paramMonth);
+            periodString = replacement;
+        }
+        nationalCadreGroupCount = nationalCadreGroupCount.replace("@pe@", periodString);
+
+        return nationalCadreGroupCount;
+    }
+
+    /**
+     *
+     * @param ou organisation unit id from http request
+     * @return qeuery string appended with org unit patameter
+     * @throws DslException
+     */
+    private String insertOrgUntiPart(String ou, String level) throws DslException {
+        String join="";
+        log.info("org unti level: "+level);
+        if ("facility".equals(level.trim())) {
+            join = " inner join common_organisation_unit com_org on cast(com_org.mfl_code as varchar) = cast(ihris.mfl_code as varchar) ";
+        } else if ("ward".equals(level.trim())) {
+            join = "inner join facilities_facility ff on cast(ff.code as varchar) =cast(ihris.mfl_code as varchar)"
+                    + "inner join common_organisation_unit com_org on com_org.mfl_code=ff.ward_sk";
+        } else if ("subcounty".equals(level.trim())) {
+            join = "inner join facilities_facility ff on cast(ff.code as varchar) =cast(ihris.mfl_code as varchar) "
+                    + "inner join common_ward com_ward on cast(com_ward.ward_sk as varchar) = cast(ff.ward_sk as varchar)"
+                    + "inner join common_organisation_unit com_org on cast(com_org.mfl_code as varchar) = cast(com_ward.constituency_sk as varchar)";
+        } else if ("county".equals(level.trim())) {
+            join = "inner join facilities_facility ff on cast(ff.code as varchar) =cast(ihris.mfl_code as varchar) "
+                    + "inner join common_ward com_ward on cast(com_ward.ward_sk as varchar)= cast(ff.ward_sk as varchar)"
+                    + "inner join common_constituency com_consti on cast(com_ward.constituency_sk as varchar) =  cast(com_consti.constituency_sk as varchar)"
+                    + "inner join common_county com_county on cast(com_county.id as varchar) = cast(com_consti.county_id as varchar)"
+                    + "inner join common_organisation_unit com_org on cast(com_org.mfl_code as varchar) = cast(com_county.code as varchar)";
+        }
+        log.debug("The oug unit join query: "+join);
+        nationalCadreGroupCount = nationalCadreGroupCount.replace("@ou_join@", join);
+        log.debug("the query after replace: "+join);
+        // @ou_join@
+        String replacement;
+        if (appendAnd) {
+            replacement = " and com_org.dhis_organisation_unit_id= " + ou;
+        } else {
+            replacement = " com_org.dhis_organisation_unit_id=" + ou;
+            appendAnd = true;
+        }
+        nationalCadreGroupCount = nationalCadreGroupCount.replace("@ou@", replacement);
+
+        return nationalCadreGroupCount;
+    }
+
+    /**
+     *
+     * @param ou organisation unit id from http request
+     * @return qeuery string appended with org unit patameter
+     * @throws DslException
+     */
+    private String insertCadreGroupPart(String cadreGroup) throws DslException {
+        String replacement;
+        if (appendAnd) {
+            replacement = " and cadre_group.cadreid = " + cadreGroup;
+        } else {
+            replacement = " cadre_group.cadreid =" + cadreGroup;
+            appendAnd = true;
+        }
+        nationalCadreGroupCount = nationalCadreGroupCount.replace("@cadreGroup@", replacement);
+
+        return nationalCadreGroupCount;
+    }
+
+    /**
+     * Allocation of cadres by cadre groups
      *
      * @param pe semi colon separated period
      * @param ou semi colon separated org unit ids
@@ -59,15 +145,29 @@ public class IhrisDao {
      * @throws DslException
      */
     public List<CadreAllocation> getCadreGroupAllocation(String pe, String ou, String cadreGroup) throws DslException {
-        int year = Calendar.getInstance().get(Calendar.YEAR);
-        if (pe != null) {
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
 
-            RequestParameters.isValidPeriodParamer(pe);
-            if (pe.length() == 4) {
-                year = Integer.parseInt(pe);
-            }
-            nationalCadreGroupCount=nationalCadreGroupCount.replace("@end_year@", Integer.toString(year));
+        if (pe != null) {
+            nationalCadreGroupCount = insertPeriodPart(pe);
+            appendAnd = true;
+        } else {
+            nationalCadreGroupCount = nationalCadreGroupCount.replace("@pe@", "");
         }
+
+        if (ou != null) {
+            String level = RequestParameters.getOruntiLevel(ou);
+            insertOrgUntiPart(ou, level);
+        } else {
+            nationalCadreGroupCount = nationalCadreGroupCount.replace("@ou@", "");
+            nationalCadreGroupCount = nationalCadreGroupCount.replace("@ou_join@", "");
+        }
+
+        if (cadreGroup != null) {
+            nationalCadreGroupCount = insertCadreGroupPart(cadreGroup);
+        } else {
+            nationalCadreGroupCount = nationalCadreGroupCount.replace("@cadreGroup@", "");
+        }
+
         List<CadreAllocation> cadreAllocationList = new ArrayList();
         Database db = new Database();
 
