@@ -14,6 +14,7 @@ import com.healthit.dslservice.dto.ihris.CadreAllocation;
 import com.healthit.dslservice.util.CacheKeys;
 import com.healthit.dslservice.util.Database;
 import com.healthit.dslservice.util.DslCache;
+import com.healthit.dslservice.util.RequestParameters;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -40,90 +41,54 @@ public class DhisDao {
             + "from vw_mohdsl_dhis where code is not null "
     );
 
-    private String getIndicatorNames = "select DISTINCT \"Indicator name\" as indicatorName,\"Group name\" as indicatorGroup from vw_mohdsl_dhis where code is not null order by indicatorName";
+    private String getIndicatorNames = "SELECT \"Indicator ID\" as id, indicatorname as name, indicatorgroupid as groupId\n"
+            + "FROM public.vw_indicator_to_indicatorgroup";
     private String getIndicatorGroups = "select DISTINCT(\"Group name\") as indicatorGroup from vw_mohdsl_dhis where code is not null order by indicatorGroup";
-    
-    private Map<String,String> groupTable=new HashMap();
-    
+
+    private Map<String, String> groupTable = new HashMap();
+
     Cache cache = DslCache.getCache();
 
-    public List<Indicator> getIndicators(
-            List<String> idicatorName,
-            List<String> indicatorGroup,
-            String startDate,
-            String endDate,
-            List<String> mflCode
-    ) throws DslException {
-
-        if (idicatorName != null) {
-            if (!idicatorName.isEmpty()) {
-                Iterator i = idicatorName.iterator();
-                String append = "";
-                int count = 0;
-                while (i.hasNext()) {
-                    if (count == 0) {
-                        append = " and indicatorName=" + (String) i.next() + " ";
-                        count = count + 1;
-                    } else {
-                        append = " or indicatorName=" + (String) i.next() + " ";
-                    }
-                }
-                getALlFaciltiesBuilder.append(append);
-            }
-        }
-
-        if (indicatorGroup != null) {
-            if (!indicatorGroup.isEmpty()) {
-                Iterator i = indicatorGroup.iterator();
-                String append = "";
-                int count = 0;
-                while (i.hasNext()) {
-                    if (count == 0) {
-                        append = " and indicatorGroup=" + (String) i.next() + " ";
-                        count = count + 1;
-                    } else {
-                        append = " or indicatorGroup=" + (String) i.next() + " ";
-                    }
-                }
-                getALlFaciltiesBuilder.append(append);
-            }
-        }
-
-        if (mflCode != null) {
-            if (!mflCode.isEmpty()) {
-                Iterator i = mflCode.iterator();
-                String append = "";
-                int count = 0;
-                while (i.hasNext()) {
-                    if (count == 0) {
-                        append = " and code=" + (String) i.next() + " ";
-                        count = count + 1;
-                    } else {
-                        append = " or code=" + (String) i.next() + " ";
-                    }
-                }
-                getALlFaciltiesBuilder.append(append);
-            }
-        }
-
-        Filter filter = new Filter();
-        String orderBy = " order by startdate,enddate ";
-        getALlFaciltiesBuilder.append(orderBy + " OFFSET " + filter.getOffset() + " " + " LIMIT " + filter.getLimit());
-
+    /**
+     * fetch indicator related data
+     *
+     * @param pe period
+     * @param ou organisation unit
+     * @param indicator indicator id
+     * @return indicator list
+     * @throws DslException
+     */
+    public List<Indicator> getIndicators(String pe, String ou, String indicatorId, String groupId) throws DslException {
+//        if (pe != null) {
+//            nationalCadreGroupCount = insertPeriodPart(pe, nationalCadreGroupCount);
+//            appendAnd = true;
+//        } else {
+//            nationalCadreGroupCount = nationalCadreGroupCount.replace("@pe@", "");
+//        }
+//
+//        if (ou != null) {
+//            String level = RequestParameters.getOruntiLevel(ou);
+//            nationalCadreGroupCount = insertOrgUntiPart(ou, level, nationalCadreGroupCount);
+//        } else {
+//            nationalCadreGroupCount = nationalCadreGroupCount.replace("@ou@", "");
+//            nationalCadreGroupCount = nationalCadreGroupCount.replace("@ou_join@", "");
+//        }
+//
+//        if (cadreGroup != null) {
+//            nationalCadreGroupCount = insertCadreGroupPart(cadreGroup);
+//        } else {
+//            nationalCadreGroupCount = nationalCadreGroupCount.replace("@cadreGroup@", "");
+//        }
         List<Indicator> indicatorList = new ArrayList();
         Database db = new Database();
-        ResultSet rs = db.executeQuery(getALlFaciltiesBuilder.toString());
+        ResultSet rs = db.executeQuery(getIndicatorNames);
         log.info("Fetching ndicators");
         try {
             while (rs.next()) {
                 Indicator indicator = new Indicator();
-                indicator.setEndDate(rs.getString("enddate"));
                 indicator.setId(rs.getString("id"));
-                indicator.setIdicatorName(rs.getString("indicatorName"));
-                indicator.setIndicatorGroup(rs.getString("indicatorGroup"));
-                indicator.setIndicatorValue(rs.getString("kpivalue"));
-                indicator.setMflCode(rs.getString("kmflcode"));
-                indicator.setStartDate(rs.getString("startdate"));
+                indicator.setName(rs.getString("name"));
+                indicator.setGroupId(rs.getString("groupId"));
                 indicatorList.add(indicator);
             }
         } catch (SQLException ex) {
@@ -143,15 +108,15 @@ public class DhisDao {
             ResultSet rs = db.executeQuery(getIndicatorNames);
             log.info("Fetching indicator Names");
             try {
-                int count=1;
-                
+                int count = 1;
+
                 //populate groupTable if empty
-                if(groupTable.isEmpty()){
-                     Element indicatorGroupTableEle = cache.get(CacheKeys.indicatorGroupTable);
-                     groupTable = (Map<String,String>) indicatorGroupTableEle.getObjectValue();
-                     if(groupTable.isEmpty()){
-                         getIndicatorGroups();
-                     }
+                if (groupTable.isEmpty()) {
+                    Element indicatorGroupTableEle = cache.get(CacheKeys.indicatorGroupTable);
+                    groupTable = (Map<String, String>) indicatorGroupTableEle.getObjectValue();
+                    if (groupTable.isEmpty()) {
+                        getIndicatorGroups();
+                    }
                 }
                 while (rs.next()) {
                     Map<String, String> indicatorName = new HashMap();
@@ -159,7 +124,7 @@ public class DhisDao {
                     indicatorName.put("id", Integer.toString(count));
                     indicatorName.put("groupId", groupTable.get(rs.getString("indicatorGroup")));
                     indicatorNames.add(indicatorName);
-                    count+=1;
+                    count += 1;
                 }
                 cache.put(new Element(CacheKeys.indicatorName, indicatorNames));
             } catch (SQLException ex) {
@@ -180,17 +145,17 @@ public class DhisDao {
         List<Map<String, String>> indicatorNames = new ArrayList();
 
         Element ele = cache.get(CacheKeys.indicatorGroup);
-        
+
         if (ele == null) {
             Database db = new Database();
             ResultSet rs = db.executeQuery(getIndicatorGroups);
             log.info("Fetching indicator groups");
             try {
-                int count=1;
+                int count = 1;
                 while (rs.next()) {
                     Map<String, String> indicatorGroupName = new HashMap();
                     groupTable.put(rs.getString("indicatorGroup"), Integer.toString(count));
-                    count+=1;
+                    count += 1;
                     indicatorGroupName.put("name", rs.getString("indicatorGroup"));
                     indicatorGroupName.put("id", Integer.toString(count));
                     indicatorNames.add(indicatorGroupName);
@@ -202,7 +167,7 @@ public class DhisDao {
             } finally {
                 db.CloseConnection();
             }
-        }else {
+        } else {
             long startTime = System.nanoTime();
             indicatorNames = (List<Map<String, String>>) ele.getObjectValue();
             long endTime = System.nanoTime();

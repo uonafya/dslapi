@@ -43,11 +43,16 @@ public class Dhis {
     
     
     @ResponseBody
-    @RequestMapping(value = "/kpi", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getIndicators() {
+    @RequestMapping(value = "/indicators", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getIndicators(
+     @RequestParam(value = "pe", required = false) String pe,
+            @RequestParam(value = "ou", required = false) String ou,
+            @RequestParam(value = "id", required = false) String id,
+            @RequestParam(value = "groupid", required = false) String groupId
+    ) {
         try {
             DhisDao dhisDao=new DhisDao();
-            List<Indicator> indicatorList = dhisDao.getIndicators(null, null, null, null, null);
+            List<Indicator> indicatorList = dhisDao.getIndicators( pe,  ou,  id,  groupId);
             return new ResponseEntity<List>(indicatorList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -56,25 +61,12 @@ public class Dhis {
     }
     
     @ResponseBody
-    @RequestMapping(value = "/indicator_group", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/indicatorgroup", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getIndicatorGroups() {
         try {
             DhisDao dhisDao=new DhisDao();
             List<Map<String,String>> indicatorGroupList = dhisDao.getIndicatorGroups();
             return new ResponseEntity<List>(indicatorGroupList, HttpStatus.OK);
-        } catch (DslException ex) {
-            return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-    }
-    
-    @ResponseBody
-    @RequestMapping(value = "/indicator_name", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getIndicatorNames() {
-        try {
-            DhisDao dhisDao=new DhisDao();
-            List<Map<String,String>> indicatorNameList = dhisDao.getIndicatorNames();
-            return new ResponseEntity<List>(indicatorNameList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
         }

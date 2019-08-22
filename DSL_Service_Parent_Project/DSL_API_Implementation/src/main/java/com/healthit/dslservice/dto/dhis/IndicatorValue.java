@@ -9,11 +9,10 @@ package com.healthit.dslservice.dto.dhis;
  *
  * @author duncan
  */
-public class Indicator {
-
+public class IndicatorValue {
     private String id;
     private String name;
-    private String groupId;
+    private String pe;
 
     public String getId() {
         return id;
@@ -31,12 +30,13 @@ public class Indicator {
         this.name = name;
     }
 
-    public String getGroupId() {
-        return groupId;
+    public String getPe() {
+        return pe;
     }
 
-    public void setGroupId(String groupId) {
-        this.groupId = groupId;
+    public void setPe(String pe) {
+        this.pe = pe;
     }
+    
     
 }
