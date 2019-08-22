@@ -6,6 +6,7 @@ import com.healthit.dslservice.dao.FacilityDao;
 import com.healthit.dslservice.dao.IhrisDao;
 import com.healthit.dslservice.dto.adminstrationlevel.Facility;
 import com.healthit.dslservice.dto.dhis.Indicator;
+import com.healthit.dslservice.dto.dhis.IndicatorGoup;
 import com.healthit.dslservice.dto.ihris.Cadre;
 import com.healthit.dslservice.dto.ihris.CadreGroup;
 import com.healthit.dslservice.message.Message;
@@ -61,11 +62,14 @@ public class Dhis {
     }
     
     @ResponseBody
-    @RequestMapping(value = "/indicatorgroup", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getIndicatorGroups() {
+    @RequestMapping(value = "/indicatorgroups", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getIndicatorGroups(@RequestParam(value = "pe", required = false) String pe,
+            @RequestParam(value = "ou", required = false) String ou,
+            @RequestParam(value = "id", required = false) String id
+            ) {
         try {
             DhisDao dhisDao=new DhisDao();
-            List<Map<String,String>> indicatorGroupList = dhisDao.getIndicatorGroups();
+            List<IndicatorGoup> indicatorGroupList = dhisDao.getIndicatorGroups( pe,  ou,  id);
             return new ResponseEntity<List>(indicatorGroupList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
