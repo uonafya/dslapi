@@ -10,9 +10,13 @@ package com.healthit.dslservice.dto.dhis;
  * @author duncan
  */
 public class IndicatorValue {
+
     private String id;
     private String name;
     private String pe;
+    private String ouid;
+    private String ouName;
+    private String value;
 
     public String getId() {
         return id;
@@ -37,6 +41,29 @@ public class IndicatorValue {
     public void setPe(String pe) {
         this.pe = pe;
     }
-    
-    
+
+    public String getOuid() {
+        return ouid;
+    }
+
+    public void setOuid(String ouid) {
+        this.ouid = ouid;
+    }
+
+    public String getOuName() {
+        return ouName;
+    }
+
+    public void setOuName(String ouName) {
+        this.ouName = ouName;
+    }
+
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+
 }

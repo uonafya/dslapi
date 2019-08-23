@@ -10,4 +10,5 @@ public class MessageType {
     public final static String NUMBER_FORMAT_ERROR="Error Code: 1005 Wrong number format";
     public final static String YEAR_FORMAT_ERROR="Error Code: 1007 Wrong period format";
     public final static String MISSING_DB_ENRTY_VALUE="Error Code: 1009 Object not found";
+    public final static String MISSING_PARAMETER_VALUE="Error Code: 1011 Missing parameter value";
 }

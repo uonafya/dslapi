@@ -7,6 +7,7 @@ import com.healthit.dslservice.dao.IhrisDao;
 import com.healthit.dslservice.dto.adminstrationlevel.Facility;
 import com.healthit.dslservice.dto.dhis.Indicator;
 import com.healthit.dslservice.dto.dhis.IndicatorGoup;
+import com.healthit.dslservice.dto.dhis.IndicatorValue;
 import com.healthit.dslservice.dto.ihris.Cadre;
 import com.healthit.dslservice.dto.ihris.CadreGroup;
 import com.healthit.dslservice.message.Message;
@@ -31,30 +32,37 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @Controller
 public class Dhis {
-    
+    final static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(Dhis.class);
     @ResponseBody
     @RequestMapping(value = "/indicators", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getIndicators(
-     @RequestParam(value = "pe", required = false) String pe,
-            @RequestParam(value = "ou", required = false) String ou,
-            @RequestParam(value = "id", required = false) String id,
-            @RequestParam(value = "groupid", required = false) String groupId
+            @RequestParam(value = "pe", required = false) String pe,
+            @RequestParam(value = "ouid", required = false) String ouid,
+            @RequestParam(value = "id", required = false) String id
     ) {
         try {
-            DhisDao dhisDao=new DhisDao();
-            List<Indicator> indicatorList = dhisDao.getIndicators( pe,  ou,  id,  groupId);
-            return new ResponseEntity<List>(indicatorList, HttpStatus.OK);
+            DhisDao dhisDao = new DhisDao();
+            log.info("parameters passed: "+"pe: "+pe+" ouid: "+ouid+" id: "+id );
+            if (pe == null
+                    && ouid == null
+                    && id == null) {
+                List<Indicator> indicatorList = dhisDao.getIndicators();
+                return new ResponseEntity<List>(indicatorList, HttpStatus.OK);
+            } else {
+                List<IndicatorValue> indicatorValue = dhisDao.getKPIValue(pe, ouid, id);
+                return new ResponseEntity<List>(indicatorValue, HttpStatus.OK);
+            }
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
     }
-    
+
     @ResponseBody
     @RequestMapping(value = "/indicators/{indicatorId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getIndicatorsByGroup(@PathVariable("indicatorId") int indicatorId) {
         try {
-            DhisDao dhisDao=new DhisDao();
+            DhisDao dhisDao = new DhisDao();
             List<Indicator> indicatorList = dhisDao.getIndicatorsByGroup(indicatorId);
             return new ResponseEntity<List>(indicatorList, HttpStatus.OK);
         } catch (DslException ex) {
@@ -62,22 +70,21 @@ public class Dhis {
         }
 
     }
-    
- 
+
     @ResponseBody
     @RequestMapping(value = "/indicatorgroups", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getIndicatorGroups(@RequestParam(value = "pe", required = false) String pe,
             @RequestParam(value = "ou", required = false) String ou,
             @RequestParam(value = "id", required = false) String id
-            ) {
+    ) {
         try {
-            DhisDao dhisDao=new DhisDao();
-            List<IndicatorGoup> indicatorGroupList = dhisDao.getIndicatorGroups( pe,  ou,  id);
+            DhisDao dhisDao = new DhisDao();
+            List<IndicatorGoup> indicatorGroupList = dhisDao.getIndicatorGroups(pe, ou, id);
             return new ResponseEntity<List>(indicatorGroupList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
     }
-    
+
 }

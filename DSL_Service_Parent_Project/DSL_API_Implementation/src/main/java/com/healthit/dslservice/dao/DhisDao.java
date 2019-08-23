@@ -8,14 +8,19 @@ package com.healthit.dslservice.dao;
 import com.healthit.dslservice.DslException;
 import com.healthit.dslservice.dto.dhis.Indicator;
 import com.healthit.dslservice.dto.dhis.IndicatorGoup;
+import com.healthit.dslservice.dto.dhis.IndicatorValue;
+import com.healthit.dslservice.message.Message;
+import com.healthit.dslservice.message.MessageType;
 import com.healthit.dslservice.util.CacheKeys;
 import com.healthit.dslservice.util.Database;
 import com.healthit.dslservice.util.DslCache;
+import com.healthit.dslservice.util.RequestParameters;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,9 +45,103 @@ public class DhisDao {
     private String getIndicatorGroups = "SELECT DISTINCT indicatorgroupid as id, group_name as name\n"
             + "FROM public.vw_indicator_to_indicatorgroup;";
 
+    private String getKPIWholeYear = "select ROUND( kpivalue, 2 ) as value,\"Indicator name\" as indicator_name,cast(to_char(startdate, 'YYYY') as int) as year \n"
+            + ",cast(to_char(startdate, 'MM') as int) as month, \"Indicator ID\" as id,\"Org unit id\" as ouid,dhis.\"Organisation Unit Name\" as ouname \n"
+            + "from vw_mohdsl_dhis_indicators dhis "
+            + "where @pe@"
+            + " @id@ "
+            + "@ouid@"
+            + "group by year,month,\"Indicator name\",kpivalue,\"Org unit id\",ouname,id";
+
     private Map<String, String> groupTable = new HashMap();
 
     Cache cache = DslCache.getCache();
+
+    private boolean appendAnd = false;
+
+    /**
+     *
+     * @param pe period from http request
+     * @return qeuery string appended with period patameter
+     * @throws DslException
+     */
+    private String insertPeriodPart(String pe, String sqlString) throws DslException {
+        String periodYearSpanSql = " startdate between to_date(( @start_year@  || '-'|| 1 || '-'||'1'),'YYYY-MM-DD') and to_date((@end_year@ || '-'|| 12 || '-'||'31'),'YYYY-MM-DD') ";
+        String periodPerMontSql = " startdate between to_date(( @start_year@  || '-'|| @month@ || '-'||'1'),'YYYY-MM-DD') and to_date((@end_year@ || '-'|| @month@ || '-'||'31'),'YYYY-MM-DD') ";
+
+        String periodString = "";
+        RequestParameters.isValidPeriod(pe);
+        if (pe.length() == 4) {
+            String replacement = periodYearSpanSql.replace("@end_year@", pe).replace("@start_year@", pe);
+            periodString = replacement;
+        } else {
+            String paramYear = pe.substring(0, 4);
+            String paramMonth = pe.substring(4, 6);
+            String replacement = periodYearSpanSql.replace("@end_year@", paramYear).replace("@month@", paramMonth);
+            periodString = replacement;
+        }
+
+        sqlString = sqlString.replace("@pe@", periodString);
+        return sqlString;
+
+    }
+
+    /**
+     *
+     * @param ou organisation unit id from http request
+     * @return qeuery string appended with org unit patameter
+     * @throws DslException
+     */
+    private String insertOrgUntiPart(String ouid, String sqlString) throws DslException {
+
+        String replacement;
+        if (appendAnd) {
+            replacement = " and \"Org unit id\" in (@ouid@) ".replace("@ouid@", ouid);
+        } else {
+            replacement = " \"Org unit id\" in (@ouid@) ".replace("@ouid@", ouid);
+            appendAnd = true;
+        }
+        sqlString = sqlString.replace("@ouid@", replacement);
+
+        return sqlString;
+    }
+
+    /**
+     *
+     * @param ou organisation unit id from http request
+     * @return qeuery string appended with org unit patameter
+     * @throws DslException
+     */
+    private String insertIdPart(String id, String sqlString) throws DslException {
+        String replacement;
+        if (appendAnd) {
+            replacement = " and \"Indicator ID\" in (@indicator@) ".replace("@indicator@", id);
+        } else {
+            replacement = "  \"Indicator ID\" in (@indicator@) ".replace("@indicator@", id);
+        }
+        sqlString = sqlString.replace("@id@", replacement);
+
+        return sqlString;
+    }
+
+    /**
+     *
+     * @param ou organisation unit id from http request
+     * @return qeuery string appended with org unit patameter
+     * @throws DslException
+     */
+    private String insertCadrePart(String cadre, String sqlString) throws DslException {
+        String replacement;
+        if (appendAnd) {
+            replacement = " and cadree.dataelementid = " + cadre;
+        } else {
+            replacement = " cadree.dataelementid =" + cadre;
+            appendAnd = true;
+        }
+        sqlString = sqlString.replace("@cadre@", replacement);
+
+        return sqlString;
+    }
 
     /**
      * fetch indicator related data
@@ -53,27 +152,7 @@ public class DhisDao {
      * @return indicator list
      * @throws DslException
      */
-    public List<Indicator> getIndicators(String pe, String ou, String indicatorId, String groupId) throws DslException {
-//        if (pe != null) {
-//            nationalCadreGroupCount = insertPeriodPart(pe, nationalCadreGroupCount);
-//            appendAnd = true;
-//        } else {
-//            nationalCadreGroupCount = nationalCadreGroupCount.replace("@pe@", "");
-//        }
-//
-//        if (ou != null) {
-//            String level = RequestParameters.getOruntiLevel(ou);
-//            nationalCadreGroupCount = insertOrgUntiPart(ou, level, nationalCadreGroupCount);
-//        } else {
-//            nationalCadreGroupCount = nationalCadreGroupCount.replace("@ou@", "");
-//            nationalCadreGroupCount = nationalCadreGroupCount.replace("@ou_join@", "");
-//        }
-//
-//        if (cadreGroup != null) {
-//            nationalCadreGroupCount = insertCadreGroupPart(cadreGroup);
-//        } else {
-//            nationalCadreGroupCount = nationalCadreGroupCount.replace("@cadreGroup@", "");
-//        }
+    public List<Indicator> getIndicators() throws DslException {
         List<Indicator> indicatorList = new ArrayList();
         Database db = new Database();
         ResultSet rs = db.executeQuery(getIndicatorNames);
@@ -92,6 +171,63 @@ public class DhisDao {
             db.CloseConnection();
         }
         return indicatorList;
+    }
+
+    public List<IndicatorValue> getKPIValue(String pe, String ouid, String id) throws DslException {
+
+        if (pe != null) {
+            getKPIWholeYear = insertPeriodPart(pe, getKPIWholeYear);
+            appendAnd = true;
+        } else {
+            int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+            getKPIWholeYear = insertPeriodPart(Integer.toString(currentYear), getKPIWholeYear); //current years' values
+            appendAnd = true;
+        }
+
+        if (ouid != null) {
+
+            getKPIWholeYear = insertOrgUntiPart(ouid, getKPIWholeYear);
+        } else {
+
+            if (appendAnd) {
+                getKPIWholeYear = getKPIWholeYear.replace("@ouid@", " and \"Org unit id\"=18 "); //kenya (national id ) = 18
+            } else {
+                getKPIWholeYear = getKPIWholeYear.replace("@ouid@", " \"Org unit id\"=18 "); //kenya (national id ) = 18
+                appendAnd = true;
+            }
+
+        }
+
+        if (id != null) {
+            getKPIWholeYear = insertIdPart(id, getKPIWholeYear);
+        } else {
+            Message msg=new Message();
+            msg.setMesageContent("please add indicator id paramerter, '?id=xxx'");
+            msg.setMessageType(MessageType.MISSING_PARAMETER_VALUE);
+            throw new DslException(msg);
+        }
+        log.info("indicator query to run: " + getKPIWholeYear);
+        List<IndicatorValue> kpiList = new ArrayList();
+        Database db = new Database();
+        ResultSet rs = db.executeQuery(getKPIWholeYear);
+        log.info("Fetching KPI values");
+        try {
+            while (rs.next()) {
+                IndicatorValue indicatorValue = new IndicatorValue();
+                indicatorValue.setId(rs.getString("id"));
+                indicatorValue.setName(rs.getString("indicator_name"));
+                indicatorValue.setOuName(rs.getString("ouname"));
+                indicatorValue.setOuid(rs.getString("ouid"));
+                indicatorValue.setPe(rs.getString("year") + rs.getString("month"));
+                indicatorValue.setValue(rs.getString("value"));
+                kpiList.add(indicatorValue);
+            }
+        } catch (SQLException ex) {
+            log.error(ex);
+        } finally {
+            db.CloseConnection();
+        }
+        return kpiList;
     }
 
     public List<Indicator> getIndicatorsByGroup(int groupId) throws DslException {
