@@ -54,6 +54,9 @@ public class Dhis {
             }
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }catch(Exception e){
+            log.error("unknow request "+e);
+            return new ResponseEntity<String >("Unknown request", HttpStatus.BAD_REQUEST);
         }
 
     }
@@ -67,6 +70,9 @@ public class Dhis {
             return new ResponseEntity<List>(indicatorList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }catch(Exception e){
+            log.error("unknow request "+e);
+            return new ResponseEntity<String >("Unknown request", HttpStatus.BAD_REQUEST);
         }
 
     }
@@ -83,6 +89,9 @@ public class Dhis {
             return new ResponseEntity<List>(indicatorGroupList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }catch(Exception e){
+            log.error("unknow request "+e);
+            return new ResponseEntity<String >("Unknown request", HttpStatus.BAD_REQUEST);
         }
 
     }

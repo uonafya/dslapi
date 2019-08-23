@@ -32,7 +32,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @Controller
 public class Ihris {
-
+    final static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(Ihris.class);
     @ResponseBody
     @RequestMapping(value = "/cadregroups/{cadreGroupId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAllCadresGroup(@PathVariable("cadreGroupId") int cadreGroupId) {
@@ -43,6 +43,9 @@ public class Ihris {
             return new ResponseEntity<List>(cadreGroupList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }catch(Exception e){
+            log.error("unknow request "+e);
+            return new ResponseEntity<String >("Unknown request", HttpStatus.BAD_REQUEST);
         }
 
     }
@@ -68,6 +71,9 @@ public class Ihris {
             }
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }catch(Exception e){
+            log.error("unknow request "+e);
+            return new ResponseEntity<String >("Unknown request", HttpStatus.BAD_REQUEST);
         }
 
     }
@@ -95,6 +101,9 @@ public class Ihris {
 
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }catch(Exception e){
+            log.error("unknow request "+e);
+            return new ResponseEntity<String >("Unknown request", HttpStatus.BAD_REQUEST);
         }
 
     }

@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @Controller
 public class Kmfl {
-
+    final static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(Kmfl.class);
     @ResponseBody
     @RequestMapping(value = "/facilities", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAllFacility() {
@@ -40,6 +40,9 @@ public class Kmfl {
             return new ResponseEntity<List>(facilityList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }catch(Exception e){
+            log.error("unknow request "+e);
+            return new ResponseEntity<String >("Unknown request", HttpStatus.BAD_REQUEST);
         }
 
     }
@@ -53,6 +56,9 @@ public class Kmfl {
             return new ResponseEntity<List>(facilityLevel, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }catch(Exception e){
+            log.error("unknow request "+e);
+            return new ResponseEntity<String >("Unknown request", HttpStatus.BAD_REQUEST);
         }
 
     }
@@ -67,6 +73,9 @@ public class Kmfl {
             return new ResponseEntity<List>(facilityList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }catch(Exception e){
+            log.error("unknow request "+e);
+            return new ResponseEntity<String >("Unknown request", HttpStatus.BAD_REQUEST);
         }
 
     }
@@ -80,6 +89,9 @@ public class Kmfl {
             return new ResponseEntity<List>(facilityList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }catch(Exception e){
+            log.error("unknow request "+e);
+            return new ResponseEntity<String >("Unknown request", HttpStatus.BAD_REQUEST);
         }
 
     }
@@ -94,6 +106,9 @@ public class Kmfl {
             return new ResponseEntity<List>(facilityList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }catch(Exception e){
+            log.error("unknow request "+e);
+            return new ResponseEntity<String >("Unknown request", HttpStatus.BAD_REQUEST);
         }
 
     }
@@ -107,6 +122,9 @@ public class Kmfl {
             return new ResponseEntity<List>(facilityList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }catch(Exception e){
+            log.error("unknow request "+e);
+            return new ResponseEntity<String >("Unknown request", HttpStatus.BAD_REQUEST);
         }
 
     }
@@ -121,6 +139,9 @@ public class Kmfl {
             return new ResponseEntity<List>(facilityList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }catch(Exception e){
+            log.error("unknow request "+e);
+            return new ResponseEntity<String >("Unknown request", HttpStatus.BAD_REQUEST);
         }
 
     }
@@ -148,6 +169,9 @@ public class Kmfl {
             return new ResponseEntity<List>(facilityList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }catch(Exception e){
+            log.error("unknow request "+e);
+            return new ResponseEntity<String >("Unknown request", HttpStatus.BAD_REQUEST);
         }
 
     }

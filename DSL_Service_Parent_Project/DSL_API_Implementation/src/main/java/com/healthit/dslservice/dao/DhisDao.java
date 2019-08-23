@@ -36,7 +36,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class DhisDao {
 
-    final static Logger log = Logger.getLogger(FacilityDao.class);
+    final static Logger log = Logger.getLogger(DhisDao.class);
 
     private String getIndicatorNames = "SELECT \"Indicator ID\" as id, indicatorname as name, indicatorgroupid as groupId\n"
             + "FROM public.vw_indicator_to_indicatorgroup";
