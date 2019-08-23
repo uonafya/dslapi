@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -61,6 +62,20 @@ public class Dhis {
 
     }
     
+    @ResponseBody
+    @RequestMapping(value = "/indicators/{indicatorId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getIndicatorsByGroup(@PathVariable("indicatorId") int indicatorId) {
+        try {
+            DhisDao dhisDao=new DhisDao();
+            List<Indicator> indicatorList = dhisDao.getIndicatorsByGroup(indicatorId);
+            return new ResponseEntity<List>(indicatorList, HttpStatus.OK);
+        } catch (DslException ex) {
+            return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+    
+ 
     @ResponseBody
     @RequestMapping(value = "/indicatorgroups", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getIndicatorGroups(@RequestParam(value = "pe", required = false) String pe,

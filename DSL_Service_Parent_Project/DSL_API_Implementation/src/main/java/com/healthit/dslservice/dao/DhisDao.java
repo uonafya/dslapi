@@ -11,6 +11,8 @@ import com.healthit.dslservice.dto.dhis.IndicatorGoup;
 import com.healthit.dslservice.util.CacheKeys;
 import com.healthit.dslservice.util.Database;
 import com.healthit.dslservice.util.DslCache;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -33,8 +35,10 @@ public class DhisDao {
 
     private String getIndicatorNames = "SELECT \"Indicator ID\" as id, indicatorname as name, indicatorgroupid as groupId\n"
             + "FROM public.vw_indicator_to_indicatorgroup";
-    private String getIndicatorGroups = "SELECT DISTINCT indicatorgroupid as id, group_name as name\n" +
-"FROM public.vw_indicator_to_indicatorgroup;";
+    private String getIndicatorGroup = "SELECT \"Indicator ID\" as id, indicatorname as name, indicatorgroupid as groupId\n"
+            + "FROM public.vw_indicator_to_indicatorgroup where indicatorgroupid=?";
+    private String getIndicatorGroups = "SELECT DISTINCT indicatorgroupid as id, group_name as name\n"
+            + "FROM public.vw_indicator_to_indicatorgroup;";
 
     private Map<String, String> groupTable = new HashMap();
 
@@ -90,6 +94,44 @@ public class DhisDao {
         return indicatorList;
     }
 
+    public List<Indicator> getIndicatorsByGroup(int groupId) throws DslException {
+        List<Indicator> indicatorList = new ArrayList();
+
+        Element ele = cache.get("indicatorByGroup" + groupId);
+        if (ele == null) {
+            try {
+                Database db = new Database();
+                Connection conn = db.getConn();
+                PreparedStatement ps = conn.prepareStatement(getIndicatorGroup);
+                ps.setInt(1, groupId);
+                ResultSet rs = ps.executeQuery();
+                log.info("Fetching cadres");
+                try {
+                    while (rs.next()) {
+                        Indicator indicator = new Indicator();
+                        indicator.setId(rs.getString("id"));
+                        indicator.setName(rs.getString("name"));
+                        indicator.setGroupId(rs.getString("groupId"));
+                        indicatorList.add(indicator);
+                    }
+                    cache.put(new Element("indicatorByGroup" + groupId, indicatorList));
+                } catch (SQLException ex) {
+                    log.error(ex);
+                } finally {
+                    db.CloseConnection();
+                }
+            } catch (SQLException ex) {
+                log.error(ex);
+            }
+        } else {
+            long startTime = System.nanoTime();
+            indicatorList = (List<Indicator>) ele.getObjectValue();
+            long endTime = System.nanoTime();
+            log.info("Time taken to fetch data from cache " + (endTime - startTime) / 1000000);
+        }
+        return indicatorList;
+    }
+
     public List<IndicatorGoup> getIndicatorGroups(String pe, String ou, String id) throws DslException {
         List<IndicatorGoup> indicatorGroupList = new ArrayList();
 
@@ -102,7 +144,7 @@ public class DhisDao {
             try {
                 int count = 1;
                 while (rs.next()) {
-                    IndicatorGoup indGroup=new IndicatorGoup();
+                    IndicatorGoup indGroup = new IndicatorGoup();
                     indGroup.setId(rs.getString("name"));
                     indGroup.setName(rs.getString("id"));
                     indicatorGroupList.add(indGroup);
