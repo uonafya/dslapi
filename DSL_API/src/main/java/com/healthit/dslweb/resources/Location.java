@@ -29,7 +29,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class Location {
     final static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(Location.class);
     @ResponseBody
-    @RequestMapping(value = "/ward", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/wards", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getALlWards() {
         try {
             LocationDao locationDao = new LocationDao();
@@ -45,7 +45,7 @@ public class Location {
     }
 
     @ResponseBody
-    @RequestMapping(value = "/subcounty", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/subcounties", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getConstituencies() {
         try {
             LocationDao locationDao = new LocationDao();
@@ -61,7 +61,7 @@ public class Location {
     }
 
     @ResponseBody
-    @RequestMapping(value = "/county", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/counties", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getCounties() {
         try {
             LocationDao locationDao = new LocationDao();
