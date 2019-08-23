@@ -27,11 +27,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @Controller
 public class Location {
+
     @ResponseBody
     @RequestMapping(value = "/ward", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getALlWards() {
         try {
-            LocationDao locationDao=new LocationDao();
+            LocationDao locationDao = new LocationDao();
             List<Ward> wardList = locationDao.getALlWards();
             return new ResponseEntity<List>(wardList, HttpStatus.OK);
         } catch (DslException ex) {
@@ -39,13 +40,12 @@ public class Location {
         }
 
     }
-    
-    
+
     @ResponseBody
     @RequestMapping(value = "/subcounty", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getConstituencies() {
         try {
-            LocationDao locationDao=new LocationDao();
+            LocationDao locationDao = new LocationDao();
             List<Constituency> constituencyList = locationDao.getSubCounties();
             return new ResponseEntity<List>(constituencyList, HttpStatus.OK);
         } catch (DslException ex) {
@@ -53,13 +53,12 @@ public class Location {
         }
 
     }
-    
-    
+
     @ResponseBody
     @RequestMapping(value = "/county", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getCounties() {
         try {
-            LocationDao locationDao=new LocationDao();
+            LocationDao locationDao = new LocationDao();
             List<County> countyList = locationDao.getCounties();
             return new ResponseEntity<List>(countyList, HttpStatus.OK);
         } catch (DslException ex) {
@@ -67,5 +66,5 @@ public class Location {
         }
 
     }
-    
+
 }

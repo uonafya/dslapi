@@ -30,16 +30,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @Controller
 public class Kemsa {
 
-    @ResponseBody
-    @RequestMapping(value = "/commodities2", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getAllCommodities(@RequestParam String msisdn) {
-
-        if (true) {
-            return new ResponseEntity<String>("No Content found for this number", HttpStatus.NOT_FOUND);
-        } else {
-            return new ResponseEntity(HttpStatus.OK);
-        }
-    }
 
     @ResponseBody
     @RequestMapping(value = "/commodities", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)

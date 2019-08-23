@@ -34,17 +34,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class Ihris {
 
     @ResponseBody
-    @RequestMapping(value = "/cadre2", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getAllCadres(@RequestParam String msisdn) {
-
-        if (true) {
-            return new ResponseEntity<String>("No Content found for this number", HttpStatus.NOT_FOUND);
-        } else {
-            return new ResponseEntity(HttpStatus.OK);
-        }
-    }
-
-    @ResponseBody
     @RequestMapping(value = "/cadregroups/{cadreGroupId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAllCadresGroup(@PathVariable("cadreGroupId") int cadreGroupId) {
         System.out.println("by group");

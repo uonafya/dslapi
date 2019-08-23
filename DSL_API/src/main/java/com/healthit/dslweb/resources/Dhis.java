@@ -31,18 +31,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @Controller
 public class Dhis {
-    @ResponseBody
-    @RequestMapping(value = "/kpi2", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getAllCadres() {
-        JsonBuilder jsBUilder=new JsonBuilder();
-        jsBUilder.init();
-        if (true) {
-            return new ResponseEntity<String>("No Content found for this number", HttpStatus.NOT_FOUND);
-        } else {
-            return new ResponseEntity(HttpStatus.OK);
-        }
-    }
-    
     
     @ResponseBody
     @RequestMapping(value = "/indicators", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)

@@ -30,23 +30,12 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @Controller
 public class Kmfl {
-    @ResponseBody
-    @RequestMapping(value = "/facilities_ty", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getAllFacilities(@RequestParam String msisdn) {
-        
-       
-        if (true) {
-            return new ResponseEntity<String>("No Content found for this number", HttpStatus.NOT_FOUND);
-        } else {
-            return new ResponseEntity(HttpStatus.OK);
-        }
-    }
-    
+
     @ResponseBody
     @RequestMapping(value = "/facilities", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAllFacility() {
         try {
-            FacilityDao facilityDao=new FacilityDao();
+            FacilityDao facilityDao = new FacilityDao();
             List<Facility> facilityList = facilityDao.getFacilities();
             return new ResponseEntity<List>(facilityList, HttpStatus.OK);
         } catch (DslException ex) {
@@ -54,13 +43,12 @@ public class Kmfl {
         }
 
     }
-    
-    
+
     @ResponseBody
     @RequestMapping(value = "/facilitylevel", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAllFacilityLevels() {
         try {
-            FacilityDao facilityDao=new FacilityDao();
+            FacilityDao facilityDao = new FacilityDao();
             List<FacilityLevel> facilityLevel = facilityDao.getFacilitiesLevel();
             return new ResponseEntity<List>(facilityLevel, HttpStatus.OK);
         } catch (DslException ex) {
@@ -68,21 +56,21 @@ public class Kmfl {
         }
 
     }
-    
+
     @ResponseBody
     @RequestMapping(value = "/facilitylevel/{facilityLevelId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getFacilitiesByLevel(@PathVariable("facilityLevelId") int facilityLevelId) {
         System.out.println("by group");
         try {
-            FacilityDao facilityDao=new FacilityDao();
-            List<Facility> facilityList  = facilityDao.getFacilitiesByLevel(facilityLevelId);
+            FacilityDao facilityDao = new FacilityDao();
+            List<Facility> facilityList = facilityDao.getFacilitiesByLevel(facilityLevelId);
             return new ResponseEntity<List>(facilityList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
     }
-    
+
     @ResponseBody
     @RequestMapping(value = "/facilitytype", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getFacilityTypes() {
@@ -109,8 +97,7 @@ public class Kmfl {
         }
 
     }
-    
-    
+
     @ResponseBody
     @RequestMapping(value = "/facilityregulatingbody", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getFacilityRegulatingBodies() {
@@ -137,11 +124,8 @@ public class Kmfl {
         }
 
     }
-    
-    
-    
-    
-     @ResponseBody
+
+    @ResponseBody
     @RequestMapping(value = "/facilityownertype", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getFacilityOwnerType() {
         try {
@@ -167,6 +151,5 @@ public class Kmfl {
         }
 
     }
-    
-    
+
 }
