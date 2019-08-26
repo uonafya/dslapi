@@ -19,6 +19,7 @@
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring.docs>2.0.3.RELEASE</spring.docs>
+        <snippetsDirectory>${project.build.directory}/generated-docs</snippetsDirectory>
     </properties>
     
     <dependencies>
@@ -90,6 +91,11 @@
                         <configuration>
                             <backend>html</backend>
                             <doctype>book</doctype>
+                            <attributes>
+                                <snippets>${snippetsDirectory}</snippets> 
+                            </attributes>
+                            <sourceDirectory>src/docs</sourceDirectory> <!--template .adoc-->
+                            <outputDirectory>${project.build.directory}/generated-snippets</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
