@@ -27,13 +27,13 @@ import java.util.Map;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Element;
 import org.apache.log4j.Logger;
-import org.springframework.stereotype.Component;
+//import org.springframework.stereotype.Component;
 
 /**
  *
  * @author duncan
  */
-@Component
+//@Component
 public class DhisDao {
 
     final static Logger log = Logger.getLogger(DhisDao.class);

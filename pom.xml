@@ -15,11 +15,13 @@
     
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <javax.version>2.5</javax.version>
-        <spring.version>4.2.2.RELEASE</spring.version>
+        <spring.version>5.1.0.RELEASE</spring.version>
+        <spring.docs>2.0.0.RELEASE</spring.docs>
+        <spring.hateoas>0.25.0.RELEASE</spring.hateoas>
     </properties>
     
     <dependencies>
@@ -63,6 +65,13 @@
             <artifactId>spring-context</artifactId>
             <version>${spring.version}</version>
         </dependency>
+        
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-test</artifactId>
+    <version>${spring.version}</version>
+    <scope>test</scope>
+</dependency>
             
         <dependency>
             <groupId>org.springframework</groupId>
@@ -87,22 +96,47 @@
             <artifactId>spring-context-support</artifactId>
             <version>${spring.version}</version>
         </dependency>
-        
-        <dependency> 
+       
+        <dependency>
             <groupId>org.springframework.restdocs</groupId>
             <artifactId>spring-restdocs-mockmvc</artifactId>
-            <version>1.2.6.RELEASE</version>
+            <version>${spring.docs}</version>
             <scope>test</scope>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.springframework.restdocs/spring-restdocs-asciidoctor -->
-<!--        <dependency>
-            <groupId>org.springframework.restdocs</groupId>
-            <artifactId>spring-restdocs-asciidoctor</artifactId>
-            <version>1.2.0.RELEASE</version>
-        </dependency>-->
+        <dependency>
+            <groupId>org.springframework.hateoas</groupId>
+            <artifactId>spring-hateoas</artifactId>
+            <version>${spring.hateoas}</version>
+        </dependency>
+       
     </dependencies>
-    
- 
-    
+    <build>
+        <plugins>
+            <plugin> 
+                <groupId>org.asciidoctor</groupId>
+                <artifactId>asciidoctor-maven-plugin</artifactId>
+                <version>1.5.3</version>
+                <executions>
+                    <execution>
+                        <id>generate-docs</id>
+                        <phase>prepare-package</phase> 
+                        <goals>
+                            <goal>process-asciidoc</goal>
+                        </goals>
+                        <configuration>
+                            <backend>html</backend>
+                            <doctype>book</doctype>
+                            <attributes>
+                                <snippets>${project.build.directory}/generated-snippets</snippets>
+                            </attributes>
+                            <sourceDirectory>${project.build.directory}</sourceDirectory>
+                            <outputDirectory>target/generated-docs</outputDirectory>
+            
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
     
 </project>
