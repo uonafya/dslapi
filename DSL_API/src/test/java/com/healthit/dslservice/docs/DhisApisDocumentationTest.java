@@ -13,6 +13,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.JUnitRestDocumentation;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -32,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class DhisApisDocumentationTest {
 
     @Autowired
-    private WebApplicationContext wac;
+    private WebApplicationContext context;
     private MockMvc mockMvc;
 
     @Rule
@@ -40,7 +41,8 @@ public class DhisApisDocumentationTest {
 
     @Before
     public void setUp() {
-        this.mockMvc = MockMvcBuilders.webAppContextSetup( this.wac ).build();
+        this.mockMvc = MockMvcBuilders.webAppContextSetup( this.context ).apply(documentationConfiguration(this.restDocumentation))
+                .build();
     }
 
     @Test
