@@ -74,7 +74,7 @@ public class DhisApisDocumentationTest {
                 + "values for only a particular month";
         this.mockMvc.perform(
                 get("/indicators?pe=2017&ouid=23408&id=61829").accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk()).andDo(document("indicators", requestParameters( 
+                .andExpect(status().isOk()).andDo(document("indicators-request-parameters", requestParameters( 
 			parameterWithName("pe").description(periodDec), 
 			parameterWithName("ouid").description("Organisation unit id, if not provided defaults to national"),
                         parameterWithName("id").description("Indicator ID which is mandatory") 

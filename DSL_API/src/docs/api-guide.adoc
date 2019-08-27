@@ -49,7 +49,7 @@ include::{snippets}/indicators-request-parameters/request-body.adoc[]
 include::{snippets}/indicators-request-parameters/response-body.adoc[]
 
 === HTTP Response
-include::{snippets}/indicators/http-response.adoc[]
+include::{snippets}/indicators-request-parameters/http-response.adoc[]
 
 === Response fields
-include::{snippets}/indicators/response-fields.adoc[]
+include::{snippets}/indicators-request-parameters/request-parameters.adoc[]
