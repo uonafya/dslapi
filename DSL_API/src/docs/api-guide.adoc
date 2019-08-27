@@ -1,2 +1,55 @@
-=== Links
-include::{snippets}/index/http-response.adoc[]
+:doctitle: DSL API Documentation
+:revnumber: 1.0.0
+:gitref: DSL-Service-Layer-{revnumber}
+:keywords: DSL, MOH DSL API, Data Service Layer, Data Service Layer Endpoints, Kenya Ministry Of Health Data Service Layer, JVM
+:page-keywords: {keywords}
+:toc:
+:toc-placement: left
+:toclevels: 2
+:icons: font
+:sectnums:
+
+== Get available indicators
+=== Curl Request
+include::{snippets}/indicators/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/indicators/http-request.adoc[]
+
+=== HTTPie Request
+include::{snippets}/indicators/httpie-request.adoc[]
+
+=== Request body
+include::{snippets}/indicators/request-body.adoc[]
+
+=== Response Body
+include::{snippets}/indicators/response-body.adoc[]
+
+=== HTTP Response
+include::{snippets}/indicators/http-response.adoc[]
+
+=== Response fields
+include::{snippets}/indicators/response-fields.adoc[]
+
+
+== Get indicator Values
+=== Curl Request
+include::{snippets}/indicators-request-parameters/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/indicators-request-parameters/http-request.adoc[]
+
+=== HTTPie Request
+include::{snippets}/indicators-request-parameters/httpie-request.adoc[]
+
+=== Request body
+include::{snippets}/indicators-request-parameters/request-body.adoc[]
+
+=== Response Body
+include::{snippets}/indicators-request-parameters/response-body.adoc[]
+
+=== HTTP Response
+include::{snippets}/indicators/http-response.adoc[]
+
+=== Response fields
+include::{snippets}/indicators/response-fields.adoc[]

@@ -20,6 +20,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring.docs>2.0.3.RELEASE</spring.docs>
         <snippetsDirectory>${project.build.directory}/generated-snippets</snippetsDirectory>
+        <maven.build.timestamp.format>yyyy-MM-dd HH</maven.build.timestamp.format>
     </properties>
     
     <dependencies>
@@ -94,9 +95,13 @@
                             <doctype>book</doctype>-->
                             <sourceHighlighter>coderay</sourceHighlighter>
                             <backend>html</backend>
+                            <!--<backend>pdf</backend>-->
                             <attributes>
                                 <toc/>
-                                <linkcss>false</linkcss>
+                                <!--<linkcss>false</linkcss>-->
+                                <sectnums>true</sectnums>
+                                <revnumber>${project.version}</revnumber>
+                                <revdate>${maven.build.timestamp}</revdate>
                                 <snippets>${snippetsDirectory}</snippets> 
                             </attributes>
                             <sourceDirectory>src/docs</sourceDirectory> <!--template .adoc-->
