@@ -11,45 +11,68 @@
 
 == Get available indicators
 === Curl Request
-include::{snippets}/indicators/curl-request.adoc[]
+include::{snippets}/test-indicators-returned-api-call/curl-request.adoc[]
 
 === HTTP Request
-include::{snippets}/indicators/http-request.adoc[]
+include::{snippets}/test-indicators-returned-api-call/http-request.adoc[]
 
 === HTTPie Request
-include::{snippets}/indicators/httpie-request.adoc[]
+include::{snippets}/test-indicators-returned-api-call/httpie-request.adoc[]
 
 === Request body
-include::{snippets}/indicators/request-body.adoc[]
+include::{snippets}/test-indicators-returned-api-call/request-body.adoc[]
 
 === Response Body
-include::{snippets}/indicators/response-body.adoc[]
+include::{snippets}/test-indicators-returned-api-call/response-body.adoc[]
 
 === HTTP Response
-include::{snippets}/indicators/http-response.adoc[]
+include::{snippets}/test-indicators-returned-api-call/http-response.adoc[]
 
 === Response fields
-include::{snippets}/indicators/response-fields.adoc[]
+include::{snippets}/test-indicators-returned-api-call/response-fields.adoc[]
 
 
 == Get indicator Values
 === Curl Request
-include::{snippets}/indicators-request-parameters/curl-request.adoc[]
+include::{snippets}/test-indicators-values-returned-with-request-parameters/curl-request.adoc[]
 
 === HTTP Request
-include::{snippets}/indicators-request-parameters/http-request.adoc[]
+include::{snippets}/test-indicators-values-returned-with-request-parameters/http-request.adoc[]
 
 === HTTPie Request
-include::{snippets}/indicators-request-parameters/httpie-request.adoc[]
+include::{snippets}/test-indicators-values-returned-with-request-parameters/httpie-request.adoc[]
 
 === Request body
-include::{snippets}/indicators-request-parameters/request-body.adoc[]
+include::{snippets}/test-indicators-values-returned-with-request-parameters/request-body.adoc[]
 
 === Response Body
-include::{snippets}/indicators-request-parameters/response-body.adoc[]
+include::{snippets}/test-indicators-values-returned-with-request-parameters/response-body.adoc[]
 
 === HTTP Response
-include::{snippets}/indicators-request-parameters/http-response.adoc[]
+include::{snippets}/test-indicators-values-returned-with-request-parameters/http-response.adoc[]
 
 === Response fields
-include::{snippets}/indicators-request-parameters/request-parameters.adoc[]
+include::{snippets}/test-indicators-values-returned-with-request-parameters/request-parameters.adoc[]
+
+
+== Get available indicator groups
+=== Curl Request
+include::{snippets}/test-indicator-groups-returned-api-call/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-indicator-groups-returned-api-call/http-request.adoc[]
+
+=== HTTPie Request
+include::{snippets}/test-indicator-groups-returned-api-call/httpie-request.adoc[]
+
+=== Request body
+include::{snippets}/test-indicator-groups-returned-api-call/request-body.adoc[]
+
+=== Response Body
+include::{snippets}/test-indicator-groups-returned-api-call/response-body.adoc[]
+
+=== HTTP Response
+include::{snippets}/test-indicator-groups-returned-api-call/http-response.adoc[]
+
+=== Response fields
+include::{snippets}/test-indicator-groups-returned-api-call/response-fields.adoc[]

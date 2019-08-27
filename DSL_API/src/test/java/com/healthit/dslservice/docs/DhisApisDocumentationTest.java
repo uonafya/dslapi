@@ -57,10 +57,10 @@ public class DhisApisDocumentationTest {
     }
 
     @Test
-    public void indicators() throws Exception {
+    public void testIndicatorsReturnedApiCall() throws Exception {
         this.mockMvc.perform(
                 get("/indicators").accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk()).andDo(document("indicators", responseFields(
+                .andExpect(status().isOk()).andDo(document("test-indicators-returned-api-call", responseFields(
                 fieldWithPath("[].id")
                         .description("Indicator ID"),
                 fieldWithPath("[].name")
@@ -69,15 +69,27 @@ public class DhisApisDocumentationTest {
     }
     
     @Test
-    public void indicatorsRequestParameters() throws Exception {
+    public void testIndicatorsValuesReturnedWithRequestParameters() throws Exception {
         String periodDec="Period parameter. Can be an explicit year, YYYY (eg 2018) which will give the stated year values, or YYYYmm which gives "
                 + "values for only a particular month";
         this.mockMvc.perform(
                 get("/indicators?pe=2017&ouid=23408&id=61829").accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk()).andDo(document("indicators-request-parameters", requestParameters( 
+                .andExpect(status().isOk()).andDo(document("test-indicators-values-returned-with-request-parameters", requestParameters( 
 			parameterWithName("pe").description(periodDec), 
 			parameterWithName("ouid").description("Organisation unit id, if not provided defaults to national"),
                         parameterWithName("id").description("Indicator ID which is mandatory") 
 	)));
+    }
+    
+    
+    @Test
+    public void testIndicatorGroupsReturnedApiCall() throws Exception {
+        this.mockMvc.perform(
+                get("/indicatorgroups").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andDo(document("test-indicator-groups-returned-api-call", responseFields(
+                fieldWithPath("[].id")
+                        .description("Indicator group ID"),
+                fieldWithPath("[].name")
+                        .description("Indicator group Name"))));
     }
 }
