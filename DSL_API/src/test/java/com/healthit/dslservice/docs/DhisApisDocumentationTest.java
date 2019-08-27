@@ -50,7 +50,7 @@ public class DhisApisDocumentationTest {
     }
 
     @Test
-    public void getPersonByIdShouldReturnOk() throws Exception {
+    public void getIndicators() throws Exception {
         this.mockMvc.perform(
                 get("/indicators").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()).andDo(document("index"));
