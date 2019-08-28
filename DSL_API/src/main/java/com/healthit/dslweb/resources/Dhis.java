@@ -65,11 +65,11 @@ public class Dhis {
     }
 
     @ResponseBody
-    @RequestMapping(value = "/indicators/{indicatorId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getIndicatorsByGroup(@PathVariable("indicatorId") int indicatorId) {
+    @RequestMapping(value = "/indicatorgroups/{indicatorGroupId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getIndicatorsByGroup(@PathVariable("indicatorGroupId") int indicatorGroupId) {
         try {
             DhisDao dhisDao = new DhisDao();
-            List<Indicator> indicatorList = dhisDao.getIndicatorsByGroup(indicatorId);
+            List<Indicator> indicatorList = dhisDao.getIndicatorsByGroup(indicatorGroupId);
             return new ResponseEntity<List>(indicatorList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);

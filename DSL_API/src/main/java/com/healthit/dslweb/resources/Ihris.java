@@ -82,8 +82,8 @@ public class Ihris {
     @RequestMapping(value = "/cadres", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAllCadres(
             @RequestParam(value = "pe", required = false) String pe,
-            @RequestParam(value = "ou", required = false) String ou,
-            @RequestParam(value = "cadreid", required = false) String cadre,
+            @RequestParam(value = "ouid", required = false) String ou,
+            @RequestParam(value = "id", required = false) String cadre,
             @RequestParam(value = "cadreGroup", required = false) String cadreGroup
     ) {
         try {

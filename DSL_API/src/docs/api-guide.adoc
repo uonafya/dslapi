@@ -5,74 +5,266 @@
 :page-keywords: {keywords}
 :toc:
 :toc-placement: left
-:toclevels: 2
+:toclevels: 5
 :icons: font
 :sectnums:
 
-== Get available indicators
+*Introduction*
+
+This DSL Web API is provided in a RESTful architectural style. It supports one HTTP method, the GET method, as the resources exposed are read only, providing historical facts in the health space.
+
+Resources exposed from the API are the National human resource capacity, health key perfomance indicators, data from the kenya health master facility list.
+// ======================DHIS============================>>>
+// ======================DHIS============================>>>
+
+*Key perfomance indicators resources*
+
+== Getting available indicators
+Requesting a list of indicators
+
 === Curl Request
 include::{snippets}/test-indicators-returned-api-call/curl-request.adoc[]
 
 === HTTP Request
 include::{snippets}/test-indicators-returned-api-call/http-request.adoc[]
 
-=== HTTPie Request
-include::{snippets}/test-indicators-returned-api-call/httpie-request.adoc[]
-
-=== Request body
-include::{snippets}/test-indicators-returned-api-call/request-body.adoc[]
-
-=== Response Body
-include::{snippets}/test-indicators-returned-api-call/response-body.adoc[]
+Response given from the request
 
 === HTTP Response
 include::{snippets}/test-indicators-returned-api-call/http-response.adoc[]
 
-=== Response fields
+=== Response fields definition
 include::{snippets}/test-indicators-returned-api-call/response-fields.adoc[]
 
+// ==================================================>>>
 
 == Get indicator Values
+Requesting for indicator values
+
 === Curl Request
 include::{snippets}/test-indicators-values-returned-with-request-parameters/curl-request.adoc[]
 
 === HTTP Request
 include::{snippets}/test-indicators-values-returned-with-request-parameters/http-request.adoc[]
 
-=== HTTPie Request
-include::{snippets}/test-indicators-values-returned-with-request-parameters/httpie-request.adoc[]
+=== Request parameters definition
+include::{snippets}/test-indicators-values-returned-with-request-parameters/request-parameters.adoc[]
 
-=== Request body
-include::{snippets}/test-indicators-values-returned-with-request-parameters/request-body.adoc[]
-
-=== Response Body
-include::{snippets}/test-indicators-values-returned-with-request-parameters/response-body.adoc[]
+Response given from the request
 
 === HTTP Response
 include::{snippets}/test-indicators-values-returned-with-request-parameters/http-response.adoc[]
 
-=== Response fields
-include::{snippets}/test-indicators-values-returned-with-request-parameters/request-parameters.adoc[]
+=== Response fields definition
+include::{snippets}/test-indicators-values-returned-with-request-parameters/response-fields.adoc[]
 
+// ==================================================>>>
 
 == Get available indicator groups
+Requesting a list of indicator groups
+
 === Curl Request
 include::{snippets}/test-indicator-groups-returned-api-call/curl-request.adoc[]
 
 === HTTP Request
 include::{snippets}/test-indicator-groups-returned-api-call/http-request.adoc[]
 
-=== HTTPie Request
-include::{snippets}/test-indicator-groups-returned-api-call/httpie-request.adoc[]
-
-=== Request body
-include::{snippets}/test-indicator-groups-returned-api-call/request-body.adoc[]
-
-=== Response Body
-include::{snippets}/test-indicator-groups-returned-api-call/response-body.adoc[]
+Response given from the request
 
 === HTTP Response
 include::{snippets}/test-indicator-groups-returned-api-call/http-response.adoc[]
 
-=== Response fields
+=== Response fields definition
 include::{snippets}/test-indicator-groups-returned-api-call/response-fields.adoc[]
+
+// ==================================================>>>
+
+== Get indicators under an indicator group
+Requesting a list of indicators under same indicator group
+
+=== Curl Request
+include::{snippets}/test-indicators-by-group-id-returned/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-indicators-by-group-id-returned/http-request.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-indicators-by-group-id-returned/http-response.adoc[]
+
+=== Path parameter definition
+include::{snippets}/test-indicators-by-group-id-returned/path-parameters.adoc[]
+
+
+// =======================Ihris===========================>>>
+// =======================Ihris===========================>>>
+
+*National cadre resources*
+
+== Getting available cadres
+Requesting a list of cadres
+
+=== Curl Request
+include::{snippets}/test-cadres-returned-api-call/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-cadres-returned-api-call/http-request.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-cadres-returned-api-call/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-cadres-returned-api-call/response-fields.adoc[]
+
+// ==================================================>>>
+
+== Get cadre Values
+Requesting for cadre count values
+
+=== Curl Request
+include::{snippets}/test-cadres-values-returned-with-request-parameters/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-cadres-values-returned-with-request-parameters/http-request.adoc[]
+
+=== Request parameters definition
+include::{snippets}/test-cadres-values-returned-with-request-parameters/request-parameters.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-cadres-values-returned-with-request-parameters/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-cadres-values-returned-with-request-parameters/response-fields.adoc[]
+
+// ==================================================>>>
+
+== Get available cadre groups
+Requesting a list of cadre groups
+
+=== Curl Request
+include::{snippets}/test-cadre-groups-returned-api-call/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-cadre-groups-returned-api-call/http-request.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-cadre-groups-returned-api-call/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-cadre-groups-returned-api-call/response-fields.adoc[]
+
+// ==================================================>>>
+
+== Get cadres under a cadre group
+Requesting a list of indicators under same indicator group
+
+=== Curl Request
+include::{snippets}/test-cadres-by-group-id-returned/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-cadres-by-group-id-returned/http-request.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-cadres-by-group-id-returned/http-response.adoc[]
+
+=== Path parameter definition
+include::{snippets}/test-cadres-by-group-id-returned/path-parameters.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-cadres-by-group-id-returned/response-fields.adoc[]
+
+// =======================KHMFL===========================>>>
+// =======================KHMFL===========================>>>
+
+*kenya health master facility list resources*
+
+
+
+== Getting available cadres
+Requesting a list of cadres
+
+=== Curl Request
+include::{snippets}/test-cadres-returned-api-call/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-cadres-returned-api-call/http-request.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-cadres-returned-api-call/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-cadres-returned-api-call/response-fields.adoc[]
+
+// ==================================================>>>
+
+== Get cadre Values
+Requesting for cadre count values
+
+=== Curl Request
+include::{snippets}/test-cadres-values-returned-with-request-parameters/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-cadres-values-returned-with-request-parameters/http-request.adoc[]
+
+=== Request parameters definition
+include::{snippets}/test-cadres-values-returned-with-request-parameters/request-parameters.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-cadres-values-returned-with-request-parameters/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-cadres-values-returned-with-request-parameters/response-fields.adoc[]
+
+// ==================================================>>>
+
+== Get available cadre groups
+Requesting a list of cadre groups
+
+=== Curl Request
+include::{snippets}/test-cadre-groups-returned-api-call/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-cadre-groups-returned-api-call/http-request.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-cadre-groups-returned-api-call/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-cadre-groups-returned-api-call/response-fields.adoc[]
+
+// ==================================================>>>
+
+== Get cadres under a cadre group
+Requesting a list of indicators under same indicator group
+
+=== Curl Request
+include::{snippets}/test-cadres-by-group-id-returned/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-cadres-by-group-id-returned/http-request.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-cadres-by-group-id-returned/http-response.adoc[]
+
+=== Path parameter definition
+include::{snippets}/test-cadres-by-group-id-returned/path-parameters.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-cadres-by-group-id-returned/response-fields.adoc[]

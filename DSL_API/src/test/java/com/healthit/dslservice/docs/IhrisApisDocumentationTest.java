@@ -44,7 +44,7 @@ import static org.springframework.restdocs.snippet.Attributes.key;
 @ContextConfiguration("file:src/main/webapp/WEB-INF/spring-servlet.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
-public class DhisApisDocumentationTest {
+public class IhrisApisDocumentationTest {
 
     @Autowired
     private WebApplicationContext context;
@@ -64,58 +64,63 @@ public class DhisApisDocumentationTest {
     }
 
     @Test
-    public void testIndicatorsReturnedApiCall() throws Exception {
+    public void testCadresReturnedApiCall() throws Exception {
         this.mockMvc.perform(
-                get("/indicators").accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk()).andDo(document("test-indicators-returned-api-call", responseFields(
+                get("/cadres").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andDo(document("test-cadres-returned-api-call", responseFields(
                 fieldWithPath("[].id")
-                        .description("Indicator ID"),
+                        .description("Cadre ID"),
                 fieldWithPath("[].name")
-                        .description("Indicator Name"),
-                fieldWithPath("[].groupId").description("Indicator Group Id"))));
+                        .description("Cadre Name"),
+                fieldWithPath("[].cadreGroupId").description("Cadre Group Id"))));
     }
 
     @Test
-    public void testIndicatorsValuesReturnedWithRequestParameters() throws Exception {
-        String periodDec = "Period parameter. Can be an explicit year, YYYY (eg 2018) which will give the stated year values, or YYYYmm which gives "
-                + "values for only a particular month";
+    public void testCadresValuesReturnedWithRequestParameters() throws Exception {
+        String periodDec = "Period parameter. Can be an explicit year, YYYY (eg 2018) which will give the stated year values, or YYYYmm (eg 201801) which gives "
+                + "cadre count upto that given month";
         this.mockMvc.perform(
-                get("/indicators?pe=2017&ouid=23408&id=61829").accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk()).andDo(document("test-indicators-values-returned-with-request-parameters", requestParameters(
+                get("/cadres?pe=2017&ouid=23408&id=33").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andDo(document("test-cadres-values-returned-with-request-parameters", requestParameters(
                 parameterWithName("pe").description(periodDec),
                 parameterWithName("ouid").description("Organisation unit id, if not provided defaults to national"),
-                parameterWithName("id").description("Indicator ID which is mandatory")
+                parameterWithName("id").description("Cadre ID, if not provided gives count for all cadres")
         ), responseFields(
-                fieldWithPath("[].id")
-                        .description("Indicator ID"),
-                fieldWithPath("[].name")
-                        .description("Indicator Name"),
-                fieldWithPath("[].pe").description("Period"),
-                fieldWithPath("[].ouid").description("Organisation unit id"),
-                fieldWithPath("[].ouName").description("Organisation unit name"),
-                fieldWithPath("[].value").description("Indicator Value")
+                fieldWithPath("[].cadre")
+                        .description("Cadre name"),
+                fieldWithPath("[].cadreCount")
+                        .description("Cadre count"),
+                fieldWithPath("[].id").description("Cadre Id")
         )
         ));
     }
 
     @Test
-    public void testIndicatorGroupsReturnedApiCall() throws Exception {
+    public void testCadreGroupsReturnedApiCall() throws Exception {
         this.mockMvc.perform(
-                get("/indicatorgroups").accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk()).andDo(document("test-indicator-groups-returned-api-call", responseFields(
+                get("/cadregroups").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andDo(document("test-cadre-groups-returned-api-call", responseFields(
                 fieldWithPath("[].id")
-                        .description("Indicator group ID"),
+                        .description("Cadre group ID"),
                 fieldWithPath("[].name")
-                        .description("Indicator group Name"))));
+                        .description("Cadre group Name"))));
     }
 
     @Test
-    public void testIndicatorsByGroupIdReturned() throws Exception {
+    public void testCadresByGroupIdReturned() throws Exception {
         this.mockMvc.perform(
-                RestDocumentationRequestBuilders.get("/indicatorgroups/{indicatorGroupId}", 31591).accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk()).andDo(document("test-indicators-by-group-id-returned", pathParameters(
-                parameterWithName("indicatorGroupId").description("The indicator group id from which to return its indicators")
-        )));
+                RestDocumentationRequestBuilders.get("/cadregroups/{cadreGroupId}", 4).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andDo(document("test-cadres-by-group-id-returned", pathParameters(
+                parameterWithName("cadreGroupId").description("The cadre group id from which to return its cadres")
+        ), responseFields(
+                fieldWithPath("[].id")
+                        .description("Cadre ID"),
+                fieldWithPath("[].name")
+                        .description("Cadre Name"),
+                fieldWithPath("[].cadreGroupId")
+                        .description("Cadre group id")
+        )
+        ));
     }
 
 }
