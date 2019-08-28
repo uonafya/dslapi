@@ -188,83 +188,184 @@ include::{snippets}/test-cadres-by-group-id-returned/response-fields.adoc[]
 *kenya health master facility list resources*
 
 
-
-== Getting available cadres
-Requesting a list of cadres
+== Getting available facilities
+Requesting a list of facilities
 
 === Curl Request
-include::{snippets}/test-cadres-returned-api-call/curl-request.adoc[]
+include::{snippets}/test-facilities-returned-api-call/curl-request.adoc[]
 
 === HTTP Request
-include::{snippets}/test-cadres-returned-api-call/http-request.adoc[]
+include::{snippets}/test-facilities-returned-api-call/http-request.adoc[]
 
 Response given from the request
 
 === HTTP Response
-include::{snippets}/test-cadres-returned-api-call/http-response.adoc[]
+include::{snippets}/test-facilities-returned-api-call/http-response.adoc[]
 
 === Response fields definition
-include::{snippets}/test-cadres-returned-api-call/response-fields.adoc[]
+include::{snippets}/test-facilities-returned-api-call/response-fields.adoc[]
 
 // ==================================================>>>
 
-== Get cadre Values
-Requesting for cadre count values
+== Getting available facility levels
+Requesting a list of facility levels
 
 === Curl Request
-include::{snippets}/test-cadres-values-returned-with-request-parameters/curl-request.adoc[]
+include::{snippets}/test-facilitylevel-returned-api-call/curl-request.adoc[]
 
 === HTTP Request
-include::{snippets}/test-cadres-values-returned-with-request-parameters/http-request.adoc[]
-
-=== Request parameters definition
-include::{snippets}/test-cadres-values-returned-with-request-parameters/request-parameters.adoc[]
+include::{snippets}/test-facilitylevel-returned-api-call/http-request.adoc[]
 
 Response given from the request
 
 === HTTP Response
-include::{snippets}/test-cadres-values-returned-with-request-parameters/http-response.adoc[]
+include::{snippets}/test-facilitylevel-returned-api-call/http-response.adoc[]
 
 === Response fields definition
-include::{snippets}/test-cadres-values-returned-with-request-parameters/response-fields.adoc[]
+include::{snippets}/test-facilitylevel-returned-api-call/response-fields.adoc[]
 
 // ==================================================>>>
 
-== Get available cadre groups
-Requesting a list of cadre groups
+== Get facilities under a facility level
+Requesting a list of facilities under same facility level
 
 === Curl Request
-include::{snippets}/test-cadre-groups-returned-api-call/curl-request.adoc[]
+include::{snippets}/test-facilities-by-facility-level-id-returned/curl-request.adoc[]
 
 === HTTP Request
-include::{snippets}/test-cadre-groups-returned-api-call/http-request.adoc[]
+include::{snippets}/test-facilities-by-facility-level-id-returned/http-request.adoc[]
 
 Response given from the request
 
 === HTTP Response
-include::{snippets}/test-cadre-groups-returned-api-call/http-response.adoc[]
-
-=== Response fields definition
-include::{snippets}/test-cadre-groups-returned-api-call/response-fields.adoc[]
-
-// ==================================================>>>
-
-== Get cadres under a cadre group
-Requesting a list of indicators under same indicator group
-
-=== Curl Request
-include::{snippets}/test-cadres-by-group-id-returned/curl-request.adoc[]
-
-=== HTTP Request
-include::{snippets}/test-cadres-by-group-id-returned/http-request.adoc[]
-
-Response given from the request
-
-=== HTTP Response
-include::{snippets}/test-cadres-by-group-id-returned/http-response.adoc[]
+include::{snippets}/test-facilities-by-facility-level-id-returned/http-response.adoc[]
 
 === Path parameter definition
-include::{snippets}/test-cadres-by-group-id-returned/path-parameters.adoc[]
+include::{snippets}/test-facilities-by-facility-level-id-returned/path-parameters.adoc[]
 
 === Response fields definition
-include::{snippets}/test-cadres-by-group-id-returned/response-fields.adoc[]
+include::{snippets}/test-facilities-by-facility-level-id-returned/response-fields.adoc[]
+
+// ==================================================>>>
+
+== Getting available facility types
+Requesting a list of facility types
+
+=== Curl Request
+include::{snippets}/test-facilitytype-returned-api-call/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-facilitytype-returned-api-call/http-request.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-facilitytype-returned-api-call/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-facilitytype-returned-api-call/response-fields.adoc[]
+
+// ==================================================>>>
+
+== Get facilities under a facility type
+Requesting a list of facilities under same facility type
+
+=== Curl Request
+include::{snippets}/test-facilities-by-facility-type-id-returned/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-facilities-by-facility-type-id-returned/http-request.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-facilities-by-facility-type-id-returned/http-response.adoc[]
+
+=== Path parameter definition
+include::{snippets}/test-facilities-by-facility-type-id-returned/path-parameters.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-facilities-by-facility-type-id-returned/response-fields.adoc[]
+
+// ==================================================>>>
+
+== Getting available facility regulating bodies
+Requesting a list of facility regulating bodies
+
+=== Curl Request
+include::{snippets}/test-facility-regulating-body-returned-api-call/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-facility-regulating-body-returned-api-call/http-request.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-facility-regulating-body-returned-api-call/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-facility-regulating-body-returned-api-call/response-fields.adoc[]
+
+// ==================================================>>>
+
+== Get facilities under a facility regulating body
+Requesting a list of facilities under same facility regulating body
+
+=== Curl Request
+include::{snippets}/test-facilities-by-regulating-body-id-returned/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-facilities-by-regulating-body-id-returned/http-request.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-facilities-by-regulating-body-id-returned/http-response.adoc[]
+
+=== Path parameter definition
+include::{snippets}/test-facilities-by-regulating-body-id-returned/path-parameters.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-facilities-by-regulating-body-id-returned/response-fields.adoc[]
+
+
+// ==================================================>>>
+
+== Getting available facility owner types
+Requesting a list of facility owner types
+
+=== Curl Request
+include::{snippets}/test-facility-owner-type-returned-api-call/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-facility-owner-type-returned-api-call/http-request.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-facility-owner-type-returned-api-call/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-facility-owner-type-returned-api-call/response-fields.adoc[]
+
+// ==================================================>>>
+
+== Get facilities under a facility owner type
+Requesting a list of facilities under same facility regulating body
+
+=== Curl Request
+include::{snippets}/test-facilities-by-owner-type-id-returned/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-facilities-by-owner-type-id-returned/http-request.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-facilities-by-owner-type-id-returned/http-response.adoc[]
+
+=== Path parameter definition
+include::{snippets}/test-facilities-by-owner-type-id-returned/path-parameters.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-facilities-by-owner-type-id-returned/response-fields.adoc[]
