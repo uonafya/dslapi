@@ -369,3 +369,67 @@ include::{snippets}/test-facilities-by-owner-type-id-returned/path-parameters.ad
 
 === Response fields definition
 include::{snippets}/test-facilities-by-owner-type-id-returned/response-fields.adoc[]
+
+
+// =======================Location===========================>>>
+// =======================Location===========================>>>
+
+*kenya health master facility list resources*
+
+
+== Getting available wards
+Requesting a list of wards
+
+=== Curl Request
+include::{snippets}/test-wards-returned-api-call/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-wards-returned-api-call/http-request.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-wards-returned-api-call/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-wards-returned-api-call/response-fields.adoc[]
+// ==================================================>>>
+
+
+
+== Getting available sub-counties
+Requesting a list of sub-counties
+
+=== Curl Request
+include::{snippets}/test-subcounties-returned-api-call/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-subcounties-returned-api-call/http-request.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-subcounties-returned-api-call/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-subcounties-returned-api-call/response-fields.adoc[]
+// ==================================================>>>
+
+
+== Getting available counties
+Requesting a list of counties
+
+=== Curl Request
+include::{snippets}/test-counties-returned-api-call/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-counties-returned-api-call/http-request.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-counties-returned-api-call/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-counties-returned-api-call/response-fields.adoc[]
+// ==================================================>>>
