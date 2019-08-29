@@ -18,6 +18,7 @@ import com.healthit.dslservice.util.RequestParameters;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -38,9 +39,9 @@ public class DhisDao {
 
     final static Logger log = Logger.getLogger(DhisDao.class);
 
-    private String getIndicatorNames = "SELECT \"Indicator ID\" as id, indicatorname as name, indicatorgroupid as groupId\n"
+    private String getIndicatorNames = "SELECT \"Indicator ID\" as id, indicatorname as name,indicator_description as description, indicatorgroupid as groupId\n"
             + "FROM public.vw_indicator_to_indicatorgroup";
-    private String getIndicatorGroup = "SELECT \"Indicator ID\" as id, indicatorname as name, indicatorgroupid as groupId\n"
+    private String getIndicatorGroup = "SELECT \"Indicator ID\" as id, indicatorname as name,indicator_description as description, indicatorgroupid as groupId\n"
             + "FROM public.vw_indicator_to_indicatorgroup where indicatorgroupid=?";
     private String getIndicatorGroups = "SELECT DISTINCT indicatorgroupid as id, group_name as name\n"
             + "FROM public.vw_indicator_to_indicatorgroup;";
@@ -163,6 +164,13 @@ public class DhisDao {
                 indicator.setId(rs.getString("id"));
                 indicator.setName(rs.getString("name"));
                 indicator.setGroupId(rs.getString("groupId"));
+                String desc = rs.getString("description");
+                if (desc == null) {
+                    desc = "";
+                } else {
+                    desc = desc;
+                }
+                indicator.setDescription(desc);
                 indicatorList.add(indicator);
             }
         } catch (SQLException ex) {
@@ -201,7 +209,7 @@ public class DhisDao {
         if (id != null) {
             getKPIWholeYear = insertIdPart(id, getKPIWholeYear);
         } else {
-            Message msg=new Message();
+            Message msg = new Message();
             msg.setMesageContent("please add indicator id paramerter, '?id=xxx'");
             msg.setMessageType(MessageType.MISSING_PARAMETER_VALUE);
             throw new DslException(msg);
@@ -240,14 +248,24 @@ public class DhisDao {
                 Connection conn = db.getConn();
                 PreparedStatement ps = conn.prepareStatement(getIndicatorGroup);
                 ps.setInt(1, groupId);
+                log.info("Fetching indicators");
+                log.info(ps.toString());
                 ResultSet rs = ps.executeQuery();
-                log.info("Fetching cadres");
+
                 try {
                     while (rs.next()) {
                         Indicator indicator = new Indicator();
                         indicator.setId(rs.getString("id"));
-                        indicator.setName(rs.getString("name"));
                         indicator.setGroupId(rs.getString("groupId"));
+                        String desc = rs.getString("description");
+                        if (desc == null) {
+                            desc = "";
+                        } else {
+                            desc = desc;
+                        }
+                        indicator.setDescription(desc);
+                        String name = rs.getString("name");
+                        indicator.setName(name);
                         indicatorList.add(indicator);
                     }
                     cache.put(new Element("indicatorByGroup" + groupId, indicatorList));

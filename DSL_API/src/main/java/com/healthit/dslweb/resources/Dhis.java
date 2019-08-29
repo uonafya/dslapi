@@ -49,15 +49,20 @@ public class Dhis {
             if (pe != null
                     || ouid != null
                     || id != null) {
-
+                log.info("indicators without filter");
                 List<IndicatorValue> indicatorValue = dhisDao.getKPIValue(pe, ouid, id);
+                log.debug(indicatorValue);
                 return new ResponseEntity<List>(indicatorValue, HttpStatus.OK);
 
             } else if (groupId != null) {// return list of indicators in this group id
+                log.info("indicators with group id");
                 List<Indicator> indicatorList = dhisDao.getIndicatorsByGroup(Integer.parseInt(groupId));
+                log.debug(indicatorList);
                 return new ResponseEntity<List>(indicatorList, HttpStatus.OK);
             } else {
+                log.info("raw indicators");
                 List<Indicator> indicatorList = dhisDao.getIndicators();
+                log.debug(indicatorList);
                 return new ResponseEntity<List>(indicatorList, HttpStatus.OK);
             }
         } catch (DslException ex) {
@@ -69,21 +74,27 @@ public class Dhis {
 
     }
 
-//    @ResponseBody
-//    @RequestMapping(value = "/indicatorgroups/{indicatorGroupId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-//    public ResponseEntity<?> getIndicatorsByGroup(@PathVariable("indicatorGroupId") int indicatorGroupId) {
-//        try {
-//            DhisDao dhisDao = new DhisDao();
-//            List<Indicator> indicatorList = dhisDao.getIndicatorsByGroup(indicatorGroupId);
-//            return new ResponseEntity<List>(indicatorList, HttpStatus.OK);
-//        } catch (DslException ex) {
-//            return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
-//        } catch (Exception e) {
-//            log.error("unknow request " + e);
-//            return new ResponseEntity<String>("Unknown request", HttpStatus.BAD_REQUEST);
-//        }
-//
-//    }
+    @ResponseBody
+    @RequestMapping(value = "/indicators/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getIndicators(
+            @RequestParam(value = "pe", required = false) String pe,
+            @RequestParam(value = "ouid", required = false) String ouid,
+            @PathVariable("id") String id
+    ) {
+        try {
+            DhisDao dhisDao = new DhisDao();
+            log.info("indicators without filter");
+            List<IndicatorValue> indicatorValue = dhisDao.getKPIValue(pe, ouid, id);
+            log.debug(indicatorValue);
+            return new ResponseEntity<List>(indicatorValue, HttpStatus.OK);
+        } catch (DslException ex) {
+            return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
+            log.error("unknow request " + e);
+            return new ResponseEntity<String>("Unknown request", HttpStatus.BAD_REQUEST);
+        }
+
+    }
 
     @ResponseBody
     @RequestMapping(value = "/indicatorgroups", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)

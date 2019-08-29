@@ -58,6 +58,32 @@ include::{snippets}/test-indicators-values-returned-with-request-parameters/http
 === Response fields definition
 include::{snippets}/test-indicators-values-returned-with-request-parameters/response-fields.adoc[]
 
+
+// ==================================================>>>
+
+== Get indicator Values using path parameter
+Requesting for a single indicator value using a HTTP path parameter
+
+=== Curl Request
+include::{snippets}/test-indicators-values-returned-with-path-and-request-parameters/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-indicators-values-returned-with-path-and-request-parameters/http-request.adoc[]
+
+=== Request parameters definition
+include::{snippets}/test-indicators-values-returned-with-path-and-request-parameters/request-parameters.adoc[]
+
+=== Path parameter definition
+include::{snippets}/test-indicators-values-returned-with-path-and-request-parameters/path-parameters.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-indicators-values-returned-with-path-and-request-parameters/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-indicators-values-returned-with-path-and-request-parameters/response-fields.adoc[]
+
 // ==================================================>>>
 
 == Get available indicator groups
