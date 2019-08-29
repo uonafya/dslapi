@@ -203,8 +203,8 @@ Response given from the request
 === HTTP Response
 include::{snippets}/test-cadres-by-group-id-returned/http-response.adoc[]
 
-=== Path parameter definition
-include::{snippets}/test-cadres-by-group-id-returned/path-parameters.adoc[]
+=== Request parameters definition
+include::{snippets}/test-cadres-by-group-id-returned/request-parameters.adoc[]
 
 === Response fields definition
 include::{snippets}/test-cadres-by-group-id-returned/response-fields.adoc[]

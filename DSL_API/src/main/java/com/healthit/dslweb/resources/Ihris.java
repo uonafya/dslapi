@@ -32,7 +32,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @Controller
 public class Ihris {
+
     final static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(Ihris.class);
+
     @ResponseBody
     @RequestMapping(value = "/cadregroups/{cadreGroupId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAllCadresGroup(@PathVariable("cadreGroupId") int cadreGroupId) {
@@ -43,9 +45,9 @@ public class Ihris {
             return new ResponseEntity<List>(cadreGroupList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }catch(Exception e){
-            log.error("unknow request "+e);
-            return new ResponseEntity<String >("Unknown request", HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            log.error("unknow request " + e);
+            return new ResponseEntity<String>("Unknown request", HttpStatus.BAD_REQUEST);
         }
 
     }
@@ -60,20 +62,20 @@ public class Ihris {
         try {
 
             IhrisDao ihris = new IhrisDao();
-            if (    pe == null
+            if (pe == null
                     && ou == null
                     && cadreGroup == null) {
                 List<CadreGroup> cadreGroupList = ihris.getAllCadresGroup();
                 return new ResponseEntity<List>(cadreGroupList, HttpStatus.OK);
             } else {
-                List<CadreAllocation> cadreAllocationList = ihris.getCadreGroupAllocation( pe,  ou,  cadreGroup);
+                List<CadreAllocation> cadreAllocationList = ihris.getCadreGroupAllocation(pe, ou, cadreGroup);
                 return new ResponseEntity<List>(cadreAllocationList, HttpStatus.OK);
             }
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }catch(Exception e){
-            log.error("unknow request "+e);
-            return new ResponseEntity<String >("Unknown request", HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            log.error("unknow request " + e);
+            return new ResponseEntity<String>("Unknown request", HttpStatus.BAD_REQUEST);
         }
 
     }
@@ -84,26 +86,29 @@ public class Ihris {
             @RequestParam(value = "pe", required = false) String pe,
             @RequestParam(value = "ouid", required = false) String ou,
             @RequestParam(value = "id", required = false) String cadre,
-            @RequestParam(value = "cadreGroup", required = false) String cadreGroup
+            @RequestParam(value = "groupId", required = false) String groupId
     ) {
         try {
             IhrisDao ihris = new IhrisDao();
-            if (pe == null
-                    && ou == null
-                    && cadre == null
-                    && cadreGroup == null) {
+            if (pe != null
+                    || ou != null
+                    || cadre != null) {
+
+                List<CadreAllocation> cadreAllocationList = ihris.getCadreAllocation(pe, ou, cadre);
+                return new ResponseEntity<List>(cadreAllocationList, HttpStatus.OK);
+            } else if (groupId != null) {// return list of indicators in this group id
+                List<Cadre> cadreGroupList = ihris.getCadresByGroup(Integer.parseInt(groupId));
+                return new ResponseEntity<List>(cadreGroupList, HttpStatus.OK);
+            } else {
                 List<Cadre> cadreList = ihris.getAllCadres();
                 return new ResponseEntity<List>(cadreList, HttpStatus.OK);
-            } else {
-                List<CadreAllocation> cadreAllocationList = ihris.getCadreAllocation(pe, ou, cadre, cadreGroup);
-                return new ResponseEntity<List>(cadreAllocationList, HttpStatus.OK);
             }
 
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }catch(Exception e){
-            log.error("unknow request "+e);
-            return new ResponseEntity<String >("Unknown request", HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            log.error("unknow request " + e);
+            return new ResponseEntity<String>("Unknown request", HttpStatus.BAD_REQUEST);
         }
 
     }

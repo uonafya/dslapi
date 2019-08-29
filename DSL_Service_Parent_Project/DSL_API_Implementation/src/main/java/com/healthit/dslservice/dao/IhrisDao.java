@@ -214,11 +214,10 @@ public class IhrisDao {
      * @param pe semi colon separated period
      * @param ou semi colon separated org unit ids
      * @param cadre semi colon separated cadre ids
-     * @param cadreGroup semi colon separated cadreGroup ids
      * @return cadre allocation objects
      * @throws DslException
      */
-    public List<CadreAllocation> getCadreAllocation(String pe, String ou, String cadre, String cadreGroup) throws DslException {
+    public List<CadreAllocation> getCadreAllocation(String pe, String ou, String cadre) throws DslException {
         if (pe != null) {
             nationalCadreCount = insertPeriodPart(pe,nationalCadreCount);
             appendAnd = true;

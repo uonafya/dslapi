@@ -109,9 +109,9 @@ public class IhrisApisDocumentationTest {
     @Test
     public void testCadresByGroupIdReturned() throws Exception {
         this.mockMvc.perform(
-                RestDocumentationRequestBuilders.get("/cadregroups/{cadreGroupId}", 4).accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk()).andDo(document("test-cadres-by-group-id-returned", pathParameters(
-                parameterWithName("cadreGroupId").description("The cadre group id from which to return its cadres")
+                get("/cadres?groupId=4").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andDo(document("test-cadres-by-group-id-returned", requestParameters(
+                parameterWithName("groupId").description("The cadre group id from which to return its cadres")
         ), responseFields(
                 fieldWithPath("[].id")
                         .description("Cadre ID"),
