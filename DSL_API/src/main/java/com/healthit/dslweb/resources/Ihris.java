@@ -36,23 +36,6 @@ public class Ihris {
     final static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(Ihris.class);
 
     @ResponseBody
-    @RequestMapping(value = "/cadregroups/{cadreGroupId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getAllCadresGroup(@PathVariable("cadreGroupId") int cadreGroupId) {
-        System.out.println("by group");
-        try {
-            IhrisDao ihris = new IhrisDao();
-            List<Cadre> cadreGroupList = ihris.getCadresByGroup(cadreGroupId);
-            return new ResponseEntity<List>(cadreGroupList, HttpStatus.OK);
-        } catch (DslException ex) {
-            return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
-        } catch (Exception e) {
-            log.error("unknow request " + e);
-            return new ResponseEntity<String>("Unknown request", HttpStatus.BAD_REQUEST);
-        }
-
-    }
-
-    @ResponseBody
     @RequestMapping(value = "/cadregroups", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getCadreGroups(
             @RequestParam(value = "pe", required = false) String pe,
@@ -82,7 +65,7 @@ public class Ihris {
 
     @ResponseBody
     @RequestMapping(value = "/cadres", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getAllCadres(
+    public ResponseEntity<?> getCadres(
             @RequestParam(value = "pe", required = false) String pe,
             @RequestParam(value = "ouid", required = false) String ou,
             @RequestParam(value = "id", required = false) String cadre,
@@ -103,6 +86,27 @@ public class Ihris {
                 List<Cadre> cadreList = ihris.getAllCadres();
                 return new ResponseEntity<List>(cadreList, HttpStatus.OK);
             }
+
+        } catch (DslException ex) {
+            return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
+            log.error("unknow request " + e);
+            return new ResponseEntity<String>("Unknown request", HttpStatus.BAD_REQUEST);
+        }
+
+    }
+
+    @ResponseBody
+    @RequestMapping(value = "/cadres/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getSingleCadreAllocation(
+            @RequestParam(value = "pe", required = false) String pe,
+            @RequestParam(value = "ouid", required = false) String ou,
+            @PathVariable("id") String id
+    ) {
+        try {
+            IhrisDao ihris = new IhrisDao();
+            List<CadreAllocation> cadreAllocationList = ihris.getCadreAllocation(pe, ou, id);
+            return new ResponseEntity<List>(cadreAllocationList, HttpStatus.OK);
 
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);

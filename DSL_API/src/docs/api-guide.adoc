@@ -168,6 +168,32 @@ include::{snippets}/test-cadres-values-returned-with-request-parameters/http-res
 === Response fields definition
 include::{snippets}/test-cadres-values-returned-with-request-parameters/response-fields.adoc[]
 
+
+// ==================================================>>>
+
+== Get cadre Values with path parameter
+Requesting for cadre count values using cadre id as http path parameter
+
+=== Curl Request
+include::{snippets}/test-cadres-values-returned-with-path-and-request-parameters/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-cadres-values-returned-with-path-and-request-parameters/http-request.adoc[]
+
+=== Request parameters definition
+include::{snippets}/test-cadres-values-returned-with-path-and-request-parameters/request-parameters.adoc[]
+
+=== Path parameter definition
+include::{snippets}/test-cadres-values-returned-with-path-and-request-parameters/path-parameters.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-cadres-values-returned-with-path-and-request-parameters/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-cadres-values-returned-with-path-and-request-parameters/response-fields.adoc[]
+
 // ==================================================>>>
 
 == Get available cadre groups

@@ -96,6 +96,27 @@ public class IhrisApisDocumentationTest {
     }
 
     @Test
+    public void testCadresValuesReturnedWithPathAndRequestParameters() throws Exception {
+        String periodDec = "Period parameter. Can be an explicit year, YYYY (eg 2018) which will give the stated year values, or YYYYmm (eg 201801) which gives "
+                + "cadre count upto that given month";
+        this.mockMvc.perform(
+                RestDocumentationRequestBuilders.get("/cadres/{id}?pe=2017&ouid=23408", 33).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andDo(document("test-cadres-values-returned-with-path-and-request-parameters", pathParameters(
+                parameterWithName("id").description("Cadre ID, if not provided gives count for all cadres")
+        ), requestParameters(
+                parameterWithName("pe").description(periodDec),
+                parameterWithName("ouid").description("Organisation unit id, if not provided defaults to national")
+        ), responseFields(
+                fieldWithPath("[].cadre")
+                        .description("Cadre name"),
+                fieldWithPath("[].cadreCount")
+                        .description("Cadre count"),
+                fieldWithPath("[].id").description("Cadre Id")
+        )
+        ));
+    }
+
+    @Test
     public void testCadreGroupsReturnedApiCall() throws Exception {
         this.mockMvc.perform(
                 get("/cadregroups").accept(MediaType.APPLICATION_JSON))
