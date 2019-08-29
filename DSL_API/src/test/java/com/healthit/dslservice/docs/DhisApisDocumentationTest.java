@@ -111,11 +111,18 @@ public class DhisApisDocumentationTest {
 
     @Test
     public void testIndicatorsByGroupIdReturned() throws Exception {
+
         this.mockMvc.perform(
-                RestDocumentationRequestBuilders.get("/indicatorgroups/{indicatorGroupId}", 31591).accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk()).andDo(document("test-indicators-by-group-id-returned", pathParameters(
-                parameterWithName("indicatorGroupId").description("The indicator group id from which to return its indicators")
-        )));
+                get("/indicators?groupId=31591").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andDo(document("test-indicators-by-group-id-returned", requestParameters(
+                parameterWithName("groupId").description("Indicator group ID. Returns indicators under this indicator group Should be passed as the only parameter when making this API call")
+        ), responseFields(
+                fieldWithPath("[].id")
+                        .description("Indicator ID"),
+                fieldWithPath("[].name")
+                        .description("Indicator Name"),
+                fieldWithPath("[].groupId").description("Indicator Group Id"))
+        ));
     }
 
 }

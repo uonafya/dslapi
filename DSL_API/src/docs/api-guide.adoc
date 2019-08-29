@@ -94,9 +94,10 @@ Response given from the request
 include::{snippets}/test-indicators-by-group-id-returned/http-response.adoc[]
 
 === Path parameter definition
-include::{snippets}/test-indicators-by-group-id-returned/path-parameters.adoc[]
+include::{snippets}/test-indicators-by-group-id-returned/request-parameters.adoc[]
 
-
+=== Response fields definition
+include::{snippets}/test-indicators-by-group-id-returned/response-fields.adoc[]
 // =======================Ihris===========================>>>
 // =======================Ihris===========================>>>
 

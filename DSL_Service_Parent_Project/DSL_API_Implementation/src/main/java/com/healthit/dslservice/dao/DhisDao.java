@@ -281,8 +281,8 @@ public class DhisDao {
                 int count = 1;
                 while (rs.next()) {
                     IndicatorGoup indGroup = new IndicatorGoup();
-                    indGroup.setId(rs.getString("name"));
-                    indGroup.setName(rs.getString("id"));
+                    indGroup.setId(rs.getString("id"));
+                    indGroup.setName(rs.getString("name"));
                     indicatorGroupList.add(indGroup);
                 }
                 cache.put(new Element(CacheKeys.indicatorGroup, indicatorGroupList));
