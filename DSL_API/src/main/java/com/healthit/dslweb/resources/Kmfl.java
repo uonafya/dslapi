@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -30,7 +31,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @Controller
 public class Kmfl {
+
     final static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(Kmfl.class);
+
+    @CrossOrigin
     @ResponseBody
     @RequestMapping(value = "/facilities", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAllFacility() {
@@ -40,13 +44,14 @@ public class Kmfl {
             return new ResponseEntity<List>(facilityList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }catch(Exception e){
-            log.error("unknow request "+e);
-            return new ResponseEntity<String >("Unknown request", HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            log.error("unknow request " + e);
+            return new ResponseEntity<String>("Unknown request", HttpStatus.BAD_REQUEST);
         }
 
     }
 
+    @CrossOrigin
     @ResponseBody
     @RequestMapping(value = "/facilitylevel", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getAllFacilityLevels() {
@@ -56,13 +61,14 @@ public class Kmfl {
             return new ResponseEntity<List>(facilityLevel, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }catch(Exception e){
-            log.error("unknow request "+e);
-            return new ResponseEntity<String >("Unknown request", HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            log.error("unknow request " + e);
+            return new ResponseEntity<String>("Unknown request", HttpStatus.BAD_REQUEST);
         }
 
     }
 
+    @CrossOrigin
     @ResponseBody
     @RequestMapping(value = "/facilitylevel/{facilityLevelId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getFacilitiesByLevel(@PathVariable("facilityLevelId") int facilityLevelId) {
@@ -73,13 +79,14 @@ public class Kmfl {
             return new ResponseEntity<List>(facilityList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }catch(Exception e){
-            log.error("unknow request "+e);
-            return new ResponseEntity<String >("Unknown request", HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            log.error("unknow request " + e);
+            return new ResponseEntity<String>("Unknown request", HttpStatus.BAD_REQUEST);
         }
 
     }
 
+    @CrossOrigin
     @ResponseBody
     @RequestMapping(value = "/facilitytype", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getFacilityTypes() {
@@ -89,13 +96,14 @@ public class Kmfl {
             return new ResponseEntity<List>(facilityList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }catch(Exception e){
-            log.error("unknow request "+e);
-            return new ResponseEntity<String >("Unknown request", HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            log.error("unknow request " + e);
+            return new ResponseEntity<String>("Unknown request", HttpStatus.BAD_REQUEST);
         }
 
     }
 
+    @CrossOrigin
     @ResponseBody
     @RequestMapping(value = "/facilitytype/{facilityTypeId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getFacilitiesByType(@PathVariable("facilityTypeId") int facilityTypeId) {
@@ -106,13 +114,14 @@ public class Kmfl {
             return new ResponseEntity<List>(facilityList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }catch(Exception e){
-            log.error("unknow request "+e);
-            return new ResponseEntity<String >("Unknown request", HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            log.error("unknow request " + e);
+            return new ResponseEntity<String>("Unknown request", HttpStatus.BAD_REQUEST);
         }
 
     }
 
+    @CrossOrigin
     @ResponseBody
     @RequestMapping(value = "/facilityregulatingbody", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getFacilityRegulatingBodies() {
@@ -122,13 +131,14 @@ public class Kmfl {
             return new ResponseEntity<List>(facilityList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }catch(Exception e){
-            log.error("unknow request "+e);
-            return new ResponseEntity<String >("Unknown request", HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            log.error("unknow request " + e);
+            return new ResponseEntity<String>("Unknown request", HttpStatus.BAD_REQUEST);
         }
 
     }
 
+    @CrossOrigin
     @ResponseBody
     @RequestMapping(value = "/facilityregulatingbody/{regulatingBodyId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getFacilitiesByRegulatingBody(@PathVariable("regulatingBodyId") int regulatingBodyId) {
@@ -139,13 +149,14 @@ public class Kmfl {
             return new ResponseEntity<List>(facilityList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }catch(Exception e){
-            log.error("unknow request "+e);
-            return new ResponseEntity<String >("Unknown request", HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            log.error("unknow request " + e);
+            return new ResponseEntity<String>("Unknown request", HttpStatus.BAD_REQUEST);
         }
 
     }
 
+    @CrossOrigin
     @ResponseBody
     @RequestMapping(value = "/facilityownertype", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getFacilityOwnerType() {
@@ -159,6 +170,7 @@ public class Kmfl {
 
     }
 
+    @CrossOrigin
     @ResponseBody
     @RequestMapping(value = "/facilityownertype/{onwerTypeId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getFacilitiesByOwnerType(@PathVariable("onwerTypeId") int onwerTypeId) {
@@ -169,9 +181,9 @@ public class Kmfl {
             return new ResponseEntity<List>(facilityList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }catch(Exception e){
-            log.error("unknow request "+e);
-            return new ResponseEntity<String >("Unknown request", HttpStatus.BAD_REQUEST);
+        } catch (Exception e) {
+            log.error("unknow request " + e);
+            return new ResponseEntity<String>("Unknown request", HttpStatus.BAD_REQUEST);
         }
 
     }

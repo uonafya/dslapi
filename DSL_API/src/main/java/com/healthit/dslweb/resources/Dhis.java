@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -34,7 +35,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class Dhis {
 
     final static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(Dhis.class);
-
+    
+    @CrossOrigin
     @ResponseBody
     @RequestMapping(value = "/indicators", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getIndicators(
@@ -73,7 +75,8 @@ public class Dhis {
         }
 
     }
-
+    
+    @CrossOrigin
     @ResponseBody
     @RequestMapping(value = "/indicators/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getIndicators(
@@ -95,7 +98,7 @@ public class Dhis {
         }
 
     }
-
+    @CrossOrigin
     @ResponseBody
     @RequestMapping(value = "/indicatorgroups", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getIndicatorGroups(@RequestParam(value = "pe", required = false) String pe,

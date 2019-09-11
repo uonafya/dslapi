@@ -7,6 +7,7 @@ package com.healthit.dslweb.resources;
 
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -19,7 +20,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class Dsl {
 
     final static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(Dsl.class);
-
+    @CrossOrigin
     @RequestMapping({"/","/home"})
     public String showHomePage1() {
         return "api-guide.html";
