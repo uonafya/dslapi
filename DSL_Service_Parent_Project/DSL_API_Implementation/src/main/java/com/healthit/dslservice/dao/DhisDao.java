@@ -47,12 +47,12 @@ public class DhisDao {
             + "FROM public.vw_indicator_to_indicatorgroup;";
 
     private String getKPIWholeYear = "select ROUND( kpivalue, 2 ) as value,\"Indicator name\" as indicator_name,cast(to_char(startdate, 'YYYY') as int) as year \n"
-            + ",cast(to_char(startdate, 'MM') as int) as month, \"Indicator ID\" as id,\"Org unit id\" as ouid,dhis.\"Organisation Unit Name\" as ouname \n"
+            + ",cast(to_char(startdate, 'MM') as int) as month,_datecreated, lastupdated, \"Indicator ID\" as id,\"Org unit id\" as ouid,dhis.\"Organisation Unit Name\" as ouname \n"
             + "from vw_mohdsl_dhis_indicators dhis "
             + "where @pe@"
             + " @id@ "
             + "@ouid@"
-            + "group by year,month,\"Indicator name\",kpivalue,\"Org unit id\",ouname,id";
+            + "group by year,month,\"Indicator name\",kpivalue,\"Org unit id\",ouname,id,_datecreated, lastupdated";
 
     private Map<String, String> groupTable = new HashMap();
 
@@ -181,8 +181,62 @@ public class DhisDao {
         return indicatorList;
     }
 
-    public List<IndicatorValue> getKPIValue(String pe, String ouid, String id) throws DslException {
+    private Map<String, Map> preparePayload(String pe, String ouid, String id, ResultSet rs) throws SQLException {
+        Map<String, Map> result = new HashMap();
+        Map<String, Map> dictionary = new HashMap();
+        Map<String, Map> orgUnits = new HashMap();
+        Map<String, Map> indicators = new HashMap();
+        Map<String, Object> parameters = new HashMap();
+        Map<String, List> data = new HashMap();
 
+        while (rs.next()) {
+
+            Map<String, Object> orgUnitMetadata = new HashMap();
+            orgUnitMetadata.put("name", rs.getString("ouname"));
+            orgUnits.put(rs.getString("ouid"), orgUnitMetadata);
+
+            Map<String, Object> indicatorMetadata = new HashMap();
+            indicatorMetadata.put("name", rs.getString("indicator_name"));
+            indicatorMetadata.put("last_updated", rs.getString("lastupdated"));
+            indicatorMetadata.put("date_created", rs.getString("_datecreated"));
+            indicatorMetadata.put("source", "KHIS");
+            indicators.put(rs.getString("id"), indicatorMetadata);
+
+            List<String> periodsParams = new ArrayList();
+            periodsParams.add(pe);
+            parameters.put("period", periodsParams);
+
+            List<String> locationParams = new ArrayList();
+            locationParams.add(ouid);
+            parameters.put("location", locationParams);
+
+            List<String> indicatorParams = new ArrayList();
+            indicatorParams.add(id);
+            parameters.put("indicators", indicatorParams);
+
+            //data
+            List<Map> indicatorList = new ArrayList();
+            Map<String, String> dataValues = new HashMap();
+            dataValues.put("value", rs.getString("value"));
+            dataValues.put("period", pe);
+            dataValues.put("ou", ouid);
+            indicatorList.add(dataValues);
+            data.put(rs.getString("id"), indicatorList);
+
+        }
+
+        dictionary.put("orgunits", orgUnits);
+        dictionary.put("indicators", indicators);
+        dictionary.put("parameters", parameters);
+
+        result.put("dictionary", dictionary);
+        result.put("data", data);
+
+        return result;
+    }
+
+    public Map<String, Map> getKPIValue(String pe, String ouid, String id) throws DslException {
+        Map<String, Map> envelop = new HashMap();
         if (pe != null) {
             getKPIWholeYear = insertPeriodPart(pe, getKPIWholeYear);
             appendAnd = true;
@@ -219,23 +273,19 @@ public class DhisDao {
         Database db = new Database();
         ResultSet rs = db.executeQuery(getKPIWholeYear);
         log.info("Fetching KPI values");
+
         try {
-            while (rs.next()) {
-                IndicatorValue indicatorValue = new IndicatorValue();
-                indicatorValue.setId(rs.getString("id"));
-                indicatorValue.setName(rs.getString("indicator_name"));
-                indicatorValue.setOuName(rs.getString("ouname"));
-                indicatorValue.setOuid(rs.getString("ouid"));
-                indicatorValue.setPe(rs.getString("year") + rs.getString("month"));
-                indicatorValue.setValue(rs.getString("value"));
-                kpiList.add(indicatorValue);
-            }
+            Map<String, Map> result;
+            result = preparePayload(pe, ouid, id, rs);
+            envelop.put("result", result);
+
+            return envelop;
         } catch (SQLException ex) {
             log.error(ex);
         } finally {
             db.CloseConnection();
         }
-        return kpiList;
+        return envelop;
     }
 
     public List<Indicator> getIndicatorsByGroup(int groupId) throws DslException {

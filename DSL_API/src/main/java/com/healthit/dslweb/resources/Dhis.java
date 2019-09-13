@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 public class Dhis {
 
     final static org.apache.log4j.Logger log = org.apache.log4j.Logger.getLogger(Dhis.class);
-    
+
     @CrossOrigin
     @ResponseBody
     @RequestMapping(value = "/indicators", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -52,9 +52,9 @@ public class Dhis {
                     || ouid != null
                     || id != null) {
                 log.info("indicators without filter");
-                List<IndicatorValue> indicatorValue = dhisDao.getKPIValue(pe, ouid, id);
+                Map<String, Map> indicatorValue = dhisDao.getKPIValue(pe, ouid, id);
                 log.debug(indicatorValue);
-                return new ResponseEntity<List>(indicatorValue, HttpStatus.OK);
+                return new ResponseEntity<Map<String, Map>>(indicatorValue, HttpStatus.OK);
 
             } else if (groupId != null) {// return list of indicators in this group id
                 log.info("indicators with group id");
@@ -75,7 +75,7 @@ public class Dhis {
         }
 
     }
-    
+
     @CrossOrigin
     @ResponseBody
     @RequestMapping(value = "/indicators/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -87,9 +87,9 @@ public class Dhis {
         try {
             DhisDao dhisDao = new DhisDao();
             log.info("indicators without filter");
-            List<IndicatorValue> indicatorValue = dhisDao.getKPIValue(pe, ouid, id);
+            Map<String, Map> indicatorValue = dhisDao.getKPIValue(pe, ouid, id);
             log.debug(indicatorValue);
-            return new ResponseEntity<List>(indicatorValue, HttpStatus.OK);
+            return new ResponseEntity<Map<String, Map>>(indicatorValue, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (Exception e) {
@@ -98,6 +98,7 @@ public class Dhis {
         }
 
     }
+
     @CrossOrigin
     @ResponseBody
     @RequestMapping(value = "/indicatorgroups", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
