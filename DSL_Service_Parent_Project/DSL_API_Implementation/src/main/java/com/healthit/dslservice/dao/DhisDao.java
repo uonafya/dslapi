@@ -188,7 +188,7 @@ public class DhisDao {
         Map<String, Map> indicators = new HashMap();
         Map<String, Object> parameters = new HashMap();
         Map<String, List> data = new HashMap();
-
+        List<Map> indicatorList;
         while (rs.next()) {
 
             Map<String, Object> orgUnitMetadata = new HashMap();
@@ -215,12 +215,19 @@ public class DhisDao {
             parameters.put("indicators", indicatorParams);
 
             //data
-            List<Map> indicatorList = new ArrayList();
             Map<String, String> dataValues = new HashMap();
             dataValues.put("value", rs.getString("value"));
-            dataValues.put("period", pe);
+            dataValues.put("period", rs.getString("year") + rs.getString("month"));
             dataValues.put("ou", ouid);
-            indicatorList.add(dataValues);
+
+            if (data.containsKey(rs.getString("id"))) {
+                indicatorList = data.get(rs.getString("id"));
+                indicatorList.add(dataValues);
+            } else {
+                indicatorList = new ArrayList();
+                indicatorList.add(dataValues);
+            }
+
             data.put(rs.getString("id"), indicatorList);
 
         }
