@@ -46,13 +46,14 @@ public class DhisDao {
     private String getIndicatorGroups = "SELECT DISTINCT indicatorgroupid as id, group_name as name\n"
             + "FROM public.vw_indicator_to_indicatorgroup;";
 
-    private String getKPIWholeYear = "select ROUND( kpivalue, 2 ) as value,\"Indicator name\" as indicator_name,cast(to_char(startdate, 'YYYY') as int) as year \n"
+    private String getKPIWholeYear = "select ROUND( kpivalue, 2 ) as value,\"Indicator name\" as indicator_name,\"Indicator description\" as description, "
+            + "cast(to_char(startdate, 'YYYY') as int) as year \n"
             + ",cast(to_char(startdate, 'MM') as int) as month,_datecreated, lastupdated, \"Indicator ID\" as id,\"Org unit id\" as ouid,dhis.\"Organisation Unit Name\" as ouname \n"
             + "from vw_mohdsl_dhis_indicators dhis "
             + "where @pe@"
             + " @id@ "
             + "@ouid@"
-            + "group by year,month,\"Indicator name\",kpivalue,\"Org unit id\",ouname,id,_datecreated, lastupdated";
+            + "group by year,month,\"Indicator name\",\"Indicator description\",kpivalue,\"Org unit id\",ouname,id,_datecreated, lastupdated";
 
     private Map<String, String> groupTable = new HashMap();
 
@@ -183,24 +184,38 @@ public class DhisDao {
 
     private Map<String, Map> preparePayload(String pe, String ouid, String id, ResultSet rs) throws SQLException {
         Map<String, Map> result = new HashMap();
-        Map<String, Map> dictionary = new HashMap();
-        Map<String, Map> orgUnits = new HashMap();
-        Map<String, Map> indicators = new HashMap();
+        Map<String, Object> dictionary = new HashMap();
+        List<Map> orgUnits = new ArrayList();
+        List<Map> indicators = new ArrayList();
         Map<String, Object> parameters = new HashMap();
         Map<String, List> data = new HashMap();
         List<Map> indicatorList;
+        List<String> addedOuid = new ArrayList();
+        List<String> addedIndicators = new ArrayList();
         while (rs.next()) {
 
             Map<String, Object> orgUnitMetadata = new HashMap();
-            orgUnitMetadata.put("name", rs.getString("ouname"));
-            orgUnits.put(rs.getString("ouid"), orgUnitMetadata);
+            String _ouid = rs.getString("id");
+
+            if (!addedOuid.contains(_ouid)) {
+                orgUnitMetadata.put("id", rs.getString("ouid"));
+                orgUnitMetadata.put("name", rs.getString("ouname"));
+                orgUnits.add(orgUnitMetadata);
+                addedOuid.add(_ouid);
+            }
 
             Map<String, Object> indicatorMetadata = new HashMap();
-            indicatorMetadata.put("name", rs.getString("indicator_name"));
-            indicatorMetadata.put("last_updated", rs.getString("lastupdated"));
-            indicatorMetadata.put("date_created", rs.getString("_datecreated"));
-            indicatorMetadata.put("source", "KHIS");
-            indicators.put(rs.getString("id"), indicatorMetadata);
+            String _indicatorId = rs.getString("id");
+            if (!addedIndicators.contains(_indicatorId)) {
+                indicatorMetadata.put("id", _indicatorId);
+                indicatorMetadata.put("name", rs.getString("indicator_name"));
+                indicatorMetadata.put("last_updated", rs.getString("lastupdated"));
+                indicatorMetadata.put("date_created", rs.getString("_datecreated"));
+                indicatorMetadata.put("description", rs.getString("description"));
+                indicatorMetadata.put("source", "KHIS");
+                indicators.add(indicatorMetadata);
+                addedIndicators.add(_ouid);
+            }
 
             List<String> periodsParams = new ArrayList();
             periodsParams.add(pe);
@@ -217,7 +232,8 @@ public class DhisDao {
             //data
             Map<String, String> dataValues = new HashMap();
             dataValues.put("value", rs.getString("value"));
-            dataValues.put("period", rs.getString("year") + rs.getString("month"));
+            String mnth = rs.getString("month");
+            dataValues.put("period", rs.getString("year") + ((mnth.length() > 1) ? mnth : "0" + mnth)); // ensure leading 0 if month is single digit eg. 20191 > 201901
             dataValues.put("ou", ouid);
 
             if (data.containsKey(rs.getString("id"))) {
@@ -249,6 +265,7 @@ public class DhisDao {
             appendAnd = true;
         } else {
             int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+            pe = Integer.toString(currentYear);
             getKPIWholeYear = insertPeriodPart(Integer.toString(currentYear), getKPIWholeYear); //current years' values
             appendAnd = true;
         }
@@ -257,7 +274,7 @@ public class DhisDao {
 
             getKPIWholeYear = insertOrgUntiPart(ouid, getKPIWholeYear);
         } else {
-
+            ouid = "18"; //kenya (default national id ) = 18
             if (appendAnd) {
                 getKPIWholeYear = getKPIWholeYear.replace("@ouid@", " and \"Org unit id\"=18 "); //kenya (national id ) = 18
             } else {

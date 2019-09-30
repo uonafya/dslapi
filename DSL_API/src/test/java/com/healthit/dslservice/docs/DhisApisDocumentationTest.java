@@ -96,21 +96,27 @@ public class DhisApisDocumentationTest {
                                 .description("Carries metadata for the payload"),
                         fieldWithPath("result.dictionary.orgunits")
                                 .description("Metadata for organization units contained in the reponse payload"),
-                        fieldWithPath("result.dictionary.orgunits.23408")
+                        fieldWithPath("result.dictionary.orgunits[]")
+                                .description("List of organisation unit(s)"),
+                        fieldWithPath("result.dictionary.orgunits[].id")
                                 .description("Organisation unit id"),
-                        fieldWithPath("result.dictionary.orgunits.23408.name")
+                        fieldWithPath("result.dictionary.orgunits[].name")
                                 .description("Organisation unit name"),
                         fieldWithPath("result.dictionary.indicators")
                                 .description("Metadata for indicators contained in the reponse payload"),
-                        fieldWithPath("result.dictionary.indicators.61829")
-                                .description("Indicator id"),
-                        fieldWithPath("result.dictionary.indicators.61829.name")
+                        fieldWithPath("result.dictionary.indicators[]")
+                                .description("List of indicator(s) in the payload"),
+                        fieldWithPath("result.dictionary.indicators[].id")
+                                .description("Indicator ID"),
+                        fieldWithPath("result.dictionary.indicators[].name")
                                 .description("Indicator name"),
-                        fieldWithPath("result.dictionary.indicators.61829.last_updated")
+                        fieldWithPath("result.dictionary.indicators[].description")
+                                .description("Indicator description"),
+                        fieldWithPath("result.dictionary.indicators[].last_updated")
                                 .description("Indicator indicator update date"),
-                        fieldWithPath("result.dictionary.indicators.61829.date_created")
+                        fieldWithPath("result.dictionary.indicators[].date_created")
                                 .description("Indicator creation date"),
-                        fieldWithPath("result.dictionary.indicators.61829.source")
+                        fieldWithPath("result.dictionary.indicators[].source")
                                 .description("Source for this Indicator"),
                         //
                         fieldWithPath("result.dictionary.parameters")
@@ -157,21 +163,27 @@ public class DhisApisDocumentationTest {
                         .description("Carries metadata for the payload"),
                 fieldWithPath("result.dictionary.orgunits")
                         .description("Metadata for organization units contained in the reponse payload"),
-                fieldWithPath("result.dictionary.orgunits.23408")
+                fieldWithPath("result.dictionary.orgunits[]")
+                        .description("List of organisation unit(s)"),
+                fieldWithPath("result.dictionary.orgunits[].id")
                         .description("Organisation unit id"),
-                fieldWithPath("result.dictionary.orgunits.23408.name")
+                fieldWithPath("result.dictionary.orgunits[].name")
                         .description("Organisation unit name"),
                 fieldWithPath("result.dictionary.indicators")
                         .description("Metadata for indicators contained in the reponse payload"),
-                fieldWithPath("result.dictionary.indicators.61829")
-                        .description("Indicator id"),
-                fieldWithPath("result.dictionary.indicators.61829.name")
+                fieldWithPath("result.dictionary.indicators[]")
+                        .description("List of indicator(s) in the payload"),
+                fieldWithPath("result.dictionary.indicators[].id")
+                        .description("Indicator ID"),
+                fieldWithPath("result.dictionary.indicators[].name")
                         .description("Indicator name"),
-                fieldWithPath("result.dictionary.indicators.61829.last_updated")
+                fieldWithPath("result.dictionary.indicators[].description")
+                        .description("Indicator description"),
+                fieldWithPath("result.dictionary.indicators[].last_updated")
                         .description("Indicator indicator update date"),
-                fieldWithPath("result.dictionary.indicators.61829.date_created")
+                fieldWithPath("result.dictionary.indicators[].date_created")
                         .description("Indicator creation date"),
-                fieldWithPath("result.dictionary.indicators.61829.source")
+                fieldWithPath("result.dictionary.indicators[].source")
                         .description("Source for this Indicator"),
                 //
                 fieldWithPath("result.dictionary.parameters")
