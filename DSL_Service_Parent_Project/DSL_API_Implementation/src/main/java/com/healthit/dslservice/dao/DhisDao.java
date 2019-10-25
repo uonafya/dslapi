@@ -53,7 +53,8 @@ public class DhisDao {
             + "where @pe@"
             + " @id@ "
             + "@ouid@"
-            + "group by year,month,\"Indicator name\",\"Indicator description\",kpivalue,\"Org unit id\",ouname,id,_datecreated, lastupdated";
+            + " group by year,month,\"Indicator name\",\"Indicator description\",kpivalue,\"Org unit id\",ouname,id,_datecreated, lastupdated"
+            + " order by month ";
 
     private Map<String, String> groupTable = new HashMap();
 
@@ -259,57 +260,69 @@ public class DhisDao {
     }
 
     public Map<String, Map> getKPIValue(String pe, String ouid, String id) throws DslException {
+        Element ele = cache.get(pe + ouid + id);
         Map<String, Map> envelop = new HashMap();
-        if (pe != null) {
-            getKPIWholeYear = insertPeriodPart(pe, getKPIWholeYear);
-            appendAnd = true;
-        } else {
-            int currentYear = Calendar.getInstance().get(Calendar.YEAR);
-            pe = Integer.toString(currentYear);
-            getKPIWholeYear = insertPeriodPart(Integer.toString(currentYear), getKPIWholeYear); //current years' values
-            appendAnd = true;
-        }
 
-        if (ouid != null) {
+        if (ele == null) {
 
-            getKPIWholeYear = insertOrgUntiPart(ouid, getKPIWholeYear);
-        } else {
-            ouid = "18"; //kenya (default national id ) = 18
-            if (appendAnd) {
-                getKPIWholeYear = getKPIWholeYear.replace("@ouid@", " and \"Org unit id\"=18 "); //kenya (national id ) = 18
+            if (pe != null) {
+                getKPIWholeYear = insertPeriodPart(pe, getKPIWholeYear);
+                appendAnd = true;
             } else {
-                getKPIWholeYear = getKPIWholeYear.replace("@ouid@", " \"Org unit id\"=18 "); //kenya (national id ) = 18
+                int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+                pe = Integer.toString(currentYear);
+                getKPIWholeYear = insertPeriodPart(Integer.toString(currentYear), getKPIWholeYear); //current years' values
                 appendAnd = true;
             }
 
-        }
+            if (ouid != null) {
 
-        if (id != null) {
-            getKPIWholeYear = insertIdPart(id, getKPIWholeYear);
-        } else {
-            Message msg = new Message();
-            msg.setMesageContent("please add indicator id paramerter, '?id=xxx'");
-            msg.setMessageType(MessageType.MISSING_PARAMETER_VALUE);
-            throw new DslException(msg);
-        }
-        log.info("indicator query to run: " + getKPIWholeYear);
-        List<IndicatorValue> kpiList = new ArrayList();
-        Database db = new Database();
-        ResultSet rs = db.executeQuery(getKPIWholeYear);
-        log.info("Fetching KPI values");
+                getKPIWholeYear = insertOrgUntiPart(ouid, getKPIWholeYear);
+            } else {
+                ouid = "18"; //kenya (default national id ) = 18
+                if (appendAnd) {
+                    getKPIWholeYear = getKPIWholeYear.replace("@ouid@", " and \"Org unit id\"=18 "); //kenya (national id ) = 18
+                } else {
+                    getKPIWholeYear = getKPIWholeYear.replace("@ouid@", " \"Org unit id\"=18 "); //kenya (national id ) = 18
+                    appendAnd = true;
+                }
 
-        try {
-            Map<String, Map> result;
-            result = preparePayload(pe, ouid, id, rs);
-            envelop.put("result", result);
+            }
 
+            if (id != null) {
+                getKPIWholeYear = insertIdPart(id, getKPIWholeYear);
+            } else {
+                Message msg = new Message();
+                msg.setMesageContent("please add indicator id paramerter, '?id=xxx'");
+                msg.setMessageType(MessageType.MISSING_PARAMETER_VALUE);
+                throw new DslException(msg);
+            }
+            log.info("indicator query to run: " + getKPIWholeYear);
+            List<IndicatorValue> kpiList = new ArrayList();
+            Database db = new Database();
+            ResultSet rs = db.executeQuery(getKPIWholeYear);
+            log.info("Fetching KPI values");
+
+            try {
+                Map<String, Map> result;
+                result = preparePayload(pe, ouid, id, rs);
+                envelop.put("result", result);
+                cache.put(new Element(pe + ouid + id, envelop));
+                return envelop;
+            } catch (SQLException ex) {
+                log.error(ex);
+            } finally {
+                db.CloseConnection();
+            }
+            cache.put(new Element(pe + ouid + id, envelop));
             return envelop;
-        } catch (SQLException ex) {
-            log.error(ex);
-        } finally {
-            db.CloseConnection();
+        } else {
+            long startTime = System.nanoTime();
+            envelop = (Map<String, Map>) ele.getObjectValue();
+            long endTime = System.nanoTime();
+            log.info("Time taken to fetch data from cache " + (endTime - startTime) / 1000000);
+            return envelop;
         }
-        return envelop;
     }
 
     public List<Indicator> getIndicatorsByGroup(int groupId) throws DslException {

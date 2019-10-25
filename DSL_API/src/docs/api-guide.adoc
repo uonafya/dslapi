@@ -13,7 +13,11 @@
 
 This DSL Web API is provided in a RESTful architectural style. It supports one HTTP method, the GET method, as the resources exposed are read only, providing historical facts in the health space.
 
-Resources exposed from the API are the National human resource capacity, health key perfomance indicators, data from the kenya health master facility list.
+Resources exposed from the API are the National human resource capacity, health key perfomance indicators, data from the Kenya health master facility list.
+
+*References*
+
+$servername is the host server address. This currently resolves to 41.89.94.105
 // ======================DHIS============================>>>
 // ======================DHIS============================>>>
 

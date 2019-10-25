@@ -52,7 +52,7 @@ public class KhmflApisDocumentationTest {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(this.context).alwaysDo(document("{method-name}",
                 preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint()))).apply(documentationConfiguration(this.restDocumentation).uris()
                 .withScheme("http")
-                .withHost("41.89.94.105/dsl/api")
+                .withHost("servername/dsl/api")
                 .withPort(80))
                 .build();
     }
