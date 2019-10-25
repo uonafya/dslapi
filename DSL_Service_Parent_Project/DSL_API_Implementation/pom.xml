@@ -4,11 +4,11 @@
     <parent>
         <groupId>com.healthit</groupId>
         <artifactId>DSL_Service</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0</version>
     </parent>
     <groupId>com.healthit</groupId>
     <artifactId>DSL_API_Implementation</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     <packaging>jar</packaging>
     <properties>
         <maven.compiler.source>1.8</maven.compiler.source>
@@ -73,12 +73,12 @@
         <dependency>
             <groupId>com.healthit</groupId>
             <artifactId>DSL_JDBC_Service</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>com.healthit</groupId>
             <artifactId>DSL_System_Support</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>org.springframework</groupId>
