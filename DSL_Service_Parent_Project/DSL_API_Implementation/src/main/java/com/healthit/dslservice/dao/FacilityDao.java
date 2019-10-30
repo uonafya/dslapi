@@ -20,7 +20,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Element;
 import org.apache.log4j.Logger;
@@ -36,6 +38,11 @@ public class FacilityDao {
 
     private String getALlFaciltiesByType = "Select dhis_organisation_unit_id as id,dhis_organisation_unit_name as name,parentid from"
             + " common_organisation_unit commorg inner join facilities_facility ff on ff.code=commorg.dhis_organisation_unit_id where level='facility' and ff.facilitytype_sk=? order by name desc";
+    
+    private String getAllFaciltiesCountByType = "Select count(*),ft.\"name\" from common_organisation_unit commorg inner join\n" +
+                                                "facilities_facility ff on ff.code=commorg.dhis_organisation_unit_id \n" +
+                                                "inner join facilities_facilitytype ft  on ff.facilitytype_sk=ft.facilitytype_sk\n" +
+                                                "where level='facility' group by ft.facilitytype_sk;";
     
     private String getFaciltiesByLevels = "Select dhis_organisation_unit_id as id,dhis_organisation_unit_name as name,parentid from"
             + " common_organisation_unit commorg inner join facilities_facility ff on ff.code=commorg.dhis_organisation_unit_id where level='facility' and ff.kephlevel_sk=? order by name desc";
@@ -188,6 +195,43 @@ public class FacilityDao {
         return facilityTypeList;
     }
 
+    
+    public Map<String,Integer> getAllFacilitiesByType() throws DslException {
+        log.info("Fetching facilities by type");
+        Element ele = cache.get("AllfaclitiesByType");
+        Map facilityCount=new HashMap();
+        if (ele == null) {
+            long startTime = System.nanoTime();
+            Database db = new Database();
+            try {
+                Connection conn = db.getConn();
+                PreparedStatement ps = conn.prepareStatement(getAllFaciltiesCountByType);
+                ResultSet rs = ps.executeQuery();
+                while (rs.next()) {
+                    facilityCount.put(rs.getString("name"), rs.getString("count"));
+                }
+                cache.put(new Element("AllfaclitiesByType", facilityCount));
+
+            } catch (SQLException ex) {
+                log.error(ex);
+                Message msg = new Message();
+                msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+                msg.setMesageContent(ex.getMessage());
+                throw new DslException(msg);
+            } finally {
+                db.CloseConnection();
+            }
+            long endTime = System.nanoTime();
+            log.info("Time taken to fetch data " + (endTime - startTime) / 1000000);
+        } else {
+            long startTime = System.nanoTime();
+            facilityCount = (Map<String,Integer>) ele.getObjectValue();
+            long endTime = System.nanoTime();
+            log.info("Time taken to fetch data from cache " + (endTime - startTime) / 1000000);
+        }
+        return facilityCount;
+    }
+    
     public List<Facility> getFacilitiesByType(int typeId) throws DslException {
         List<Facility> facilityList = new ArrayList();
         log.info("Fetching facilities by type");

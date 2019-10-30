@@ -12,6 +12,7 @@ import com.healthit.dslservice.dto.kmfl.FacilityLevel;
 import com.healthit.dslservice.dto.kmfl.FacilityType;
 import com.healthit.dslservice.message.Message;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.springframework.http.HttpStatus;
@@ -112,6 +113,24 @@ public class Kmfl {
             FacilityDao facilityDao = new FacilityDao();
             List<Facility> facilityList = facilityDao.getFacilitiesByType(facilityTypeId);
             return new ResponseEntity<List>(facilityList, HttpStatus.OK);
+        } catch (DslException ex) {
+            return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
+            log.error("unknow request " + e);
+            return new ResponseEntity<String>("Unknown request", HttpStatus.BAD_REQUEST);
+        }
+
+    }
+    
+    @CrossOrigin
+    @ResponseBody
+    @RequestMapping(value = "/facilitytype/all", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getAllFacilitiesByType() {
+        System.out.println("by group");
+        try {
+            FacilityDao facilityDao = new FacilityDao();
+            Map<String,Integer> facilityList = facilityDao.getAllFacilitiesByType();
+            return new ResponseEntity<Map<String,Integer>>(facilityList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (Exception e) {
