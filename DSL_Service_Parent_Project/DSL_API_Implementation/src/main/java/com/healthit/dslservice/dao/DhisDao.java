@@ -27,8 +27,15 @@ import java.util.List;
 import java.util.Map;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Element;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.ClientResponse;
+import com.sun.jersey.api.client.WebResource;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+import java.util.logging.Level;
+import javax.ws.rs.core.MediaType;
 import org.apache.log4j.Logger;
-//import org.springframework.stereotype.Component;
 
 /**
  *
@@ -183,6 +190,62 @@ public class DhisDao {
         return indicatorList;
     }
 
+    public Map<String, Map> predict(String indicatorid,String ouid,String periodtype,String periodspan){
+        Properties prop = new Properties();
+                
+        String propFileName = "settings.properties";
+
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream(propFileName);
+
+        if (inputStream != null) {
+            try {
+                prop.load(inputStream);
+            } catch (IOException ex) {
+                java.util.logging.Logger.getLogger(DhisDao.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            log.error("property file '" + propFileName + "' not found in the classpath");
+        }
+        
+        String host = prop.getProperty("predictor_host");
+        String predictor_port = prop.getProperty("predictor_port");
+        
+        
+        Map<String, Map> result = new HashMap();
+        try {
+            
+            Client client = Client.create();
+            if(ouid == null || ouid.isEmpty()) ouid="18";
+            String predictor_url = "http://"+host+":"+predictor_port+"/forecast/"+indicatorid+"?ouid="+ouid;
+            if(periodtype != null && !periodtype.isEmpty()) predictor_url=predictor_url+"&periodtype="+periodtype;
+            if(periodspan != null && !periodspan.isEmpty()) periodspan=predictor_url+"&periodspan="+periodspan;
+            //verse_url=URLEncoder.encode(verse_url, "UTF-8");
+            log.info("The url: " + predictor_url);
+            WebResource webResource = client
+                    .resource(predictor_url);
+
+            ClientResponse response = webResource.accept(MediaType.APPLICATION_XML)
+                    .get(ClientResponse.class);
+
+            if (response.getStatus() != 200) {
+                log.error("Failed to predict data : "
+                        + response.getStatus()+ ":" +response.toString()+ " : "+response.getEntity(String.class));
+                throw new RuntimeException();
+            }
+
+            String output = response.getEntity(String.class);
+
+            log.info("Output from Server .... \n");
+            log.info(output);
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+
+        }
+        return result;
+    }
+    
     private Map<String, Map> preparePayload(String pe, String ouid, String id, ResultSet rs) throws SQLException {
         Map<String, Map> result = new HashMap();
         Map<String, Object> dictionary = new HashMap();

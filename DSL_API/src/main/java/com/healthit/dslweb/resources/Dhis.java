@@ -119,4 +119,21 @@ public class Dhis {
 
     }
 
+    @CrossOrigin
+    @ResponseBody
+    @RequestMapping(value = "/forecast/{indicatorid}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> forecast(
+            @RequestParam(value = "periodspan", required = false) String periodSpan,
+            @RequestParam(value = "periodtype", required = false) String periodType,
+            @RequestParam(value = "ouid", required = false) String ouid,
+            @PathVariable("indicatorid") String indicatorId
+    ) {
+        
+        DhisDao dhisDao = new DhisDao();
+        log.info("indicators without filter");
+        Map<String, Map> predictedData = dhisDao.predict(indicatorId, ouid, periodType, periodSpan);
+        return new ResponseEntity<Map<String, Map>>(predictedData, HttpStatus.OK);
+
+    }
+
 }
