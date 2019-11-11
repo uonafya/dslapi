@@ -129,10 +129,14 @@ public class Dhis {
             @PathVariable("indicatorid") String indicatorId
     ) {
         
-        DhisDao dhisDao = new DhisDao();
-        log.info("indicators without filter");
-        Map<String, Map> predictedData = dhisDao.predict(indicatorId, ouid, periodType, periodSpan);
-        return new ResponseEntity<Map<String, Map>>(predictedData, HttpStatus.OK);
+        try {
+            DhisDao dhisDao = new DhisDao();
+            log.info("indicators without filter");
+            Map<String, Map> predictedData = dhisDao.predict(indicatorId, ouid, periodType, periodSpan);
+            return new ResponseEntity<Map<String, Map>>(predictedData, HttpStatus.OK);
+        } catch (DslException ex) {
+            return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
     }
 

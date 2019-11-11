@@ -5,6 +5,7 @@
  */
 package com.healthit.dslservice.dao;
 
+import com.google.gson.Gson;
 import com.healthit.dslservice.DslException;
 import com.healthit.dslservice.dto.dhis.Indicator;
 import com.healthit.dslservice.dto.dhis.IndicatorGoup;
@@ -204,7 +205,7 @@ public class DhisDao {
             peSpan = "2";
         }
         
-        Map<String, Map> result = new HashMap();
+       
         Map<String, Object> dictionary = new HashMap();
         List<Map> orgUnits = new ArrayList();
         List<Map> indicators = new ArrayList();
@@ -219,7 +220,7 @@ public class DhisDao {
         paramsList.add(ouidParam);
 
         Database db = new Database();
-        ResultSet rs = db.executeQuery(getOrgUnit, paramsList);
+        
         if (ouid == "18") {
             Map<String, Object> orgUnitMetadata = new HashMap();
             orgUnitMetadata.put("id", ouid);
@@ -228,12 +229,15 @@ public class DhisDao {
             addedOuid.add(ouid);
 
         } else {
+            //private String getOrgUnit = "select dhis_organisation_unit_name as name,dhis_organisation_unit_id as id from common_organisation_unit where dhis_organisation_unit_id=?";
+
+            ResultSet rs = db.executeQuery(getOrgUnit, paramsList);
             while (rs.next()) {
                 Map<String, Object> orgUnitMetadata = new HashMap();
                 String _ouid = rs.getString("id");
                 if (!addedOuid.contains(_ouid)) {
-                    orgUnitMetadata.put("id", rs.getString("ouid"));
-                    orgUnitMetadata.put("name", rs.getString("ouname"));
+                    orgUnitMetadata.put("id", rs.getString("id"));
+                    orgUnitMetadata.put("name", rs.getString("name"));
                     orgUnits.add(orgUnitMetadata);
                     addedOuid.add(_ouid);
                 }
@@ -285,18 +289,24 @@ public class DhisDao {
         dictionary.put("orgunits", orgUnits);
         dictionary.put("indicators", indicators);
         dictionary.put("parameters", parameters);
-
-        result.put("dictionary", dictionary);
-        
+        db.CloseConnection();
         return dictionary;
     }
 
-    public Map<String, Map> predict(String indicatorid, String ouid, String periodtype, String periodspan) {
+    public Map<String, Map> predict(String indicatorid, String ouid, String periodtype, String periodspan) throws DslException {
         Properties prop = new Properties();
+        Map<String, Object> dictionary=null;
+        Map<String, Map> result = new HashMap();
+        Map<String, List> prdictData = new HashMap();
+                
         try {
-            Map<String, Object> getDictionary=getDictionary(periodspan, periodtype, ouid, indicatorid);
-        } catch (SQLException ex) {
-            java.util.logging.Logger.getLogger(DhisDao.class.getName()).log(Level.SEVERE, null, ex);
+            dictionary=getDictionary(periodspan, periodtype, ouid, indicatorid);
+        } catch (SQLException  | NumberFormatException ex) {
+            log.error(ex);
+            Message msg = new Message();
+            msg.setMesageContent(ex.getMessage());
+            msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+            throw new DslException(msg);
         }
         String propFileName = "settings.properties";
 
@@ -315,7 +325,7 @@ public class DhisDao {
         String host = prop.getProperty("predictor_host");
         String predictor_port = prop.getProperty("predictor_port");
 
-        Map<String, Map> result = new HashMap();
+         
         try {
 
             Client client = Client.create();
@@ -323,11 +333,12 @@ public class DhisDao {
                 ouid = "18";
             }
             String predictor_url = "http://" + host + ":" + predictor_port + "/forecast/" + indicatorid + "?ouid=" + ouid;
-            if (periodtype != null && !periodtype.isEmpty()) {
+            if (periodtype != null || !periodtype.isEmpty()) {
                 predictor_url = predictor_url + "&periodtype=" + periodtype;
             }
-            if (periodspan != null && !periodspan.isEmpty()) {
-                periodspan = predictor_url + "&periodspan=" + periodspan;
+            
+            if (periodspan != null || !periodspan.isEmpty()) {
+                predictor_url = predictor_url + "&periodspan=" + periodspan;
             }
             //verse_url=URLEncoder.encode(verse_url, "UTF-8");
             log.info("The url: " + predictor_url);
@@ -343,18 +354,24 @@ public class DhisDao {
                 throw new RuntimeException();
             }
 
-            Map dataMap = response.getEntity(Map.class);
+//            Map dataMap = response.getEntity(Map.class);
+            Gson gson = new Gson();
             String output = response.getEntity(String.class);
+            prdictData = gson.fromJson(output, Map.class);
+            
 
             log.info("Output from Server .... \n");
-            log.info(output);
+            log.info(prdictData);
 
         } catch (Exception e) {
-
-            e.printStackTrace();
-
+            log.error(e);
         }
-        return result;
+        result.put("dictionary", dictionary);
+        result.put("data", prdictData);
+        
+        Map<String, Map> envelop = new HashMap();
+        envelop.put("result", result);
+        return envelop;
     }
 
     private Map<String, Map> preparePayload(String pe, String ouid, String id, ResultSet rs) throws SQLException {
