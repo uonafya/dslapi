@@ -63,6 +63,9 @@ public class DhisDao {
             + " group by year,month,\"Indicator name\",\"Indicator description\",kpivalue,\"Org unit id\",ouname,id,_datecreated, lastupdated"
             + " order by month ";
 
+    private String getOrgUnit = "select dhis_organisation_unit_name as name,dhis_organisation_unit_id as id from common_organisation_unit where dhis_organisation_unit_id=?";
+    private String getIndicatorData = "select indicatorid as id, indicatorname as name, lastupdated, _datecreated, description from dim_dhis_indicator where indicatorid=?";
+
     private Map<String, String> groupTable = new HashMap();
 
     Cache cache = DslCache.getCache();
@@ -190,9 +193,111 @@ public class DhisDao {
         return indicatorList;
     }
 
-    public Map<String, Map> predict(String indicatorid,String ouid,String periodtype,String periodspan){
+    private Map<String, Object> getDictionary(String peSpan, String peType, String ouid, String id) throws SQLException {
+        if (ouid == null) {
+            ouid = "18";
+        }
+        if (peType == null) {
+            peType = "yearly";
+        }
+        if (peSpan == null) {
+            peSpan = "2";
+        }
+        
+        Map<String, Map> result = new HashMap();
+        Map<String, Object> dictionary = new HashMap();
+        List<Map> orgUnits = new ArrayList();
+        List<Map> indicators = new ArrayList();
+        Map<String, Object> parameters = new HashMap();
+        List<String> addedOuid = new ArrayList();
+        List<String> addedIndicators = new ArrayList();
+
+        List paramsList = new ArrayList();
+        Map<String, String> ouidParam = new HashMap();
+        ouidParam.put("value", ouid);
+        ouidParam.put("type", "integer");
+        paramsList.add(ouidParam);
+
+        Database db = new Database();
+        ResultSet rs = db.executeQuery(getOrgUnit, paramsList);
+        if (ouid == "18") {
+            Map<String, Object> orgUnitMetadata = new HashMap();
+            orgUnitMetadata.put("id", ouid);
+            orgUnitMetadata.put("name", "Kenya");
+            orgUnits.add(orgUnitMetadata);
+            addedOuid.add(ouid);
+
+        } else {
+            while (rs.next()) {
+                Map<String, Object> orgUnitMetadata = new HashMap();
+                String _ouid = rs.getString("id");
+                if (!addedOuid.contains(_ouid)) {
+                    orgUnitMetadata.put("id", rs.getString("ouid"));
+                    orgUnitMetadata.put("name", rs.getString("ouname"));
+                    orgUnits.add(orgUnitMetadata);
+                    addedOuid.add(_ouid);
+                }
+            }
+        }
+
+        List<String> periodsParams = new ArrayList();
+        periodsParams.add(peSpan);
+        parameters.put("periodspan", periodsParams);
+
+        List<String> locationParams = new ArrayList();
+        locationParams.add(ouid);
+        parameters.put("location", locationParams);
+
+        List<String> indicatorParams = new ArrayList();
+        indicatorParams.add(id);
+        parameters.put("indicators", indicatorParams);
+
+        List<String> periodsType = new ArrayList();
+        periodsType.add(peType);
+        parameters.put("periodtype", periodsType);
+
+        paramsList = new ArrayList();
+        Map<String, String> indicaParam = new HashMap();
+        indicaParam.put("value", id);
+        indicaParam.put("type", "integer");
+        paramsList.add(indicaParam);
+        ResultSet indicatorRs = db.executeQuery(getIndicatorData, paramsList);
+
+        while (indicatorRs.next()) {
+
+            String _ouid = indicatorRs.getString("id");
+
+            Map<String, Object> indicatorMetadata = new HashMap();
+            String _indicatorId = indicatorRs.getString("id");
+            if (!addedIndicators.contains(_indicatorId)) {
+                indicatorMetadata.put("id", _indicatorId);
+                indicatorMetadata.put("name", indicatorRs.getString("name"));
+                indicatorMetadata.put("last_updated", indicatorRs.getString("lastupdated"));
+                indicatorMetadata.put("date_created", indicatorRs.getString("_datecreated"));
+                indicatorMetadata.put("description", indicatorRs.getString("description"));
+                indicatorMetadata.put("source", "KHIS");
+                indicators.add(indicatorMetadata);
+                addedIndicators.add(_ouid);
+            }
+
+        }
+
+        dictionary.put("orgunits", orgUnits);
+        dictionary.put("indicators", indicators);
+        dictionary.put("parameters", parameters);
+
+        result.put("dictionary", dictionary);
+        
+        return dictionary;
+    }
+
+    public Map<String, Map> predict(String indicatorid, String ouid, String periodtype, String periodspan) {
         Properties prop = new Properties();
-                
+        try {
+            Map<String, Object> getDictionary=getDictionary(periodspan, periodtype, ouid, indicatorid);
+        } catch (SQLException ex) {
+            java.util.logging.Logger.getLogger(DhisDao.class.getName()).log(Level.SEVERE, null, ex);
+        }
         String propFileName = "settings.properties";
 
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream(propFileName);
@@ -206,19 +311,24 @@ public class DhisDao {
         } else {
             log.error("property file '" + propFileName + "' not found in the classpath");
         }
-        
+
         String host = prop.getProperty("predictor_host");
         String predictor_port = prop.getProperty("predictor_port");
-        
-        
+
         Map<String, Map> result = new HashMap();
         try {
-            
+
             Client client = Client.create();
-            if(ouid == null || ouid.isEmpty()) ouid="18";
-            String predictor_url = "http://"+host+":"+predictor_port+"/forecast/"+indicatorid+"?ouid="+ouid;
-            if(periodtype != null && !periodtype.isEmpty()) predictor_url=predictor_url+"&periodtype="+periodtype;
-            if(periodspan != null && !periodspan.isEmpty()) periodspan=predictor_url+"&periodspan="+periodspan;
+            if (ouid == null || ouid.isEmpty()) {
+                ouid = "18";
+            }
+            String predictor_url = "http://" + host + ":" + predictor_port + "/forecast/" + indicatorid + "?ouid=" + ouid;
+            if (periodtype != null && !periodtype.isEmpty()) {
+                predictor_url = predictor_url + "&periodtype=" + periodtype;
+            }
+            if (periodspan != null && !periodspan.isEmpty()) {
+                periodspan = predictor_url + "&periodspan=" + periodspan;
+            }
             //verse_url=URLEncoder.encode(verse_url, "UTF-8");
             log.info("The url: " + predictor_url);
             WebResource webResource = client
@@ -229,10 +339,11 @@ public class DhisDao {
 
             if (response.getStatus() != 200) {
                 log.error("Failed to predict data : "
-                        + response.getStatus()+ ":" +response.toString()+ " : "+response.getEntity(String.class));
+                        + response.getStatus() + ":" + response.toString() + " : " + response.getEntity(String.class));
                 throw new RuntimeException();
             }
 
+            Map dataMap = response.getEntity(Map.class);
             String output = response.getEntity(String.class);
 
             log.info("Output from Server .... \n");
@@ -245,7 +356,7 @@ public class DhisDao {
         }
         return result;
     }
-    
+
     private Map<String, Map> preparePayload(String pe, String ouid, String id, ResultSet rs) throws SQLException {
         Map<String, Map> result = new HashMap();
         Map<String, Object> dictionary = new HashMap();
