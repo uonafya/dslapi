@@ -1,5 +1,6 @@
 package com.healthit.dslweb.service;
 
+import com.healthit.dslservice.DslException;
 import com.healthit.dslservice.util.DslCache;
 import com.healthit.dslservice.util.PropertiesLoader;
 import com.healthit.dslservice.util.RequestEntity;
@@ -22,7 +23,7 @@ import net.sf.ehcache.Element;
 public class QueryProcessor {
 
 
-    public String prepareResponse(Map pBody) {
+    public String prepareResponse(Map pBody) throws DslException {
 
         QueryInterpreter queryInterpreterObj = new QueryInterpreter();
         JSONObject jsonObj = new JSONObject(pBody);

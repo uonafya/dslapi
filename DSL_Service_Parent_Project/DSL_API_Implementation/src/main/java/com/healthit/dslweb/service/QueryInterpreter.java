@@ -44,7 +44,7 @@ public class QueryInterpreter {
      * string
      * @return generated sql string to run
      */
-    public Map<String, List<Object>> interpretQuery(JSONArray array) {
+    public Map<String, List<Object>> interpretQuery(JSONArray array) throws DslException {
         JSONArray _httpJsonArray = array; //original array placeholder
         array = addFilterLevelsToMainQueryAttributes(array);
         List<Map<String, Object>> queriesToRun = new ArrayList();
@@ -361,7 +361,7 @@ public class QueryInterpreter {
         return wrapperMap;
     }
 
-    public Map<String, List<Object>> runSqlQuery(String sqlQuery) {
+    public Map<String, List<Object>> runSqlQuery(String sqlQuery) throws DslException {
         Database db = new Database();
         List<List> reslts1 = null;
         Map<String, List<Object>> wrapperMap = null;

@@ -194,7 +194,7 @@ public class DhisDao {
         return indicatorList;
     }
 
-    private Map<String, Object> getDictionary(String peSpan, String peType, String ouid, String id) throws SQLException {
+    private Map<String, Object> getDictionary(String peSpan, String peType, String ouid, String id) throws SQLException, DslException {
         if (ouid == null) {
             ouid = "18";
         }

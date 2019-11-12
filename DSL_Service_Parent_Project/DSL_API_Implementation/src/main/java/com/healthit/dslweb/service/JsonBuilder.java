@@ -5,6 +5,7 @@
  */
 package com.healthit.dslweb.service;
 
+import com.healthit.dslservice.DslException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -116,7 +117,7 @@ public class JsonBuilder {
     }
 
 // set the required data here
-    public void init() {
+    public void init() throws DslException {
         JsonBuilder jsonBuilder = new JsonBuilder();
         String indicatorName = "HIV+ test rate - PMTCT -ANC";
         String indicatorType = "indicator:average:with_filter";
