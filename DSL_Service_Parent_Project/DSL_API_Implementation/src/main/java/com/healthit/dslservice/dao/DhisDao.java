@@ -220,7 +220,7 @@ public class DhisDao {
 
         Database db = new Database();
 
-        if (ouid == "18") {
+        if (ouid.equals("18")) {
             Map<String, Object> orgUnitMetadata = new HashMap();
             orgUnitMetadata.put("id", ouid);
             orgUnitMetadata.put("name", "Kenya");

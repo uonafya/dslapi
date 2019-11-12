@@ -1,5 +1,6 @@
 package com.healthit.dslweb.resources;
 
+import com.google.gson.Gson;
 import com.healthit.dslservice.DslException;
 import com.healthit.dslservice.dao.DhisDao;
 import com.healthit.dslservice.dao.FacilityDao;
@@ -12,6 +13,8 @@ import com.healthit.dslservice.dto.ihris.Cadre;
 import com.healthit.dslservice.dto.ihris.CadreGroup;
 import com.healthit.dslservice.message.Message;
 import com.healthit.dslweb.service.JsonBuilder;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -127,8 +130,13 @@ public class Dhis {
             @RequestParam(value = "periodtype", required = false) String periodType,
             @RequestParam(value = "ouid", required = false) String ouid,
             @PathVariable("indicatorid") String indicatorId
-    ) {
-        
+    ) { 
+        //for documentation pourpose
+        if(periodSpan!=null || periodType!=null){
+            if(periodSpan.trim().equals("x") || periodSpan.trim().equals("x")){
+                return forecastDummy();
+            }
+        }
         try {
             DhisDao dhisDao = new DhisDao();
             log.info("indicators without filter");
@@ -137,6 +145,26 @@ public class Dhis {
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+
+    }
+   
+    /**
+     * This method is for documentation pourpose for predefined data returned by predictorr
+     * @param periodSpan
+     * @param periodType
+     * @param ouid
+     * @param indicatorId
+     * @return 
+     */
+
+    private ResponseEntity<?> forecastDummy() {
+        Gson gson = new Gson();
+        BufferedReader br = new BufferedReader(new InputStreamReader(
+                           this.getClass().getResourceAsStream("/predict.json")));
+        Map results=gson.fromJson(br, Map.class);
+        log.info("got data =====> ");
+        log.info(results);
+        return new ResponseEntity<Map<String, Map>>(results, HttpStatus.OK);
 
     }
 

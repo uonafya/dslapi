@@ -490,3 +490,32 @@ include::{snippets}/test-counties-returned-api-call/http-response.adoc[]
 === Response fields definition
 include::{snippets}/test-counties-returned-api-call/response-fields.adoc[]
 // ==================================================>>>
+
+// ==================================================>>>
+
+== Get indicator projections and time series data
+Request for indicator projections and timeseries data. 
+In this senario, periodtype (defined as x) is set to yearly where as
+The periodspan (defined as x too) is set to 12
+
+=== Curl Request
+include::{snippets}/test-predictor/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-predictor/http-request.adoc[]
+
+=== Request parameters definition
+include::{snippets}/test-predictor/request-parameters.adoc[]
+
+=== Path parameter definition
+include::{snippets}/test-predictor/path-parameters.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-predictor/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-predictor/response-fields.adoc[]
+
+// ==================================================>>>
