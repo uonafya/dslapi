@@ -204,8 +204,7 @@ public class DhisDao {
         if (peSpan == null) {
             peSpan = "2";
         }
-        
-       
+
         Map<String, Object> dictionary = new HashMap();
         List<Map> orgUnits = new ArrayList();
         List<Map> indicators = new ArrayList();
@@ -220,7 +219,7 @@ public class DhisDao {
         paramsList.add(ouidParam);
 
         Database db = new Database();
-        
+
         if (ouid == "18") {
             Map<String, Object> orgUnitMetadata = new HashMap();
             orgUnitMetadata.put("id", ouid);
@@ -295,13 +294,13 @@ public class DhisDao {
 
     public Map<String, Map> predict(String indicatorid, String ouid, String periodtype, String periodspan) throws DslException {
         Properties prop = new Properties();
-        Map<String, Object> dictionary=null;
+        Map<String, Object> dictionary = null;
         Map<String, Map> result = new HashMap();
         Map<String, List> prdictData = new HashMap();
-                
+        log.info("get preictor dictionary");
         try {
-            dictionary=getDictionary(periodspan, periodtype, ouid, indicatorid);
-        } catch (SQLException  | NumberFormatException ex) {
+            dictionary = getDictionary(periodspan, periodtype, ouid, indicatorid);
+        } catch (SQLException | NumberFormatException ex) {
             log.error(ex);
             Message msg = new Message();
             msg.setMesageContent(ex.getMessage());
@@ -309,7 +308,7 @@ public class DhisDao {
             throw new DslException(msg);
         }
         String propFileName = "settings.properties";
-
+        log.info("get preictor server url settings");
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream(propFileName);
 
         if (inputStream != null) {
@@ -325,20 +324,25 @@ public class DhisDao {
         String host = prop.getProperty("predictor_host");
         String predictor_port = prop.getProperty("predictor_port");
 
-         
+        log.info("connect to predictor server");
         try {
-
+            log.debug("predictor server client instance");
             Client client = Client.create();
+            log.debug("ouid: " + ouid + " periodspan: " + periodspan);
             if (ouid == null || ouid.isEmpty()) {
                 ouid = "18";
             }
             String predictor_url = "http://" + host + ":" + predictor_port + "/forecast/" + indicatorid + "?ouid=" + ouid;
-            if (periodtype != null || !periodtype.isEmpty()) {
-                predictor_url = predictor_url + "&periodtype=" + periodtype;
+            if (periodtype != null) {
+                if (!periodtype.isEmpty()) {
+                    predictor_url = predictor_url + "&periodtype=" + periodtype;
+                }
             }
-            
-            if (periodspan != null || !periodspan.isEmpty()) {
-                predictor_url = predictor_url + "&periodspan=" + periodspan;
+
+            if (periodspan != null) {
+                if (!periodspan.isEmpty()) {
+                    predictor_url = predictor_url + "&periodspan=" + periodspan;
+                }
             }
             //verse_url=URLEncoder.encode(verse_url, "UTF-8");
             log.info("The url: " + predictor_url);
@@ -358,7 +362,6 @@ public class DhisDao {
             Gson gson = new Gson();
             String output = response.getEntity(String.class);
             prdictData = gson.fromJson(output, Map.class);
-            
 
             log.info("Output from Server .... \n");
             log.info(prdictData);
@@ -368,7 +371,7 @@ public class DhisDao {
         }
         result.put("dictionary", dictionary);
         result.put("data", prdictData);
-        
+
         Map<String, Map> envelop = new HashMap();
         envelop.put("result", result);
         return envelop;
