@@ -295,7 +295,7 @@ public class DhisDao {
     public Map<String, Map> predict(String indicatorid, String ouid, String periodtype, String periodspan) throws DslException {
         Properties prop = new Properties();
         Map<String, Object> dictionary = null;
-        Map<String, Map> result = new HashMap();
+        Map<String, Object> result = new HashMap();
         Map<String, List> prdictData = new HashMap();
         log.info("get preictor dictionary");
         try {
@@ -370,7 +370,7 @@ public class DhisDao {
             log.error(e);
         }
         result.put("dictionary", dictionary);
-        result.put("data", prdictData);
+        result.put("data", prdictData.get("data"));
 
         Map<String, Map> envelop = new HashMap();
         envelop.put("result", result);
