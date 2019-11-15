@@ -619,7 +619,7 @@ public class DhisDao {
                 Map<String, Map> result;
                 result = preparePayload(pe, ouid, id, rs);
                 envelop.put("result", result);
-                cache.put(new Element(pe + ouid + id, envelop));
+                cache.put(new Element(pe + ouid + id + level, envelop));
                 return envelop;
             } catch (SQLException ex) {
                 log.error(ex);
