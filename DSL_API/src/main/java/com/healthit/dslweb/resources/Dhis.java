@@ -55,7 +55,7 @@ public class Dhis {
                     || ouid != null
                     || id != null) {
                 log.info("indicators without filter");
-                Map<String, Map> indicatorValue = dhisDao.getKPIValue(pe, ouid, id);
+                Map<String, Map> indicatorValue = dhisDao.getKPIValue(pe, ouid, id,null);
                 log.debug(indicatorValue);
                 return new ResponseEntity<Map<String, Map>>(indicatorValue, HttpStatus.OK);
 
@@ -82,15 +82,16 @@ public class Dhis {
     @CrossOrigin
     @ResponseBody
     @RequestMapping(value = "/indicators/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getIndicators(
+    public ResponseEntity<?> getIndicatorsByLevel(
             @RequestParam(value = "pe", required = false) String pe,
             @RequestParam(value = "ouid", required = false) String ouid,
+            @RequestParam(value = "level", required = false) String level,
             @PathVariable("id") String id
     ) {
         try {
             DhisDao dhisDao = new DhisDao();
             log.info("indicators without filter");
-            Map<String, Map> indicatorValue = dhisDao.getKPIValue(pe, ouid, id);
+            Map<String, Map> indicatorValue = dhisDao.getKPIValue(pe, ouid, id, level);
             log.debug(indicatorValue);
             return new ResponseEntity<Map<String, Map>>(indicatorValue, HttpStatus.OK);
         } catch (DslException ex) {

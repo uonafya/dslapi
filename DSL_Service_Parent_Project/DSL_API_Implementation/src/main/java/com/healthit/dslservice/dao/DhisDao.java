@@ -64,6 +64,7 @@ public class DhisDao {
             + " group by year,month,\"Indicator name\",\"Indicator description\",kpivalue,\"Org unit id\",ouname,id,_datecreated, lastupdated"
             + " order by month ";
 
+    private String getOrgUnitLevelQry = "Select hierarchylevel from common_organisation_unit where dhis_organisation_unit_id=?";
     private String getOrgUnit = "select dhis_organisation_unit_name as name,dhis_organisation_unit_id as id from common_organisation_unit where dhis_organisation_unit_id=?";
     private String getIndicatorData = "select indicatorid as id, indicatorname as name, lastupdated, _datecreated, description from dim_dhis_indicator where indicatorid=?";
 
@@ -118,6 +119,110 @@ public class DhisDao {
         sqlString = sqlString.replace("@ouid@", replacement);
 
         return sqlString;
+    }
+
+    /**
+     *
+     * @param ou organisation unit id from http request
+     * @return qeuery string appended with org unit patameter
+     * @throws DslException
+     */
+    private String insertOrgUntiPartByLevel(String ouid, String level, String sqlString) throws DslException {
+        Database db = new Database();
+        List paramsList = new ArrayList();
+        Map params = new HashMap();
+        params.put("type", "integer");
+        params.put("value", ouid);
+        paramsList.add(params);
+        ResultSet rs = db.executeQuery(getOrgUnitLevelQry, paramsList);
+        int orgLevel = 1;
+        try {
+            while (rs.next()) {
+                orgLevel = rs.getInt("hierarchylevel");
+            }
+        } catch (SQLException ex) {
+            Message msg = new Message();
+            msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+            msg.setMesageContent(ex.getMessage());
+            throw new DslException(msg);
+        }
+        try {
+            Integer.parseInt(level);
+
+        } catch (Exception ex) {
+            Message msg = new Message();
+            msg.setMessageType(MessageType.NUMBER_FORMAT_ERROR);
+            msg.setMesageContent(ex.getMessage());
+            throw new DslException(msg);
+        }
+
+        if (orgLevel == Integer.parseInt(level)) { //if equal no need to drill down
+            return insertOrgUntiPart(ouid, sqlString);
+        }
+        if (orgLevel > Integer.parseInt(level)) {
+
+            Message msg = new Message();
+            msg.setMessageType(MessageType.ORGUNIT_LEVEL);
+            msg.setMesageContent("Level should be below given orgunit requested");
+            throw new DslException(msg);
+        }
+
+        int levelToDrill = Integer.parseInt(level)-orgLevel;
+        log.debug("levels ========>");
+        log.debug(Integer.parseInt(level));
+        log.debug(orgLevel);
+        log.debug(levelToDrill);
+        String replacement;
+        String innerSelect = "select \"Org unit id\" from vw_mohdsl_dhis_indicators where parentid";
+        switch (levelToDrill) {
+            case 1:
+
+                if (appendAnd) {
+                    replacement = " and \"Org unit id\" in (" + innerSelect + "=@ouid@) ".replaceAll("@ouid@", ouid);
+                } else {
+                    replacement = " \"Org unit id\" in (" + innerSelect + "=@ouid@) ".replaceAll("@ouid@", ouid);
+                    appendAnd = true;
+                }
+                sqlString = sqlString.replace("@ouid@", replacement);
+
+                return sqlString;
+
+            case 2:
+                if (appendAnd) {
+                    replacement = " and \"Org unit id\" in (" + innerSelect + " in( " + innerSelect + "=@ouid@) ) ".replaceAll("@ouid@", ouid);
+                } else {
+                    replacement = " \"Org unit id\" in (" + innerSelect + " in( " + innerSelect + "=@ouid@) ) ".replaceAll("@ouid@", ouid);
+                    appendAnd = true;
+                }
+                sqlString = sqlString.replace("@ouid@", replacement);
+
+                return sqlString;
+
+            case 3:
+                if (appendAnd) {
+                    replacement = " and \"Org unit id\" in (" + innerSelect + " in( " + innerSelect + " in(" + innerSelect + "=@ouid@)) ) ".replaceAll("@ouid@", ouid);
+                } else {
+                    replacement = " \"Org unit id\" in (" + innerSelect + " in( " + innerSelect + " in(" + innerSelect + "=@ouid@)) ) ".replaceAll("@ouid@", ouid);
+                    appendAnd = true;
+                }
+                sqlString = sqlString.replace("@ouid@", replacement);
+
+                return sqlString;
+
+            case 4:
+                if (appendAnd) {
+                    replacement = " \"Org unit id\" in (" + innerSelect + " in( " + innerSelect + " in(" + innerSelect + "in(" + innerSelect + "=@ouid@))) ) ".replaceAll("@ouid@", ouid);
+                } else {
+                    replacement = " \"Org unit id\" in (" + innerSelect + " in( " + innerSelect + " in(" + innerSelect + "in(" + innerSelect + "=@ouid@))) ) ".replaceAll("@ouid@", ouid);
+                    appendAnd = true;
+                }
+                sqlString = sqlString.replace("@ouid@", replacement);
+
+                return sqlString;
+            default:
+                return "";
+        }
+
     }
 
     /**
@@ -390,7 +495,7 @@ public class DhisDao {
         while (rs.next()) {
 
             Map<String, Object> orgUnitMetadata = new HashMap();
-            String _ouid = rs.getString("id");
+            String _ouid = rs.getString("ouid");
 
             if (!addedOuid.contains(_ouid)) {
                 orgUnitMetadata.put("id", rs.getString("ouid"));
@@ -409,7 +514,7 @@ public class DhisDao {
                 indicatorMetadata.put("description", rs.getString("description"));
                 indicatorMetadata.put("source", "KHIS");
                 indicators.add(indicatorMetadata);
-                addedIndicators.add(_ouid);
+                addedIndicators.add(_indicatorId);
             }
 
             List<String> periodsParams = new ArrayList();
@@ -429,7 +534,7 @@ public class DhisDao {
             dataValues.put("value", rs.getString("value"));
             String mnth = rs.getString("month");
             dataValues.put("period", rs.getString("year") + ((mnth.length() > 1) ? mnth : "0" + mnth)); // ensure leading 0 if month is single digit eg. 20191 > 201901
-            dataValues.put("ou", ouid);
+            dataValues.put("ou", rs.getString("ouid"));
 
             if (data.containsKey(rs.getString("id"))) {
                 indicatorList = data.get(rs.getString("id"));
@@ -453,10 +558,19 @@ public class DhisDao {
         return result;
     }
 
-    public Map<String, Map> getKPIValue(String pe, String ouid, String id) throws DslException {
+    private void appendNationalQuerySegment() {
+        if (appendAnd) {
+            getKPIWholeYear = getKPIWholeYear.replace("@ouid@", " and \"Org unit id\"=18 "); //kenya (national id ) = 18
+        } else {
+            getKPIWholeYear = getKPIWholeYear.replace("@ouid@", " \"Org unit id\"=18 "); //kenya (national id ) = 18
+            appendAnd = true;
+        }
+    }
+
+    public Map<String, Map> getKPIValue(String pe, String ouid, String id, String level) throws DslException {
         Element ele = cache.get(pe + ouid + id);
         Map<String, Map> envelop = new HashMap();
-
+        log.debug(" pe: " + pe + " ouid: " + ouid + " id: " + id + " level: " + level);
         if (ele == null) {
 
             if (pe != null) {
@@ -468,21 +582,25 @@ public class DhisDao {
                 getKPIWholeYear = insertPeriodPart(Integer.toString(currentYear), getKPIWholeYear); //current years' values
                 appendAnd = true;
             }
-
             if (ouid != null) {
-
-                getKPIWholeYear = insertOrgUntiPart(ouid, getKPIWholeYear);
+                if (level == null) {
+                    getKPIWholeYear = insertOrgUntiPart(ouid, getKPIWholeYear);
+                } else if (level == "1" && ouid == "18") {
+                    ouid = "18"; //kenya (default national id ) = 18
+                    appendNationalQuerySegment();
+                } else {
+                    getKPIWholeYear = insertOrgUntiPartByLevel(ouid, level, getKPIWholeYear);
+                    log.info(getKPIWholeYear);
+                }
             } else {
                 ouid = "18"; //kenya (default national id ) = 18
-                if (appendAnd) {
-                    getKPIWholeYear = getKPIWholeYear.replace("@ouid@", " and \"Org unit id\"=18 "); //kenya (national id ) = 18
+                if (level == "1" || level==null) {
+                    appendNationalQuerySegment();
                 } else {
-                    getKPIWholeYear = getKPIWholeYear.replace("@ouid@", " \"Org unit id\"=18 "); //kenya (national id ) = 18
-                    appendAnd = true;
+                    getKPIWholeYear = insertOrgUntiPartByLevel(ouid, level, getKPIWholeYear);
+                    log.info(getKPIWholeYear);
                 }
-
             }
-
             if (id != null) {
                 getKPIWholeYear = insertIdPart(id, getKPIWholeYear);
             } else {

@@ -90,6 +90,35 @@ include::{snippets}/test-indicators-values-returned-with-path-and-request-parame
 
 // ==================================================>>>
 
+
+// ==================================================>>>
+
+== Get indicator Values per level basis
+Requesting orgunit level wise indicator values using a HTTP path parameter; gets indicator values for level below requested orgunit
+
+=== Curl Request
+include::{snippets}/test-indicators-values-requested-per-level-basis/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-indicators-values-requested-per-level-basis/http-request.adoc[]
+
+=== Request parameters definition
+include::{snippets}/test-indicators-values-requested-per-level-basis/request-parameters.adoc[]
+
+=== Path parameter definition
+include::{snippets}/test-indicators-values-requested-per-level-basis/path-parameters.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-indicators-values-requested-per-level-basis/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-indicators-values-requested-per-level-basis/response-fields.adoc[]
+
+// ==================================================>>>
+
+
 == Get available indicator groups
 Requesting a list of indicator groups
 
@@ -494,7 +523,7 @@ include::{snippets}/test-counties-returned-api-call/response-fields.adoc[]
 // ==================================================>>>
 
 == Get indicator projections and time series data
-Request for indicator projections and timeseries data. 
+Request for indicator projections and timeseries data.
 In this senario, periodtype (defined as x) is set to yearly where as
 The periodspan (defined as x too) is set to 12
 
