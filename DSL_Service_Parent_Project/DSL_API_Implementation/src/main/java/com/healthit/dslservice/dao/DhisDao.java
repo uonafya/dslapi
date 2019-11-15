@@ -568,7 +568,7 @@ public class DhisDao {
     }
 
     public Map<String, Map> getKPIValue(String pe, String ouid, String id, String level) throws DslException {
-        Element ele = cache.get(pe + ouid + id);
+        Element ele = cache.get(pe + ouid + id + level);
         Map<String, Map> envelop = new HashMap();
         log.debug(" pe: " + pe + " ouid: " + ouid + " id: " + id + " level: " + level);
         if (ele == null) {
