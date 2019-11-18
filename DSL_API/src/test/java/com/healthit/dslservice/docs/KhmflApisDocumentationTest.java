@@ -66,7 +66,8 @@ public class KhmflApisDocumentationTest {
                         .description("Facility ID"),
                 fieldWithPath("[].name")
                         .description("Facility Name"),
-                fieldWithPath("[].wardId").description("Ward Id that facility belongs to")
+                fieldWithPath("[].parentid").description("Parent Id (ward) that facility belongs to"),
+                fieldWithPath("[].level").description("Level in the org unit hierarchy")
         )));
     }
 
@@ -93,7 +94,8 @@ public class KhmflApisDocumentationTest {
                         .description("Facility ID"),
                 fieldWithPath("[].name")
                         .description("Facility Name"),
-                fieldWithPath("[].wardId").description("Ward Id that facility belongs to")
+                fieldWithPath("[].parentid").description("Parent Id (ward) that facility belongs to"),
+                fieldWithPath("[].level").description("Level in the org unit hierarchy")
         )
         ));
     }
@@ -121,7 +123,9 @@ public class KhmflApisDocumentationTest {
                         .description("Facility ID"),
                 fieldWithPath("[].name")
                         .description("Facility Name"),
-                fieldWithPath("[].wardId").description("Ward Id that facility belongs to")
+                fieldWithPath("[].parentid").description("Parent Id (ward) that facility belongs to"),
+                fieldWithPath("[].level").description("Level in the org unit hierarchy")
+
         )
         ));
     }
@@ -149,7 +153,10 @@ public class KhmflApisDocumentationTest {
                         .description("Facility ID"),
                 fieldWithPath("[].name")
                         .description("Facility Name"),
-                fieldWithPath("[].wardId").description("Ward Id that facility belongs to")
+                fieldWithPath("[].parentid").description("Parent Id (ward) that facility belongs to"),
+                fieldWithPath("[].level").description("Level in the org unit hierarchy")
+
+                
         )
         ));
     }
@@ -177,7 +184,9 @@ public class KhmflApisDocumentationTest {
                         .description("Facility ID"),
                 fieldWithPath("[].name")
                         .description("Facility Name"),
-                fieldWithPath("[].wardId").description("Ward Id that facility belongs to")
+                fieldWithPath("[].parentid").description("Parent Id (ward) that facility belongs to"),
+                fieldWithPath("[].level").description("Level in the org unit hierarchy")
+
         )
         ));
     }

@@ -66,7 +66,9 @@ public class LocationApisDocumentationTest {
                         .description("Ward ID"),
                 fieldWithPath("[].name")
                         .description("Ward Name"),
-                fieldWithPath("[].subcountyId").description("Subcounty that ward belongs to")
+                fieldWithPath("[].level")
+                        .description("This org unit level"),
+                fieldWithPath("[].parentid").description("Parent org unit (Subcounty) that ward belongs to")
         )));
     }
 
@@ -79,7 +81,9 @@ public class LocationApisDocumentationTest {
                         .description("sub countiy ID"),
                 fieldWithPath("[].name")
                         .description("sub countiy Name"),
-                fieldWithPath("[].countyId").description("County that sub-county belongs to")
+                fieldWithPath("[].level")
+                        .description("This org unit level"),
+                fieldWithPath("[].parentid").description("Parent id (county) sub-county belongs to")
         )));
     }
 
@@ -91,7 +95,12 @@ public class LocationApisDocumentationTest {
                 fieldWithPath("[].id")
                         .description("County ID"),
                 fieldWithPath("[].name")
-                        .description("County Name")
+                        .description("County Name"),
+                fieldWithPath("[].level")
+                        .description("This org unit level"),
+                fieldWithPath("[].parentid")
+                        .description("Parent id Name (National)")
+                        
         )));
     }
 

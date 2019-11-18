@@ -35,10 +35,10 @@ public class LocationDao {
     final static Logger log = Logger.getLogger(FacilityDao.class);
     private String getALlWards = "Select dhis_organisation_unit_id as ward_id, \n" +
 "CONCAT(dhis_organisation_unit_name,' (',(select shortname from dim_dhis_organisationunit where\n" +
-"organisationunitid=comm_org.parentid),')') as name,parentid from common_organisation_unit comm_org where level='ward' order by name desc";
+"organisationunitid=comm_org.parentid),')') as name,parentid,hierarchylevel from common_organisation_unit comm_org where level='ward' order by name desc";
 
-    private String getAllConstituencies = "Select dhis_organisation_unit_id as subcounty_id,dhis_organisation_unit_name as name,parentid from common_organisation_unit where level='subcounty' order by name desc";
-    private String getAllCounties = "Select dhis_organisation_unit_id as county_id,dhis_organisation_unit_name as name from common_organisation_unit where level='county' order by name desc";
+    private String getAllConstituencies = "Select dhis_organisation_unit_id as subcounty_id,dhis_organisation_unit_name as name,hierarchylevel,parentid from common_organisation_unit where level='subcounty' order by name desc";
+    private String getAllCounties = "Select dhis_organisation_unit_id as county_id,'18' as parentid,dhis_organisation_unit_name as name,hierarchylevel from common_organisation_unit where level='county' order by name desc";
 
     public List<Ward> getALlWards() throws DslException {
 
@@ -53,7 +53,8 @@ public class LocationDao {
                     Ward ward = new Ward();
                     ward.setId(rs.getString("ward_id"));
                     ward.setName(rs.getString("name"));
-                    ward.setSubcountyId(rs.getString("parentid"));
+                    ward.setParentid(rs.getString("parentid"));
+                    ward.setLevel(rs.getInt("hierarchylevel"));
                     wardList.add(ward);
                 }
                 cache.put(new Element(CacheKeys.wards, wardList));
@@ -83,6 +84,8 @@ public class LocationDao {
                     County county = new County();
                     county.setId(rs.getString("county_id"));
                     county.setName(rs.getString("name"));
+                    county.setParentid(rs.getString("parentid"));
+                    county.setLevel(rs.getInt("hierarchylevel"));
                     countyList.add(county);
                 }
                 cache.put(new Element(CacheKeys.counties, countyList));
@@ -112,7 +115,8 @@ public class LocationDao {
                     Constituency constituency = new Constituency();
                     constituency.setId(rs.getString("subcounty_id"));
                     constituency.setName(rs.getString("name"));
-                    constituency.setCountyId(rs.getString("parentid"));
+                    constituency.setParentid(rs.getString("parentid"));
+                    constituency.setLevel(rs.getInt("hierarchylevel"));
                     constituencyList.add(constituency);
                 }
                 cache.put(new Element(CacheKeys.constituencies, constituencyList));

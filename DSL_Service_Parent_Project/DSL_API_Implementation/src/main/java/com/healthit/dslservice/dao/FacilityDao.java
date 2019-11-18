@@ -34,9 +34,9 @@ import org.apache.log4j.Logger;
 public class FacilityDao {
 
     final static Logger log = Logger.getLogger(FacilityDao.class);
-    private String getALlFacilties = "Select dhis_organisation_unit_id as id,dhis_organisation_unit_name as name,parentid from common_organisation_unit where level='facility' order by name desc";
+    private String getALlFacilties = "Select dhis_organisation_unit_id as id,dhis_organisation_unit_name as name,parentid,'5' as level from common_organisation_unit where level='facility' order by name desc";
 
-    private String getALlFaciltiesByType = "Select dhis_organisation_unit_id as id,dhis_organisation_unit_name as name,parentid from"
+    private String getALlFaciltiesByType = "Select dhis_organisation_unit_id as id,dhis_organisation_unit_name as name,parentid, '5' as level from"
             + " common_organisation_unit commorg inner join facilities_facility ff on ff.code=commorg.dhis_organisation_unit_id where level='facility' and ff.facilitytype_sk=? order by name desc";
     
     private String getAllFaciltiesCountByType = "Select count(*),ft.\"name\" from common_organisation_unit commorg inner join\n" +
@@ -44,7 +44,7 @@ public class FacilityDao {
                                                 "inner join facilities_facilitytype ft  on ff.facilitytype_sk=ft.facilitytype_sk\n" +
                                                 "where level='facility' group by ft.facilitytype_sk;";
     
-    private String getFaciltiesByLevels = "Select dhis_organisation_unit_id as id,dhis_organisation_unit_name as name,parentid from"
+    private String getFaciltiesByLevels = "Select dhis_organisation_unit_id as id,dhis_organisation_unit_name as name,parentid, '5' as level from"
             + " common_organisation_unit commorg inner join facilities_facility ff on ff.code=commorg.dhis_organisation_unit_id where level='facility' and ff.kephlevel_sk=? order by name desc";
     
     private String getFacilityLevels = "SELECT kephlevel_sk as id,name  FROM public.facilities_kephlevel";
@@ -53,13 +53,13 @@ public class FacilityDao {
     
     private String getFacilityRegulatingBody = "SELECT regulatingbody_sk as id,name  FROM public.facilities_regulatingbody";
     
-    private String getFaciltiesByRegulatingBody = "Select dhis_organisation_unit_id as id,dhis_organisation_unit_name as name,parentid from"
+    private String getFaciltiesByRegulatingBody = "Select dhis_organisation_unit_id as id,dhis_organisation_unit_name as name,parentid, '5' as level from"
             + " common_organisation_unit commorg inner join facilities_facility ff on ff.code=commorg.dhis_organisation_unit_id where level='facility' and ff.regulatingbody_sk=? order by name desc";
     
     
     private String getFacilityOwnerType = "SELECT ownertype_sk as id,name  FROM public.facilities_ownertype";
     
-    private String getFaciltiesByOwnerType = "Select dhis_organisation_unit_id as id,dhis_organisation_unit_name as name,parentid from"
+    private String getFaciltiesByOwnerType = "Select dhis_organisation_unit_id as id,dhis_organisation_unit_name as name,parentid,'5' as level from"
             + " common_organisation_unit commorg inner join facilities_facility ff on ff.code=commorg.dhis_organisation_unit_id "
             + "inner join facilities_owner fo on fo.owner_sk=ff.owner_sk inner join facilities_ownertype fot on fot.id=fo.owner_type_id  where "
             + "level='facility' and fot.ownertype_sk=? order by name desc";
@@ -83,7 +83,8 @@ public class FacilityDao {
             try {
                 while (rs.next()) {
                     Facility facility = new Facility();
-                    facility.setWardId(rs.getString("parentid"));
+                    facility.setParentid(rs.getString("parentid"));
+                    facility.setLevel(Integer.parseInt(rs.getString("level")));
                     //facility.setFacilityOwner(rs.getString("owner_id"));
                     facility.setId(rs.getString("id"));
                     //KephLevel l = KephLevel.getKephLevel(Integer.parseInt(rs.getString("kephlevel_sk")));
@@ -247,8 +248,9 @@ public class FacilityDao {
                 ResultSet rs = ps.executeQuery();
                 while (rs.next()) {
                     Facility facility = new Facility();
-                    facility.setWardId(rs.getString("parentid"));
+                    facility.setParentid(rs.getString("parentid"));
                     facility.setId(rs.getString("id"));
+                    facility.setLevel(Integer.parseInt(rs.getString("level")));
                     facility.setName(rs.getString("name"));
                     facilityList.add(facility);
                 }
@@ -289,8 +291,9 @@ public class FacilityDao {
                 ResultSet rs = ps.executeQuery();
                 while (rs.next()) {
                     Facility facility = new Facility();
-                    facility.setWardId(rs.getString("parentid"));
+                    facility.setParentid(rs.getString("parentid"));
                     facility.setId(rs.getString("id"));
+                    facility.setLevel(Integer.parseInt(rs.getString("level")));
                     facility.setName(rs.getString("name"));
                     facilityList.add(facility);
                 }
@@ -377,7 +380,7 @@ public class FacilityDao {
                 ResultSet rs = ps.executeQuery();
                 while (rs.next()) {
                     Facility facility = new Facility();
-                    facility.setWardId(rs.getString("parentid"));
+                    facility.setParentid(rs.getString("parentid"));
                     facility.setId(rs.getString("id"));
                     facility.setName(rs.getString("name"));
                     facilityList.add(facility);
@@ -462,7 +465,8 @@ public class FacilityDao {
                 ResultSet rs = ps.executeQuery();
                 while (rs.next()) {
                     Facility facility = new Facility();
-                    facility.setWardId(rs.getString("parentid"));
+                    facility.setParentid(rs.getString("parentid"));
+                    facility.setLevel(Integer.parseInt(rs.getString("level")));
                     facility.setId(rs.getString("id"));
                     facility.setName(rs.getString("name"));
                     facilityList.add(facility);

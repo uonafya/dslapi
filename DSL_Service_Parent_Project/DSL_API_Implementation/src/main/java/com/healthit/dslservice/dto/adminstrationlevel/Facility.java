@@ -13,16 +13,16 @@ import com.healthit.dslservice.dto.KephLevel;
  */
 public class Facility extends Adminstration {
 
-    private String wardId;
+    //private String wardId;
 //    private String subCountyId;
 //    private String facilityOwner;
 //    private KephLevel kephLevel;
 
-    public String getWardId() {
-        return wardId;
-    }
-
-    public void setWardId(String wardId) {
-        this.wardId = wardId;
-    }
+//    public String getWardId() {
+//        return wardId;
+//    }
+//
+//    public void setWardId(String wardId) {
+//        this.wardId = wardId;
+//    }
 }
