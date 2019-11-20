@@ -80,7 +80,7 @@ public class IhrisApisDocumentationTest {
         String periodDec = "Period parameter. Can be an explicit year, YYYY (eg 2018) which will give the stated year values, or YYYYmm (eg 201801) which gives "
                 + "cadre count upto that given month";
         this.mockMvc.perform(
-                get("/cadres?pe=2017&ouid=23408&id=33").accept(MediaType.APPLICATION_JSON))
+                get("/cadres?pe=2017&ouid=18&id=33").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()).andDo(document("test-cadres-values-returned-with-request-parameters", requestParameters(
                 parameterWithName("pe").description(periodDec),
                 parameterWithName("ouid").description("Organisation unit id, if not provided defaults to national"),
