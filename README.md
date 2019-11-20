@@ -1,4 +1,4 @@
-# DSL-Service-Layer
+# DSL API
 DSL API Endpoints provides RESTful access to the integrated Kenya Health data repository.
 
 # Documentation
