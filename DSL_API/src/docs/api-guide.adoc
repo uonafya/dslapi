@@ -249,7 +249,7 @@ include::{snippets}/test-cadre-groups-returned-api-call/response-fields.adoc[]
 // ==================================================>>>
 
 == Get cadres under a cadre group
-Requesting a list of indicators under same indicator group
+Requesting a list of cadres under same cadre group
 
 === Curl Request
 include::{snippets}/test-cadres-by-group-id-returned/curl-request.adoc[]
@@ -267,6 +267,35 @@ include::{snippets}/test-cadres-by-group-id-returned/request-parameters.adoc[]
 
 === Response fields definition
 include::{snippets}/test-cadres-by-group-id-returned/response-fields.adoc[]
+
+
+
+// ==================================================>>>
+
+== Get Cadre group count/allocation
+Requesting for cadre group count values. Atleast one of the request parameters must be provided to get cadre group allocation;
+If not, only a list of cadre group available is given.
+
+=== Curl Request
+include::{snippets}/test-cadres-group-values-returned-with-request-parameters/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-cadres-group-values-returned-with-request-parameters/http-request.adoc[]
+
+=== Request parameters definition
+include::{snippets}/test-cadres-group-values-returned-with-request-parameters/request-parameters.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-cadres-group-values-returned-with-request-parameters/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-cadres-group-values-returned-with-request-parameters/response-fields.adoc[]
+
+
+// ==================================================>>>
+
 
 // =======================KHMFL===========================>>>
 // =======================KHMFL===========================>>>

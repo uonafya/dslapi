@@ -115,6 +115,29 @@ public class IhrisApisDocumentationTest {
         )
         ));
     }
+    
+    
+    
+    
+    @Test
+    public void testCadresGroupValuesReturnedWithRequestParameters() throws Exception {
+        String periodDec = "Period parameter. Can be an explicit year, YYYY (eg 2018) which will give the stated year values, or YYYYmm (eg 201801) which gives "
+                + "cadre count upto that given month";
+        this.mockMvc.perform(
+                get("/cadregroups?pe=2017&ouid=18&id=2").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andDo(document("test-cadres-group-values-returned-with-request-parameters", requestParameters(
+                parameterWithName("pe").description(periodDec),
+                parameterWithName("ouid").description("Organisation unit id, if not provided defaults to national"),
+                parameterWithName("id").description("Cadre group ID, if not provided gives count for all cadre groups")
+        ), responseFields(
+                fieldWithPath("[].cadre")
+                        .description("Cadre group name"),
+                fieldWithPath("[].cadreCount")
+                        .description("Cadre count"),
+                fieldWithPath("[].id").description("Cadre group Id")
+        )
+        ));
+    }
 
     @Test
     public void testCadreGroupsReturnedApiCall() throws Exception {

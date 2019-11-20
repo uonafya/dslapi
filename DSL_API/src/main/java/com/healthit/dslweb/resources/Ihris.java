@@ -41,19 +41,21 @@ public class Ihris {
     @RequestMapping(value = "/cadregroups", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getCadreGroups(
             @RequestParam(value = "pe", required = false) String pe,
-            @RequestParam(value = "ou", required = false) String ou,
-            @RequestParam(value = "cadregroupid", required = false) String cadreGroup) {
+            @RequestParam(value = "ouid", required = false) String ouid,
+            @RequestParam(value = "id", required = false) String cadreGroup) {
         System.out.println("without group");
         try {
 
             IhrisDao ihris = new IhrisDao();
             if (pe == null
-                    && ou == null
+                    && ouid == null
                     && cadreGroup == null) {
                 List<CadreGroup> cadreGroupList = ihris.getAllCadresGroup();
                 return new ResponseEntity<List>(cadreGroupList, HttpStatus.OK);
             } else {
-                List<CadreAllocation> cadreAllocationList = ihris.getCadreGroupAllocation(pe, ou, cadreGroup);
+                List<CadreAllocation> cadreAllocationList = ihris.getCadreGroupAllocation(pe, ouid, cadreGroup);
+                log.info("======>>>");
+                log.info(cadreAllocationList);
                 return new ResponseEntity<List>(cadreAllocationList, HttpStatus.OK);
             }
         } catch (DslException ex) {

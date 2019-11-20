@@ -167,16 +167,24 @@ public class IhrisDao {
     public List<CadreAllocation> getCadreGroupAllocation(String pe, String ou, String cadreGroup) throws DslException {
         int currentYear = Calendar.getInstance().get(Calendar.YEAR);
 
+        log.info(cadreGroup);
         if (pe != null) {
             nationalCadreGroupCount = insertPeriodPart(pe, nationalCadreGroupCount);
             appendAnd = true;
         } else {
-            nationalCadreGroupCount = nationalCadreGroupCount.replace("@pe@", "");
+            String curYr = Integer.toString(currentYear);
+            nationalCadreGroupCount = insertPeriodPart(curYr, nationalCadreGroupCount);
+            appendAnd = true;
         }
 
         if (ou != null) {
-            String level = RequestParameters.getOruntiLevel(ou);
-            nationalCadreGroupCount=insertOrgUntiPart(ou, level,nationalCadreGroupCount);
+            if (!ou.equals("18")) {
+                String level = RequestParameters.getOruntiLevel(ou);
+                nationalCadreGroupCount = insertOrgUntiPart(ou, level, nationalCadreGroupCount);
+            } else {
+                nationalCadreGroupCount = nationalCadreGroupCount.replace("@ou@", "");
+                nationalCadreGroupCount = nationalCadreGroupCount.replace("@ou_join@", "");
+            }
         } else {
             nationalCadreGroupCount = nationalCadreGroupCount.replace("@ou@", "");
             nationalCadreGroupCount = nationalCadreGroupCount.replace("@ou_join@", "");
@@ -219,15 +227,22 @@ public class IhrisDao {
      */
     public List<CadreAllocation> getCadreAllocation(String pe, String ou, String cadre) throws DslException {
         if (pe != null) {
-            nationalCadreCount = insertPeriodPart(pe,nationalCadreCount);
+            nationalCadreCount = insertPeriodPart(pe, nationalCadreCount);
             appendAnd = true;
         } else {
             nationalCadreCount = nationalCadreCount.replace("@pe@", "");
         }
 
         if (ou != null) {
-            String level = RequestParameters.getOruntiLevel(ou);
-            nationalCadreCount=insertOrgUntiPart(ou, level,nationalCadreCount);
+
+            if (!ou.equals("18")) {
+                String level = RequestParameters.getOruntiLevel(ou);
+                nationalCadreCount = insertOrgUntiPart(ou, level, nationalCadreCount);
+            } else {
+                nationalCadreCount = nationalCadreCount.replace("@ou@", "");
+                nationalCadreCount = nationalCadreCount.replace("@ou_join@", "");
+            }
+
         } else {
             nationalCadreCount = nationalCadreCount.replace("@ou@", "");
             nationalCadreCount = nationalCadreCount.replace("@ou_join@", "");
