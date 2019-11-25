@@ -120,6 +120,10 @@ public class DhisApisDocumentationTest {
                                 .description("List of period id(s) requested"),
                         fieldWithPath("result.dictionary.parameters.location")
                                 .description("List of organanisation unit id(s) requested"),
+                        fieldWithPath("result.dictionary.parameters.location[].ouid")
+                                .description("Organanisation unit id"),
+                        fieldWithPath("result.dictionary.parameters.location[].name")
+                                .description("Organanisation unit name"),
                         fieldWithPath("result.dictionary.parameters.indicators")
                                 .description("List of indicator id(s) requested"),
                         //                data section 
@@ -187,6 +191,10 @@ public class DhisApisDocumentationTest {
                         .description("List of period id(s) requested"),
                 fieldWithPath("result.dictionary.parameters.location")
                         .description("List of organanisation unit id(s) requested"),
+                fieldWithPath("result.dictionary.parameters.location[].ouid")
+                        .description("Organanisation unit id"),
+                fieldWithPath("result.dictionary.parameters.location[].name")
+                        .description("Organanisation unit name"),
                 fieldWithPath("result.dictionary.parameters.indicators")
                         .description("List of indicator id(s) requested"),
                 //                data section 
@@ -205,7 +213,7 @@ public class DhisApisDocumentationTest {
         )
         ));
     }
-    
+
     @Test
     public void testIndicatorsValuesRequestedPerLevelBasis() throws Exception {
         String periodDec = "Period parameter. Can be an explicit year, YYYY (eg 2018) which will give the stated year values, or YYYYmm which gives "
@@ -220,7 +228,6 @@ public class DhisApisDocumentationTest {
                 parameterWithName("level").description("Organisation unit level whose indicator value are to be returned.  "
                         + "\n"
                         + "Level 1= National, Leve 2 = County, Level 3= Sub-County, Level 4= Ward, Level 5 = Facility")
-                
         ), responseFields(
                 fieldWithPath("result")
                         .description("Response envelope object"),
@@ -258,6 +265,10 @@ public class DhisApisDocumentationTest {
                         .description("List of period id(s) requested"),
                 fieldWithPath("result.dictionary.parameters.location")
                         .description("List of organanisation unit id(s) requested"),
+                fieldWithPath("result.dictionary.parameters.location[].ouid")
+                        .description("Organanisation unit id"),
+                fieldWithPath("result.dictionary.parameters.location[].name")
+                        .description("Organanisation unit name"),
                 fieldWithPath("result.dictionary.parameters.indicators")
                         .description("List of indicator id(s) requested"),
                 //                data section 
@@ -276,7 +287,7 @@ public class DhisApisDocumentationTest {
         )
         ));
     }
-    
+
     @Test
     public void testIndicatorGroupsReturnedApiCall() throws Exception {
         this.mockMvc.perform(

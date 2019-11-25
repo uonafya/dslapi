@@ -521,8 +521,42 @@ public class DhisDao {
             periodsParams.add(pe);
             parameters.put("period", periodsParams);
 
-            List<String> locationParams = new ArrayList();
-            locationParams.add(ouid);
+            Map<String,String> locationP = new HashMap();
+            List<Map> locationParams = new ArrayList();
+
+            locationP.put("ouid",ouid);
+            String name = null;
+            if(ouid!=null){
+                if(ouid.trim().equals("18")){
+                    name="Kenya";
+                }else{
+                    Database db=null;
+                    try {
+                        db = new Database();
+                        
+                        List paramsList = new ArrayList();
+                        Map params = new HashMap();
+                        params.put("type", "integer");
+                        params.put("value", ouid);
+                        paramsList.add(params);
+                        ResultSet rsOuidName = db.executeQuery("Select dhis_organisation_unit_name as name from common_organisation_unit where dhis_organisation_unit_id=? limit 1", paramsList);
+                        if(rsOuidName.next()){
+                            name = rsOuidName.getString("name");
+                        }
+                       
+                    } catch (DslException ex) {
+                        log.error(ex);
+                    }finally{
+                        if(db!=null){
+                            db.CloseConnection();
+                        }
+                    }
+                    
+                }
+                
+            }
+            locationP.put("name", name);
+            locationParams.add(locationP);
             parameters.put("location", locationParams);
 
             List<String> indicatorParams = new ArrayList();
