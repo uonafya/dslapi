@@ -206,5 +206,19 @@ public class Kmfl {
         }
 
     }
+    
+    @CrossOrigin
+    @ResponseBody
+    @RequestMapping(value = "/facility/beds/{ouid}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getFacilitiesBedCapacity(@PathVariable("ouid") int ouid) {
+        try {
+            FacilityDao facilityDao = new FacilityDao();
+            List<FacilityType> facilityList = facilityDao.getFacilitiesBedCapacity(ouid);
+            return new ResponseEntity<List>(facilityList, HttpStatus.OK);
+        } catch (DslException ex) {
+            return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
 
 }

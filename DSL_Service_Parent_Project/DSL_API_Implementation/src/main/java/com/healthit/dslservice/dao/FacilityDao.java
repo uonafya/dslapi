@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Element;
 import org.apache.log4j.Logger;
@@ -38,35 +39,57 @@ public class FacilityDao {
 
     private String getALlFaciltiesByType = "Select dhis_organisation_unit_id as id,dhis_organisation_unit_name as name,parentid, '5' as level from"
             + " common_organisation_unit commorg inner join facilities_facility ff on ff.code=commorg.dhis_organisation_unit_id where level='facility' and ff.facilitytype_sk=? order by name desc";
-    
-    private String getAllFaciltiesCountByType = "Select count(*),ft.\"name\" from common_organisation_unit commorg inner join\n" +
-                                                "facilities_facility ff on ff.code=commorg.dhis_organisation_unit_id \n" +
-                                                "inner join facilities_facilitytype ft  on ff.facilitytype_sk=ft.facilitytype_sk\n" +
-                                                "where level='facility' group by ft.facilitytype_sk;";
-    
+
+    private String getAllFaciltiesCountByType = "Select count(*),ft.\"name\" from common_organisation_unit commorg inner join\n"
+            + "facilities_facility ff on ff.code=commorg.dhis_organisation_unit_id \n"
+            + "inner join facilities_facilitytype ft  on ff.facilitytype_sk=ft.facilitytype_sk\n"
+            + "where level='facility' group by ft.facilitytype_sk;";
+
+    private String getFaciltiesNumberOfBeds = "Select sum(number_of_beds) from facilities_facility ff where \n"
+            + "CASE WHEN (select \"level\" from common_organisation_unit where dhis_organisation_unit_id=)"
+            + " as level='facility' THEN ff.code=(select mfl_code from common_organisation_unit where "
+            + "dhis_organisation_unit_id=)"
+            + "common_organisation_unit commorg on ff.code=commorg.dhis_organisation_unit_id \n"
+            + "where level='facility' group by ft.facilitytype_sk;";
+
+    private String getNumberOfBeds = "Select sum(number_of_beds) as count from facilities_facility ";
+
+    private String getNumberOfBedsPerFacility = " ff where where ff.code=?";
+
+    private String wardNoOfBedsSeg = "ff inner join\n"
+            + " common_organisation_unit commorg on ff.code=commorg.mfl_code \n"
+            + " where level='ward' and commorg.parentid=?";
+
+    private String subCountyNoOfBedsSeg = " ff inner join\n"
+            + " common_organisation_unit commorg on ff.code=commorg.mfl_code \n"
+            + " where commorg.parentid in( select dhis_organisation_unit_id from common_organisation_unit where parentid=?)";
+
+    private String countyNoOfBedsSeg = "ff inner join\n"
+            + " common_organisation_unit commorg on ff.code=commorg.mfl_code \n"
+            + " where commorg.parentid in( select dhis_organisation_unit_id from common_organisation_unit where parentid in("
+            + " select dhis_organisation_unit_id from common_organisation_unit where parentid=?))";
+
     private String getFaciltiesByLevels = "Select dhis_organisation_unit_id as id,dhis_organisation_unit_name as name,parentid, '5' as level from"
             + " common_organisation_unit commorg inner join facilities_facility ff on ff.code=commorg.dhis_organisation_unit_id where level='facility' and ff.kephlevel_sk=? order by name desc";
-    
+
     private String getFacilityLevels = "SELECT kephlevel_sk as id,name  FROM public.facilities_kephlevel";
 
     private String getFacilityTypes = "SELECT facilitytype_sk as id,name  FROM public.facilities_facilitytype";
-    
+
     private String getFacilityRegulatingBody = "SELECT regulatingbody_sk as id,name  FROM public.facilities_regulatingbody";
-    
+
     private String getFaciltiesByRegulatingBody = "Select dhis_organisation_unit_id as id,dhis_organisation_unit_name as name,parentid, '5' as level from"
             + " common_organisation_unit commorg inner join facilities_facility ff on ff.code=commorg.dhis_organisation_unit_id where level='facility' and ff.regulatingbody_sk=? order by name desc";
-    
-    
+
+    private String getOrgUnitLevelQry = "Select hierarchylevel from common_organisation_unit where dhis_organisation_unit_id=?";
+
     private String getFacilityOwnerType = "SELECT ownertype_sk as id,name  FROM public.facilities_ownertype";
-    
+
     private String getFaciltiesByOwnerType = "Select dhis_organisation_unit_id as id,dhis_organisation_unit_name as name,parentid,'5' as level from"
             + " common_organisation_unit commorg inner join facilities_facility ff on ff.code=commorg.dhis_organisation_unit_id "
             + "inner join facilities_owner fo on fo.owner_sk=ff.owner_sk inner join facilities_ownertype fot on fot.id=fo.owner_type_id  where "
             + "level='facility' and fot.ownertype_sk=? order by name desc";
-    
-    
-    
-    
+
     Cache cache = DslCache.getCache();
 
     public List<Facility> getFacilities() throws DslException {
@@ -196,11 +219,10 @@ public class FacilityDao {
         return facilityTypeList;
     }
 
-    
-    public Map<String,Integer> getAllFacilitiesByType() throws DslException {
+    public Map<String, Integer> getAllFacilitiesByType() throws DslException {
         log.info("Fetching facilities by type");
         Element ele = cache.get("AllfaclitiesByType");
-        Map facilityCount=new HashMap();
+        Map facilityCount = new HashMap();
         if (ele == null) {
             long startTime = System.nanoTime();
             Database db = new Database();
@@ -226,13 +248,13 @@ public class FacilityDao {
             log.info("Time taken to fetch data " + (endTime - startTime) / 1000000);
         } else {
             long startTime = System.nanoTime();
-            facilityCount = (Map<String,Integer>) ele.getObjectValue();
+            facilityCount = (Map<String, Integer>) ele.getObjectValue();
             long endTime = System.nanoTime();
             log.info("Time taken to fetch data from cache " + (endTime - startTime) / 1000000);
         }
         return facilityCount;
     }
-    
+
     public List<Facility> getFacilitiesByType(int typeId) throws DslException {
         List<Facility> facilityList = new ArrayList();
         log.info("Fetching facilities by type");
@@ -275,7 +297,7 @@ public class FacilityDao {
         }
         return facilityList;
     }
-    
+
     public List<Facility> getFacilitiesByLevel(int levelId) throws DslException {
         List<Facility> facilityList = new ArrayList();
         log.info("Fetching facilities by level");
@@ -317,14 +339,9 @@ public class FacilityDao {
         }
         return facilityList;
     }
-    
 
-    
-    
-    
-    
     public List<FacilityType> getFacilitiesRegulatingBody() throws DslException {
-         
+
         List<FacilityType> facilityTypeList = new ArrayList();
 
         log.info("Fetching facilities Regulating Body");
@@ -364,7 +381,7 @@ public class FacilityDao {
         }
         return facilityTypeList;
     }
-    
+
     public List<Facility> getFacilitiesByRegulatingBody(int regulatingBodyId) throws DslException {
         List<Facility> facilityList = new ArrayList();
         log.info("Fetching facilities by level");
@@ -405,11 +422,9 @@ public class FacilityDao {
         }
         return facilityList;
     }
-    
-    
-    
+
     public List<FacilityType> getFacilitiesOwnerType() throws DslException {
-         
+
         List<FacilityType> facilityTypeList = new ArrayList();
 
         log.info("Fetching facilities owner type");
@@ -449,7 +464,79 @@ public class FacilityDao {
         }
         return facilityTypeList;
     }
-    
+
+    public List<FacilityType> getFacilitiesBedCapacity(int ouid) throws DslException {
+
+        List<FacilityType> facilityTypeList = new ArrayList();
+
+        log.info("Fetching facilities owner type");
+        Element ele = cache.get(CacheKeys.facilityBedCapacity);
+        String output = (ele == null ? null : ele.getObjectValue().toString());
+        //log.info("Element from cache " + output);
+        if (ele == null) {
+            long startTime = System.nanoTime();
+
+            Database db = new Database();
+            List paramsList = new ArrayList();
+            Map params = new HashMap();
+            params.put("type", "integer");
+            params.put("value", Integer.toString(ouid));
+            paramsList.add(params);
+            ResultSet rs = db.executeQuery(getOrgUnitLevelQry, paramsList);
+            int orgLevel = 1;
+            try {
+                while (rs.next()) {
+                    orgLevel = rs.getInt("hierarchylevel");
+                }
+            } catch (SQLException ex) {
+                Message msg = new Message();
+                msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+                msg.setMesageContent(ex.getMessage());
+                throw new DslException(msg);
+            }
+
+            //     getNumberOfBeds,getNumberOfBedsPerFacility,wardNoOfBedsSeg,subCountyNoOfBedsSeg,countyNoOfBedsSeg
+            try {
+                int count = 0;
+                if (orgLevel == 1) {
+                    ResultSet rsCout = db.executeQuery(getNumberOfBeds);
+                    count = rsCout.getInt("count");
+                } else if (orgLevel == 2) {
+                    ResultSet rsCout = db.executeQuery(getNumberOfBeds+countyNoOfBedsSeg, paramsList);
+                    count = rsCout.getInt("count");
+                } else if (orgLevel == 3) {
+                    ResultSet rsCout = db.executeQuery(getNumberOfBeds+subCountyNoOfBedsSeg, paramsList);
+                    count = rsCout.getInt("count");
+                } else if (orgLevel == 4) {
+                    ResultSet rsCout = db.executeQuery(getNumberOfBeds+wardNoOfBedsSeg, paramsList);
+                    count = rsCout.getInt("count");
+                } else if (orgLevel == 5) {
+                    ResultSet rsCout = db.executeQuery(getNumberOfBeds+getNumberOfBedsPerFacility, paramsList);
+                    count = rsCout.getInt("count");
+                }
+                log.info("The count us ===>");
+                log.info(count);
+            } catch (SQLException ex) {
+                log.error(ex);
+                Message msg = new Message();
+                msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+                msg.setMesageContent(ex.getMessage());
+                throw new DslException(msg);
+
+            }finally {
+                db.CloseConnection();
+            }
+            long endTime = System.nanoTime();
+            log.info("Time taken to fetch data " + (endTime - startTime) / 1000000);
+        } else {
+            long startTime = System.nanoTime();
+            facilityTypeList = (List<FacilityType>) ele.getObjectValue();
+            long endTime = System.nanoTime();
+            log.info("Time taken to fetch data from cache " + (endTime - startTime) / 1000000);
+        }
+        return facilityTypeList;
+    }
+
     public List<Facility> getFacilitiesByOwnerType(int ownerTypeId) throws DslException {
         List<Facility> facilityList = new ArrayList();
         log.info("Fetching facilities by owner type");
@@ -491,5 +578,5 @@ public class FacilityDao {
         }
         return facilityList;
     }
-    
+
 }
