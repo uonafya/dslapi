@@ -44,7 +44,7 @@ public class QueryInterpreter {
      * string
      * @return generated sql string to run
      */
-    public Map<String, List<Object>> interpretQuery(JSONArray array) {
+    public Map<String, List<Object>> interpretQuery(JSONArray array) throws DslException {
         JSONArray _httpJsonArray = array; //original array placeholder
         array = addFilterLevelsToMainQueryAttributes(array);
         List<Map<String, Object>> queriesToRun = new ArrayList();
@@ -60,8 +60,8 @@ public class QueryInterpreter {
         log.info("calling query populator " + array.length());
         finalQuery = populatQueryParameters(finalQuery, _httpJsonArray);
         Map<String, List<Object>> results = runSqlQuery(finalQuery);
-        return results;
-    }
+        return results; 
+   }
 
     /**
      * Replace http filter values to placeholders in the sql queries
@@ -361,7 +361,7 @@ public class QueryInterpreter {
         return wrapperMap;
     }
 
-    public Map<String, List<Object>> runSqlQuery(String sqlQuery) {
+    public Map<String, List<Object>> runSqlQuery(String sqlQuery) throws DslException {
         Database db = new Database();
         List<List> reslts1 = null;
         Map<String, List<Object>> wrapperMap = null;
