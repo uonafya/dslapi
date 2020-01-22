@@ -109,7 +109,7 @@ public class DhisDao {
         
             if (periods[x].length() == 4) {
                 log.debug("periods replacer ===< 1");
-                String replacement = periodYearSpanSql.replace("@end_year@", pe).replace("@start_year@", periods[x]);
+                String replacement = periodYearSpanSql.replace("@end_year@", periods[x]).replace("@start_year@", periods[x]);
                 if(x>0){
                     periodString.append(" or "+replacement);
                 }else{

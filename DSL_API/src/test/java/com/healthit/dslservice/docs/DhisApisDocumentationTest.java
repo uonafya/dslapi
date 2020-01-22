@@ -75,13 +75,13 @@ public class DhisApisDocumentationTest {
     @Test
     public void testIndicatorsValuesReturnedWithRequestParameters() throws Exception {
         String periodDec = "Period parameter. Can be an explicit year, YYYY (eg 2018) which will give the stated year values, or YYYYmm which gives "
-                + "values for only a particular month";
+                + "values for only a particular month. Simicolon seperate period to get data for different periods";
         this.mockMvc.perform(
                 get("/indicators?pe=2017&ouid=23408&id=61829").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()).andDo(document("test-indicators-values-returned-with-request-parameters", requestParameters(
                 parameterWithName("pe").description(periodDec),
-                parameterWithName("ouid").description("Organisation unit id, if not provided defaults to national"),
-                parameterWithName("id").description("Indicator ID which is mandatory")
+                parameterWithName("ouid").description("Organisation unit id, if not provided defaults to national. Simicolon seperate org unit id to get data for different organisation units"),
+                parameterWithName("id").description("Indicator ID which is mandatory.  Simicolon seperate indicator ids to get data for different indicators")
         ),
                 responseFields(
                         fieldWithPath("result")
