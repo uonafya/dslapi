@@ -33,6 +33,7 @@ import com.sun.jersey.api.client.ClientResponse;
 import com.sun.jersey.api.client.WebResource;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Properties;
 import java.util.logging.Level;
 import javax.ws.rs.core.MediaType;
@@ -81,43 +82,90 @@ public class DhisDao {
      * @throws DslException
      */
     private String insertPeriodPart(String pe, String sqlString) throws DslException {
+        Map<String,String> monthDays=new HashMap();
+        monthDays.put("01", "31");
+        monthDays.put("02", "28");
+        monthDays.put("03", "31");
+        monthDays.put("04", "30");
+        monthDays.put("05", "31");
+        monthDays.put("06", "30");
+        monthDays.put("07", "31");
+        monthDays.put("08", "31");
+        monthDays.put("09", "30");
+        monthDays.put("10", "31");
+        monthDays.put("11", "30");
+        monthDays.put("12", "31");
+        
         String periodYearSpanSql = " startdate between to_date(( @start_year@  || '-'|| 1 || '-'||'1'),'YYYY-MM-DD') and to_date((@end_year@ || '-'|| 12 || '-'||'31'),'YYYY-MM-DD') ";
-        String periodPerMontSql = " startdate between to_date(( @start_year@  || '-'|| @month@ || '-'||'1'),'YYYY-MM-DD') and to_date((@end_year@ || '-'|| @month@ || '-'||'31'),'YYYY-MM-DD') ";
-
-        String periodString = "";
+        String periodPerMontSql = " startdate between to_date(( @start_year@  || '-'|| @month@ || '-'||1),'YYYY-MM-DD') and to_date((@end_year@ || '-'|| @month@ || '-'||@day@),'YYYY-MM-DD') ";
+        
+        StringBuilder periodString = new StringBuilder();
         RequestParameters.isValidPeriod(pe);
-        if (pe.length() == 4) {
-            String replacement = periodYearSpanSql.replace("@end_year@", pe).replace("@start_year@", pe);
-            periodString = replacement;
-        } else {
-            String paramYear = pe.substring(0, 4);
-            String paramMonth = pe.substring(4, 6);
-            String replacement = periodYearSpanSql.replace("@end_year@", paramYear).replace("@month@", paramMonth);
-            periodString = replacement;
+        
+        String[] periods=pe.split(";");
+        
+        for(int x=0;x<periods.length;x++){
+            log.debug("periods replacer ===<");
+        
+            if (periods[x].length() == 4) {
+                log.debug("periods replacer ===< 1");
+                String replacement = periodYearSpanSql.replace("@end_year@", pe).replace("@start_year@", periods[x]);
+                if(x>0){
+                    periodString.append(" or "+replacement);
+                }else{
+                    periodString.append(replacement);
+                }
+                
+            } else {
+                log.debug("periods replacer ===< 2");
+                String paramYear = periods[x].substring(0, 4);
+                String paramMonth = periods[x].substring(4, 6);
+                String replacement = periodPerMontSql.replace("@end_year@", paramYear).replace("@month@", paramMonth).replace("@start_year@", paramYear).replace("@day@", monthDays.get(paramMonth));
+                if(x>0){
+                    periodString.append(" or "+replacement);
+                }else{
+                    periodString.append(replacement);
+                }
+            }
         }
-
-        sqlString = sqlString.replace("@pe@", periodString);
+         
+        log.debug("periods gotten ===<");
+        log.debug(periodString.toString());
+        sqlString = sqlString.replace("@pe@", " ("+periodString.toString()+") ");
         return sqlString;
 
     }
+    
+    private String orgUnitsList(String ouid){
+        
+        String[] orgUnits =ouid.split(";");
+        StringBuilder orgUnitParameters=new StringBuilder();
 
-    /**
-     *
-     * @param ou organisation unit id from http request
-     * @return qeuery string appended with org unit patameter
-     * @throws DslException
-     */
+        for(int x=0;x<orgUnits.length;x++){
+            if(x==0)
+                orgUnitParameters.append(orgUnits[x]);
+            else orgUnitParameters.append(","+orgUnits[x]);
+        }
+        return orgUnitParameters.toString();
+    }
+    
     private String insertOrgUntiPart(String ouid, String sqlString) throws DslException {
-
+        
         String replacement;
+        String orgUnitParameters=orgUnitsList(ouid);
+        
+        log.info("Org units parameters : "+ orgUnitParameters);
+        
+        
+        
         if (appendAnd) {
-            replacement = " and \"Org unit id\" in (@ouid@) ".replace("@ouid@", ouid);
+            replacement = " and \"Org unit id\" in (@ouid@) ".replace("@ouid@", orgUnitParameters);
         } else {
-            replacement = " \"Org unit id\" in (@ouid@) ".replace("@ouid@", ouid);
+            replacement = " \"Org unit id\" in (@ouid@) ".replace("@ouid@", orgUnitParameters);
             appendAnd = true;
         }
         sqlString = sqlString.replace("@ouid@", replacement);
-
+        
         return sqlString;
     }
 
@@ -517,31 +565,45 @@ public class DhisDao {
                 addedIndicators.add(_indicatorId);
             }
 
-            List<String> periodsParams = new ArrayList();
-            periodsParams.add(pe);
+            List<String> periodsParams = Arrays.asList(pe.split(";"));
             parameters.put("period", periodsParams);
 
-            Map<String,String> locationP = new HashMap();
+            
             List<Map> locationParams = new ArrayList();
-
-            locationP.put("ouid",ouid);
-            String name = null;
+            log.debug("insert location props");
+            
+            log.debug("null ouid check");
             if(ouid!=null){
+                log.debug("null ouid check 1");
                 if(ouid.trim().equals("18")){
-                    name="Kenya";
+                    Map<String,String> locationP= new HashMap();
+                    locationP.put("ouid", "18");
+                    locationP.put("name", "Kenya");
+                    locationParams.add(locationP);
+                    
                 }else{
+                    log.debug("null ouid check 2");
                     Database db=null;
                     try {
+                        log.debug("null ouid check 3");
                         db = new Database();
                         
                         List paramsList = new ArrayList();
                         Map params = new HashMap();
-                        params.put("type", "integer");
-                        params.put("value", ouid);
+                        //params.put("type", "string");
+                        //params.put("value", );
                         paramsList.add(params);
-                        ResultSet rsOuidName = db.executeQuery("Select dhis_organisation_unit_name as name from common_organisation_unit where dhis_organisation_unit_id=? limit 1", paramsList);
-                        if(rsOuidName.next()){
-                            name = rsOuidName.getString("name");
+                        String queryToRUn="Select dhis_organisation_unit_name as name,dhis_organisation_unit_id as ouid from common_organisation_unit where dhis_organisation_unit_id in(#)";
+                        queryToRUn=queryToRUn.replace("#", orgUnitsList(ouid).replaceAll("\"", ""));
+                        log.debug("logg");
+                        log.debug(queryToRUn);
+                        ResultSet rsOuidName = 
+                                db.executeQuery(queryToRUn);
+                        while(rsOuidName.next()){
+                            Map<String,String> locationP= new HashMap();
+                            locationP.put("ouid",rsOuidName.getString("ouid"));
+                            locationP.put("name", rsOuidName.getString("name"));
+                            locationParams.add(locationP);
                         }
                        
                     } catch (DslException ex) {
@@ -555,8 +617,8 @@ public class DhisDao {
                 }
                 
             }
-            locationP.put("name", name);
-            locationParams.add(locationP);
+            
+            
             parameters.put("location", locationParams);
 
             List<String> indicatorParams = new ArrayList();
@@ -617,7 +679,9 @@ public class DhisDao {
                 appendAnd = true;
             }
             if (ouid != null) {
-                if (level == null) {
+                String[] orgUnits=ouid.split(";"); //how many orgunits have been passed
+                
+                if (level == null || orgUnits.length>1) {
                     getKPIWholeYear = insertOrgUntiPart(ouid, getKPIWholeYear);
                 } else if (level == "1" && ouid == "18") {
                     ouid = "18"; //kenya (default national id ) = 18
