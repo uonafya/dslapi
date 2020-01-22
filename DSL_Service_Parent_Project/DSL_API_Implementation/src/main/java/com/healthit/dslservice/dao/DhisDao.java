@@ -136,6 +136,20 @@ public class DhisDao {
 
     }
     
+    
+    private String indicatorIdList(String id){
+        
+        String[] indicatorIds =id.split(";");
+        StringBuilder indicatorParameters=new StringBuilder();
+
+        for(int x=0;x<indicatorIds.length;x++){
+            if(x==0)
+                indicatorParameters.append(indicatorIds[x]);
+            else indicatorParameters.append(","+indicatorIds[x]);
+        }
+        return indicatorParameters.toString();
+    }
+    
     private String orgUnitsList(String ouid){
         
         String[] orgUnits =ouid.split(";");
@@ -275,16 +289,21 @@ public class DhisDao {
 
     /**
      *
-     * @param ou organisation unit id from http request
+     * @param id indicator id from http request
      * @return qeuery string appended with org unit patameter
      * @throws DslException
      */
     private String insertIdPart(String id, String sqlString) throws DslException {
         String replacement;
+        
+        String idParameters=indicatorIdList(id);
+        
+        log.info("indicator id parameters : "+ idParameters);
+    
         if (appendAnd) {
-            replacement = " and \"Indicator ID\" in (@indicator@) ".replace("@indicator@", id);
+            replacement = " and \"Indicator ID\" in (@indicator@) ".replace("@indicator@", idParameters);
         } else {
-            replacement = "  \"Indicator ID\" in (@indicator@) ".replace("@indicator@", id);
+            replacement = "  \"Indicator ID\" in (@indicator@) ".replace("@indicator@", idParameters);
         }
         sqlString = sqlString.replace("@id@", replacement);
 
@@ -621,8 +640,7 @@ public class DhisDao {
             
             parameters.put("location", locationParams);
 
-            List<String> indicatorParams = new ArrayList();
-            indicatorParams.add(id);
+            List<String> indicatorParams = Arrays.asList(id.split(";"));
             parameters.put("indicators", indicatorParams);
 
             //data
