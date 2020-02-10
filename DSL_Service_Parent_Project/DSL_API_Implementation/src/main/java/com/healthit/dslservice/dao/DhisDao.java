@@ -589,11 +589,8 @@ public class DhisDao {
 
             
             List<Map> locationParams = new ArrayList();
-            log.debug("insert location props");
             
-            log.debug("null ouid check");
             if(ouid!=null){
-                log.debug("null ouid check 1");
                 if(ouid.trim().equals("18")){
                     Map<String,String> locationP= new HashMap();
                     locationP.put("ouid", "18");
@@ -601,10 +598,8 @@ public class DhisDao {
                     locationParams.add(locationP);
                     
                 }else{
-                    log.debug("null ouid check 2");
                     Database db=null;
                     try {
-                        log.debug("null ouid check 3");
                         db = new Database();
                         
                         List paramsList = new ArrayList();
