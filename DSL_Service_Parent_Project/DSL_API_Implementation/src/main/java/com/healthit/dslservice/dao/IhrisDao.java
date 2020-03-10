@@ -19,7 +19,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Element;
@@ -60,6 +64,7 @@ public class IhrisDao {
     private String insertPeriodPart(String pe, String sqlString) throws DslException {
         String periodString = "";
         RequestParameters.isValidPeriod(pe);
+
         if (pe.length() == 4) {
             String replacement = " ihris.hire_date<='@end_year@-12-31' ".replace("@end_year@", pe);
             periodString = replacement;
@@ -217,6 +222,104 @@ public class IhrisDao {
         return cadreAllocationList;
     }
 
+    private List<CadreAllocation> formatCadreAllocationMonthly(ResultSet rs) throws SQLException {
+        Map<String, CadreAllocation> yearMonthCadreAllocMap = new LinkedHashMap();
+        List<String> availableMonthCadres = new ArrayList();
+        while (rs.next()) {
+            CadreAllocation cadreAllocation = new CadreAllocation();
+            cadreAllocation.setCadre(rs.getString("cadre"));
+            String cCount = rs.getString("cadre_count");
+            String month = rs.getString("month");
+            String year = rs.getString("year");
+            String yearMonth = year + month;
+            cadreAllocation.setCadreCount(cCount);
+            cadreAllocation.setId(rs.getString("id"));
+            cadreAllocation.setPeriod(yearMonth);
+
+            //fix previously missing cadre allocations
+            if (month.equals('1')) {
+                log.info("ihris filler month equal to one");
+                availableMonthCadres.add(yearMonth);
+            } else if (availableMonthCadres.size() == 0) {
+                //get top value in array
+                log.info("ihris filler month zero");
+                log.debug("Current month " + Integer.parseInt(month));
+                int missingCadreCountMonths = Integer.parseInt(month) - 1;
+                for (int x = missingCadreCountMonths; x >= 1; x--) {
+                    log.debug(x);
+                    try {
+                        CadreAllocation missingCadreAlloc = (CadreAllocation) cadreAllocation.clone();
+                        log.debug(year + Integer.toString(x));
+                        missingCadreAlloc.setPeriod(year + Integer.toString(x));
+
+                        yearMonthCadreAllocMap.put(year + Integer.toString(x), missingCadreAlloc);
+                    } catch (CloneNotSupportedException ex) {
+                        log.error(ex);
+                    }
+                }
+                availableMonthCadres.add(yearMonth);
+            } else {
+                log.info("ihris filler month has values");
+                //get top value in array
+                String topYearMonth = availableMonthCadres.get(availableMonthCadres.size() - 1);
+                int missingCadreCountMonths =Integer.parseInt(yearMonth.substring(4)) -Integer.parseInt(topYearMonth.substring(4));
+                for (int x = 1; x < missingCadreCountMonths; x++) {
+
+                    CadreAllocation previousAvailableCadreAlloc = yearMonthCadreAllocMap.get(topYearMonth);                    
+                    int newMnth=Integer.parseInt(topYearMonth.substring(4))+ x;
+                    String newYearMnt = topYearMonth.substring(0,4) + newMnth;
+                    
+                    try {
+                        CadreAllocation missingCadreAlloc = (CadreAllocation) previousAvailableCadreAlloc.clone();
+                        missingCadreAlloc.setPeriod(newYearMnt);
+                        yearMonthCadreAllocMap.put(newYearMnt, missingCadreAlloc);
+                    } catch (CloneNotSupportedException ex) {
+                        log.error(ex);
+                    }
+
+                }
+                availableMonthCadres.add(yearMonth);
+            }
+            // store current cadre allocation from result set
+            if (yearMonthCadreAllocMap.containsKey(yearMonth)) {
+                CadreAllocation cAllocation = yearMonthCadreAllocMap.get(yearMonth);
+                String cCountMap = cAllocation.getCadreCount();
+                if (Integer.parseInt(cCount) > Integer.parseInt(cCountMap)) {
+                    yearMonthCadreAllocMap.get(yearMonth).setCadreCount(cCount);
+                }
+            } else {
+                yearMonthCadreAllocMap.put(yearMonth, cadreAllocation);
+            }
+
+        }
+        log.info("yearMonthCadreAllocMap.size(): "+yearMonthCadreAllocMap.size());
+        //fill remaining months if not 12 months there
+        if (yearMonthCadreAllocMap.size() < 12) {
+            log.info("ihris filler month less that 12 months");
+            //get top value in array
+            String topYearMonth = availableMonthCadres.get(availableMonthCadres.size() - 1);
+            int missingCadreCountMonths = 12 - yearMonthCadreAllocMap.size(); 
+            for (int x = 1; x <= missingCadreCountMonths; x++) {
+                log.debug("filler loop "+x);
+                log.debug("top year month "+topYearMonth);
+                CadreAllocation previousAvailableCadreAlloc = yearMonthCadreAllocMap.get(topYearMonth);
+                int newMnth=Integer.parseInt(topYearMonth.substring(4))+ x;
+                String newYearMnt = topYearMonth.substring(0,4) + newMnth;
+                
+                log.debug("new month "+Integer.parseInt(topYearMonth) + x);
+                try {
+                    CadreAllocation missingCadreAlloc = (CadreAllocation) previousAvailableCadreAlloc.clone();
+                    missingCadreAlloc.setPeriod(newYearMnt);
+                    yearMonthCadreAllocMap.put(newYearMnt, missingCadreAlloc);
+                } catch (CloneNotSupportedException ex) {
+                    log.error(ex);
+                }
+            }
+        }
+        List<CadreAllocation> cadreAllocationList = new ArrayList(yearMonthCadreAllocMap.values());
+        return cadreAllocationList;
+    }
+
     /**
      *
      * @param pe semi colon separated period
@@ -225,12 +328,62 @@ public class IhrisDao {
      * @return cadre allocation objects
      * @throws DslException
      */
-    public List<CadreAllocation> getCadreAllocation(String pe, String ou, String cadre) throws DslException {
+    public List<CadreAllocation> getCadreAllocation(String pe, String ou, String cadre, String periodtype) throws DslException {
+        if (periodtype != null && periodtype.equals("monthly")) {
+            RequestParameters.isValidPeriod(pe);
+            String paramYear;
+            String periodFilter;
+            int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+            nationalCadreCount = "select id,cadre,cadre_count, date_part('year', hire_date) as year,date_part('month', hire_date) as month from"
+                    + " (select cadree.dataelementid as id,cadree.dataelementname as cadre, to_char(hire_date, 'YYYY-MM')  as yearmonth,hire_date,\n"
+                    + "count(*) OVER(ORDER BY hire_date) AS cadre_count \n"
+                    + "from fact_ihris ihris inner join dim_ihris_dataelement cadree on cast(cadree.dataelementid as varchar) = cast(ihris.job_category_id as varchar) \n"
+                    + " @ou_join@ \n"
+                    + "@cadre@ @ou@ ) x @pe@ group by hire_date,cadre,yearmonth,id,cadre_count order by year,month asc";
+
+            if (pe != null) {
+                log.debug("period not null: " + pe);
+                if (pe.length() != 0 && pe.length() >= 4) {
+                    log.debug("period length not 0");
+                    paramYear = pe.substring(0, 4);
+                    periodFilter = " where date_part('year', hire_date)='" + paramYear + "' ";
+                    nationalCadreCount = nationalCadreCount.replace("@pe@", periodFilter);
+                    log.debug(periodFilter);
+                    log.debug(nationalCadreCount);
+                } else {
+                    log.debug("period lenght less than 4 or is empty");
+                    periodFilter = " where date_part('year', hire_date)='" + pe + "' ";
+                    nationalCadreCount = nationalCadreCount.replace("@pe@", periodFilter);
+                }
+            } else {
+                nationalCadreCount = nationalCadreCount.replace("@pe@", " where date_part('year', hire_date)=2019 ");
+            }
+
+            if (cadre != null) {
+                log.debug("cadre is not null: " + cadre);
+                String cadreFilter = " where cadree.dataelementid='" + cadre + "' ";
+                nationalCadreCount = nationalCadreCount.replace("@cadre@", cadreFilter);
+                appendAnd = true;
+            } else {
+                log.debug("cadre is null: " + cadre);
+                nationalCadreCount = nationalCadreCount.replace("@cadre@", " ");
+            }
+
+            pe = null;
+            cadre = null;
+        }
+
         if (pe != null) {
             nationalCadreCount = insertPeriodPart(pe, nationalCadreCount);
             appendAnd = true;
         } else {
             nationalCadreCount = nationalCadreCount.replace("@pe@", "");
+        }
+
+        if (cadre != null) {
+            nationalCadreCount = insertCadrePart(cadre);
+        } else {
+            nationalCadreCount = nationalCadreCount.replace("@cadre@", "");
         }
 
         if (ou != null) {
@@ -248,30 +401,31 @@ public class IhrisDao {
             nationalCadreCount = nationalCadreCount.replace("@ou_join@", "");
         }
 
-        if (cadre != null) {
-            nationalCadreCount = insertCadrePart(cadre);
-        } else {
-            nationalCadreCount = nationalCadreCount.replace("@cadre@", "");
-        }
-
         List<CadreAllocation> cadreAllocationList = new ArrayList();
-        Database db = new Database();
-
-        ResultSet rs = db.executeQuery(nationalCadreCount);
         log.info("Fetching cadre groups");
+        Database db = new Database();
+        ResultSet rs = db.executeQuery(nationalCadreCount);
+
         try {
-            while (rs.next()) {
-                CadreAllocation cadreAllocation = new CadreAllocation();
-                cadreAllocation.setCadre(rs.getString("cadre"));
-                cadreAllocation.setCadreCount(rs.getString("cadre_count"));
-                cadreAllocation.setId(rs.getString("id"));
-                cadreAllocationList.add(cadreAllocation);
+            if (periodtype != null && periodtype.equals("monthly")) {
+                cadreAllocationList = formatCadreAllocationMonthly(rs);
+            } else {
+                while (rs.next()) {
+                    CadreAllocation cadreAllocation = new CadreAllocation();
+                    cadreAllocation.setCadre(rs.getString("cadre"));
+                    cadreAllocation.setCadreCount(rs.getString("cadre_count"));
+                    cadreAllocation.setId(rs.getString("id"));
+                    cadreAllocation.setPeriod(pe);
+                    cadreAllocationList.add(cadreAllocation);
+                }
             }
+
         } catch (SQLException ex) {
             log.error(ex);
         } finally {
             db.CloseConnection();
         }
+
         return cadreAllocationList;
     }
 

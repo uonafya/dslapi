@@ -74,6 +74,7 @@ public class Ihris {
             @RequestParam(value = "pe", required = false) String pe,
             @RequestParam(value = "ouid", required = false) String ou,
             @RequestParam(value = "id", required = false) String cadre,
+            @RequestParam(value = "periodtype", required = false) String periodtype,
             @RequestParam(value = "groupId", required = false) String groupId
     ) {
         try {
@@ -82,7 +83,7 @@ public class Ihris {
                     || ou != null
                     || cadre != null) {
 
-                List<CadreAllocation> cadreAllocationList = ihris.getCadreAllocation(pe, ou, cadre);
+                List<CadreAllocation> cadreAllocationList = ihris.getCadreAllocation(pe, ou, cadre,periodtype);
                 return new ResponseEntity<List>(cadreAllocationList, HttpStatus.OK);
             } else if (groupId != null) {// return list of indicators in this group id
                 List<Cadre> cadreGroupList = ihris.getCadresByGroup(Integer.parseInt(groupId));
@@ -107,11 +108,12 @@ public class Ihris {
     public ResponseEntity<?> getSingleCadreAllocation(
             @RequestParam(value = "pe", required = false) String pe,
             @RequestParam(value = "ouid", required = false) String ou,
+            @RequestParam(value = "periodtype", required = false) String periodtype,
             @PathVariable("id") String id
     ) {
         try {
             IhrisDao ihris = new IhrisDao();
-            List<CadreAllocation> cadreAllocationList = ihris.getCadreAllocation(pe, ou, id);
+            List<CadreAllocation> cadreAllocationList = ihris.getCadreAllocation(pe, ou, id,periodtype);
             return new ResponseEntity<List>(cadreAllocationList, HttpStatus.OK);
 
         } catch (DslException ex) {
