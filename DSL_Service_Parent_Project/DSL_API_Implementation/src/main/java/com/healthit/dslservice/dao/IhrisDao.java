@@ -212,6 +212,7 @@ public class IhrisDao {
                 cadreAllocation.setCadre(rs.getString("cadre"));
                 cadreAllocation.setCadreCount(rs.getString("cadre_count"));
                 cadreAllocation.setId(rs.getString("id"));
+                cadreAllocation.setPeriod(pe);
                 cadreAllocationList.add(cadreAllocation);
             }
         } catch (SQLException ex) {
