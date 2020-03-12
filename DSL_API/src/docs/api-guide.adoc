@@ -486,6 +486,55 @@ include::{snippets}/test-facilities-by-owner-type-id-returned/path-parameters.ad
 include::{snippets}/test-facilities-by-owner-type-id-returned/response-fields.adoc[]
 
 
+// =======================RESOURCES===========================>>>
+// =======================RESOURCES===========================>>>
+
+*Health infrastructure resources*
+
+== Get cots count
+Requesting the count of beds along the orgunit structure
+
+=== Curl Request
+include::{snippets}/test-facilities-get-cots-count-returned/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-facilities-get-cots-count-returned/http-request.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-facilities-get-cots-count-returned/http-response.adoc[]
+
+=== Path parameter definition
+include::{snippets}/test-facilities-get-cots-count-returned/path-parameters.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-facilities-get-cots-count-returned/response-fields.adoc[]
+
+// ==================================================>>>
+
+
+== Get beds count
+Requesting the count of beds along the orgunit structure
+
+=== Curl Request
+include::{snippets}/test-facilities-get-beds-count-returned/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-facilities-get-beds-count-returned/http-request.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-facilities-get-beds-count-returned/http-response.adoc[]
+
+=== Path parameter definition
+include::{snippets}/test-facilities-get-beds-count-returned/path-parameters.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-facilities-get-beds-count-returned/response-fields.adoc[]
+
+
 // =======================Location===========================>>>
 // =======================Location===========================>>>
 

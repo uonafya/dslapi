@@ -210,7 +210,7 @@ public class Kmfl {
 
     @CrossOrigin
     @ResponseBody
-    @RequestMapping(value = "/facility/beds", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/resource/beds", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getFacilitiesBedCapacity(
             @RequestParam(value = "ouid", required = false) String ouid) {
 
@@ -227,7 +227,7 @@ public class Kmfl {
 
     @CrossOrigin
     @ResponseBody
-    @RequestMapping(value = "/facility/cots", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @RequestMapping(value = "/resource/cots", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getFacilitiesCotCapacity(
             @RequestParam(value = "ouid", required = false) String ouid) {
 
