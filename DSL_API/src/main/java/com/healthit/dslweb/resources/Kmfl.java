@@ -7,6 +7,7 @@ package com.healthit.dslweb.resources;
 
 import com.healthit.dslservice.DslException;
 import com.healthit.dslservice.dao.FacilityDao;
+import com.healthit.dslservice.dto.OrgUnitAmenities;
 import com.healthit.dslservice.dto.adminstrationlevel.Facility;
 import com.healthit.dslservice.dto.kmfl.FacilityLevel;
 import com.healthit.dslservice.dto.kmfl.FacilityType;
@@ -121,7 +122,7 @@ public class Kmfl {
         }
 
     }
-    
+
     @CrossOrigin
     @ResponseBody
     @RequestMapping(value = "/facilitytype/all", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -129,8 +130,8 @@ public class Kmfl {
         System.out.println("by group");
         try {
             FacilityDao facilityDao = new FacilityDao();
-            Map<String,Integer> facilityList = facilityDao.getAllFacilitiesByType();
-            return new ResponseEntity<Map<String,Integer>>(facilityList, HttpStatus.OK);
+            Map<String, Integer> facilityList = facilityDao.getAllFacilitiesByType();
+            return new ResponseEntity<Map<String, Integer>>(facilityList, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (Exception e) {
@@ -206,16 +207,36 @@ public class Kmfl {
         }
 
     }
-    
+
     @CrossOrigin
     @ResponseBody
-    @RequestMapping(value = "/facility/beds/{ouid}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getFacilitiesBedCapacity(@PathVariable("ouid") int ouid) {
+    @RequestMapping(value = "/facility/beds", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getFacilitiesBedCapacity(
+            @RequestParam(value = "ouid", required = false) String ouid) {
+
         try {
             FacilityDao facilityDao = new FacilityDao();
-            List<FacilityType> facilityList = facilityDao.getFacilitiesBedCapacity(ouid);
-            return new ResponseEntity<List>(facilityList, HttpStatus.OK);
+            List<OrgUnitAmenities> facilityOrgUnitAmenities = facilityDao.getFacilitiesBedCapacity(ouid);
+            return new ResponseEntity<List>(facilityOrgUnitAmenities, HttpStatus.OK);
         } catch (DslException ex) {
+            log.error(ex);
+            return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+
+    @CrossOrigin
+    @ResponseBody
+    @RequestMapping(value = "/facility/cots", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getFacilitiesCotCapacity(
+            @RequestParam(value = "ouid", required = false) String ouid) {
+
+        try {
+            FacilityDao facilityDao = new FacilityDao();
+            List<OrgUnitAmenities> facilityOrgUnitAmenities = facilityDao.getFacilitiesCotCapacity(ouid);
+            return new ResponseEntity<List>(facilityOrgUnitAmenities, HttpStatus.OK);
+        } catch (DslException ex) {
+            log.error(ex);
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
