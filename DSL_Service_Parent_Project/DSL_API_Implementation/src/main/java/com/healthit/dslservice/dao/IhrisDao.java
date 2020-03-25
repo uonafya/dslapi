@@ -62,10 +62,11 @@ public class IhrisDao {
      * @throws DslException
      */
     private String insertPeriodPart(String pe, String sqlString) throws DslException {
+        log.info("insert period part "+ pe);
         String periodString = "";
         RequestParameters.isValidPeriod(pe);
 
-        if (pe.length() == 4) {
+        if (pe.trim().length() == 4) {
             String replacement = " ihris.hire_date<='@end_year@-12-31' ".replace("@end_year@", pe);
             periodString = replacement;
         } else {
@@ -74,8 +75,10 @@ public class IhrisDao {
             String replacement = " ihris.hire_date<='@end_year@-@month@-31' ".replace("@end_year@", paramYear).replace("@month@", paramMonth);
             periodString = replacement;
         }
-
+        log.debug("replacement string "+ periodString);
+        log.debug("insert period part query "+ sqlString);
         sqlString = sqlString.replace("@pe@", periodString);
+        log.debug("insert period part final query "+ sqlString);
         return sqlString;
 
     }
@@ -147,6 +150,7 @@ public class IhrisDao {
      * @throws DslException
      */
     private String insertCadrePart(String cadre) throws DslException {
+        log.info("insert cadre part "+ cadre);
         String replacement;
         if (appendAnd) {
             replacement = " and cadree.dataelementid = " + cadre;
@@ -223,7 +227,14 @@ public class IhrisDao {
         return cadreAllocationList;
     }
 
-    private List<CadreAllocation> formatCadreAllocationMonthly(ResultSet rs) throws SQLException {
+    private List<CadreAllocation> formatCadreAllocationMonthly(ResultSet rs,String requestedPeriod) throws SQLException {
+
+        if (rs.next()) {
+            rs.beforeFirst();
+        } else {
+            return null;
+        }
+
         Map<String, CadreAllocation> yearMonthCadreAllocMap = new LinkedHashMap();
         List<String> availableMonthCadres = new ArrayList();
         while (rs.next()) {
@@ -231,7 +242,7 @@ public class IhrisDao {
             cadreAllocation.setCadre(rs.getString("cadre"));
             String cCount = rs.getString("cadre_count");
             String month = rs.getString("month");
-            String year = rs.getString("year");
+            String year = requestedPeriod;
             String yearMonth = year + month;
             cadreAllocation.setCadreCount(cCount);
             cadreAllocation.setId(rs.getString("id"));
@@ -263,13 +274,13 @@ public class IhrisDao {
                 log.info("ihris filler month has values");
                 //get top value in array
                 String topYearMonth = availableMonthCadres.get(availableMonthCadres.size() - 1);
-                int missingCadreCountMonths =Integer.parseInt(yearMonth.substring(4)) -Integer.parseInt(topYearMonth.substring(4));
+                int missingCadreCountMonths = Integer.parseInt(yearMonth.substring(4)) - Integer.parseInt(topYearMonth.substring(4));
                 for (int x = 1; x < missingCadreCountMonths; x++) {
 
-                    CadreAllocation previousAvailableCadreAlloc = yearMonthCadreAllocMap.get(topYearMonth);                    
-                    int newMnth=Integer.parseInt(topYearMonth.substring(4))+ x;
-                    String newYearMnt = topYearMonth.substring(0,4) + newMnth;
-                    
+                    CadreAllocation previousAvailableCadreAlloc = yearMonthCadreAllocMap.get(topYearMonth);
+                    int newMnth = Integer.parseInt(topYearMonth.substring(4)) + x;
+                    String newYearMnt = topYearMonth.substring(0, 4) + newMnth;
+
                     try {
                         CadreAllocation missingCadreAlloc = (CadreAllocation) previousAvailableCadreAlloc.clone();
                         missingCadreAlloc.setPeriod(newYearMnt);
@@ -293,21 +304,21 @@ public class IhrisDao {
             }
 
         }
-        log.info("yearMonthCadreAllocMap.size(): "+yearMonthCadreAllocMap.size());
+        log.info("yearMonthCadreAllocMap.size(): " + yearMonthCadreAllocMap.size());
         //fill remaining months if not 12 months there
         if (yearMonthCadreAllocMap.size() < 12) {
             log.info("ihris filler month less that 12 months");
             //get top value in array
             String topYearMonth = availableMonthCadres.get(availableMonthCadres.size() - 1);
-            int missingCadreCountMonths = 12 - yearMonthCadreAllocMap.size(); 
+            int missingCadreCountMonths = 12 - yearMonthCadreAllocMap.size();
             for (int x = 1; x <= missingCadreCountMonths; x++) {
-                log.debug("filler loop "+x);
-                log.debug("top year month "+topYearMonth);
+                log.debug("filler loop " + x);
+                log.debug("top year month " + topYearMonth);
                 CadreAllocation previousAvailableCadreAlloc = yearMonthCadreAllocMap.get(topYearMonth);
-                int newMnth=Integer.parseInt(topYearMonth.substring(4))+ x;
-                String newYearMnt = topYearMonth.substring(0,4) + newMnth;
-                
-                log.debug("new month "+Integer.parseInt(topYearMonth) + x);
+                int newMnth = Integer.parseInt(topYearMonth.substring(4)) + x;
+                String newYearMnt = topYearMonth.substring(0, 4) + newMnth;
+
+                log.debug("new month " + Integer.parseInt(topYearMonth) + x);
                 try {
                     CadreAllocation missingCadreAlloc = (CadreAllocation) previousAvailableCadreAlloc.clone();
                     missingCadreAlloc.setPeriod(newYearMnt);
@@ -322,58 +333,71 @@ public class IhrisDao {
     }
 
     /**
+     * Creates cadreCountQuery if the period types passed is monthly
      *
-     * @param pe semi colon separated period
-     * @param ou semi colon separated org unit ids
-     * @param cadre semi colon separated cadre ids
-     * @return cadre allocation objects
+     * @param pe period to query
+     * @param ou organisation unit id to query
+     * @param cadre cadre id to query
+     * @param periodtype period type to query
+     * @param cadreQueryString query string to append query parameters
+     * @return
      * @throws DslException
      */
-    public List<CadreAllocation> getCadreAllocation(String pe, String ou, String cadre, String periodtype) throws DslException {
-        if (periodtype != null && periodtype.equals("monthly")) {
-            RequestParameters.isValidPeriod(pe);
-            String paramYear;
-            String periodFilter;
-            int currentYear = Calendar.getInstance().get(Calendar.YEAR);
-            nationalCadreCount = "select id,cadre,cadre_count, date_part('year', hire_date) as year,date_part('month', hire_date) as month from"
-                    + " (select cadree.dataelementid as id,cadree.dataelementname as cadre, to_char(hire_date, 'YYYY-MM')  as yearmonth,hire_date,\n"
-                    + "count(*) OVER(ORDER BY hire_date) AS cadre_count \n"
-                    + "from fact_ihris ihris inner join dim_ihris_dataelement cadree on cast(cadree.dataelementid as varchar) = cast(ihris.job_category_id as varchar) \n"
-                    + " @ou_join@ \n"
-                    + "@cadre@ @ou@ ) x @pe@ group by hire_date,cadre,yearmonth,id,cadre_count order by year,month asc";
-
-            if (pe != null) {
-                log.debug("period not null: " + pe);
-                if (pe.length() != 0 && pe.length() >= 4) {
-                    log.debug("period length not 0");
-                    paramYear = pe.substring(0, 4);
-                    periodFilter = " where date_part('year', hire_date)='" + paramYear + "' ";
-                    nationalCadreCount = nationalCadreCount.replace("@pe@", periodFilter);
-                    log.debug(periodFilter);
-                    log.debug(nationalCadreCount);
-                } else {
-                    log.debug("period lenght less than 4 or is empty");
-                    periodFilter = " where date_part('year', hire_date)='" + pe + "' ";
-                    nationalCadreCount = nationalCadreCount.replace("@pe@", periodFilter);
-                }
+    private String createsCadreCountQueryIfMonthlyTypePeriod(String pe, String ou, String cadre, String periodtype, boolean isRecurse) throws DslException {
+        RequestParameters.isValidPeriod(pe);
+        String paramYear;
+        String periodFilter;
+        String ordering = isRecurse ? "desc limit 1" : "asc";
+        nationalCadreCount = "select id,cadre,cadre_count, date_part('year', hire_date) as year,date_part('month', hire_date) as month from"
+                + " (select cadree.dataelementid as id,cadree.dataelementname as cadre, to_char(hire_date, 'YYYY-MM')  as yearmonth,hire_date,\n"
+                + "count(*) OVER(ORDER BY hire_date) AS cadre_count \n"
+                + "from fact_ihris ihris inner join dim_ihris_dataelement cadree on cast(cadree.dataelementid as varchar) = cast(ihris.job_category_id as varchar) \n"
+                + " @ou_join@ \n"
+                + "@cadre@ @ou@ ) x @pe@ group by hire_date,cadre,yearmonth,id,cadre_count order by year,month " + ordering;
+//  
+            log.debug("period not null: " + pe);
+            if (pe.length() != 0 && pe.length() >= 4) {
+                log.debug("period length not 0");
+                paramYear = pe.substring(0, 4);
+                periodFilter = " where date_part('year', hire_date)='" + paramYear + "' ";
+                nationalCadreCount = nationalCadreCount.replace("@pe@", periodFilter);
+                log.debug(periodFilter);
+                log.debug(nationalCadreCount);
             } else {
-                nationalCadreCount = nationalCadreCount.replace("@pe@", " where date_part('year', hire_date)=2019 ");
+                log.debug("period lenght less than 4 or is empty");
+                periodFilter = " where date_part('year', hire_date)='" + pe + "' ";
+                nationalCadreCount = nationalCadreCount.replace("@pe@", periodFilter);
             }
+        
 
-            if (cadre != null) {
-                log.debug("cadre is not null: " + cadre);
-                String cadreFilter = " where cadree.dataelementid='" + cadre + "' ";
-                nationalCadreCount = nationalCadreCount.replace("@cadre@", cadreFilter);
-                appendAnd = true;
-            } else {
-                log.debug("cadre is null: " + cadre);
-                nationalCadreCount = nationalCadreCount.replace("@cadre@", " ");
-            }
-
-            pe = null;
-            cadre = null;
+        if (cadre != null) {
+            log.debug("cadre is not null: " + cadre);
+            String cadreFilter = " where cadree.dataelementid='" + cadre + "' ";
+            nationalCadreCount = nationalCadreCount.replace("@cadre@", cadreFilter);
+            appendAnd = true;
+        } else {
+            log.debug("cadre is null: " + cadre);
+            nationalCadreCount = nationalCadreCount.replace("@cadre@", " ");
         }
 
+        pe = null;
+        cadre = null;
+        return nationalCadreCount;
+    }
+
+    /**
+     * Appends query parameters to query
+     *
+     * @param pe period to query
+     * @param ou organisation unit id to query
+     * @param cadre cadre id to query
+     * @param periodtype period type to query
+     * @param cadreQueryString query string to append query parameters
+     * @return
+     * @throws DslException
+     */
+    private String appendCadresCountParts(String pe, String ou, String cadre, String periodtype) throws DslException {
+        log.info("Appending cadres count query parts");
         if (pe != null) {
             nationalCadreCount = insertPeriodPart(pe, nationalCadreCount);
             appendAnd = true;
@@ -402,14 +426,49 @@ public class IhrisDao {
             nationalCadreCount = nationalCadreCount.replace("@ou_join@", "");
         }
 
+        return nationalCadreCount;
+    }
+
+    /**
+     *
+     * @param pe semi colon separated period
+     * @param ou semi colon separated org unit ids
+     * @param cadre semi colon separated cadre ids
+     * @return cadre allocation objects
+     * @throws DslException
+     */
+    public List<CadreAllocation> getCadreAllocation(String pe, String ou, String cadre, String periodtype) throws DslException {
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+        if(pe==null){
+            pe=Integer.toString(currentYear);
+        }
+        if (periodtype != null && periodtype.equals("monthly")) {
+            if(pe.length()>4){
+                pe=pe.substring(0, 5);
+            }
+            nationalCadreCount = createsCadreCountQueryIfMonthlyTypePeriod(pe, ou, cadre, periodtype, false);
+        }
+        String requestedPeriod=pe;
+
+        nationalCadreCount = appendCadresCountParts(pe, ou, cadre, periodtype);
+
         List<CadreAllocation> cadreAllocationList = new ArrayList();
-        log.info("Fetching cadre groups");
+        log.info("Fetching cadre allocations");
         Database db = new Database();
         ResultSet rs = db.executeQuery(nationalCadreCount);
 
         try {
             if (periodtype != null && periodtype.equals("monthly")) {
-                cadreAllocationList = formatCadreAllocationMonthly(rs);
+                log.debug("loop till last cadre count");
+                cadreAllocationList = formatCadreAllocationMonthly(rs,requestedPeriod);
+                log.debug(cadreAllocationList);
+                while(cadreAllocationList ==null){
+                    pe=Integer.toString((Integer.parseInt(pe)-1));
+                    nationalCadreCount = createsCadreCountQueryIfMonthlyTypePeriod(pe, ou, cadre, periodtype, true);
+                    nationalCadreCount = appendCadresCountParts(pe, ou, cadre, periodtype);
+                    rs = db.executeQuery(nationalCadreCount);
+                    cadreAllocationList = formatCadreAllocationMonthly(rs,requestedPeriod);
+                }
             } else {
                 while (rs.next()) {
                     CadreAllocation cadreAllocation = new CadreAllocation();
