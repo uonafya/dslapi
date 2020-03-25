@@ -1,5 +1,6 @@
 package com.healthit.dslweb.resources;
 
+import com.google.gson.Gson;
 import com.healthit.dslservice.DslException;
 import com.healthit.dslservice.dao.DhisDao;
 import com.healthit.dslservice.dao.FacilityDao;
@@ -12,6 +13,8 @@ import com.healthit.dslservice.dto.ihris.Cadre;
 import com.healthit.dslservice.dto.ihris.CadreGroup;
 import com.healthit.dslservice.message.Message;
 import com.healthit.dslweb.service.JsonBuilder;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -52,7 +55,7 @@ public class Dhis {
                     || ouid != null
                     || id != null) {
                 log.info("indicators without filter");
-                Map<String, Map> indicatorValue = dhisDao.getKPIValue(pe, ouid, id);
+                Map<String, Map> indicatorValue = dhisDao.getKPIValue(pe, ouid, id,null);
                 log.debug(indicatorValue);
                 return new ResponseEntity<Map<String, Map>>(indicatorValue, HttpStatus.OK);
 
@@ -79,15 +82,16 @@ public class Dhis {
     @CrossOrigin
     @ResponseBody
     @RequestMapping(value = "/indicators/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getIndicators(
+    public ResponseEntity<?> getIndicatorsByLevel(
             @RequestParam(value = "pe", required = false) String pe,
             @RequestParam(value = "ouid", required = false) String ouid,
+            @RequestParam(value = "level", required = false) String level,
             @PathVariable("id") String id
     ) {
         try {
             DhisDao dhisDao = new DhisDao();
             log.info("indicators without filter");
-            Map<String, Map> indicatorValue = dhisDao.getKPIValue(pe, ouid, id);
+            Map<String, Map> indicatorValue = dhisDao.getKPIValue(pe, ouid, id, level);
             log.debug(indicatorValue);
             return new ResponseEntity<Map<String, Map>>(indicatorValue, HttpStatus.OK);
         } catch (DslException ex) {
@@ -116,6 +120,52 @@ public class Dhis {
             log.error("unknow request " + e);
             return new ResponseEntity<String>("Unknown request", HttpStatus.BAD_REQUEST);
         }
+
+    }
+
+    @CrossOrigin
+    @ResponseBody
+    @RequestMapping(value = "/forecast/{indicatorid}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> forecast(
+            @RequestParam(value = "periodspan", required = false) String periodSpan,
+            @RequestParam(value = "periodtype", required = false) String periodType,
+            @RequestParam(value = "ouid", required = false) String ouid,
+            @PathVariable("indicatorid") String indicatorId
+    ) { 
+        //for documentation pourpose
+        if(periodSpan!=null || periodType!=null){
+            if(periodSpan.trim().equals("x") || periodSpan.trim().equals("x")){
+                return forecastDummy();
+            }
+        }
+        try {
+            DhisDao dhisDao = new DhisDao();
+            log.info("indicators without filter");
+            Map<String, Map> predictedData = dhisDao.predict(indicatorId, ouid, periodType, periodSpan);
+            return new ResponseEntity<Map<String, Map>>(predictedData, HttpStatus.OK);
+        } catch (DslException ex) {
+            return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+   
+    /**
+     * This method is for documentation pourpose for predefined data returned by predictorr
+     * @param periodSpan
+     * @param periodType
+     * @param ouid
+     * @param indicatorId
+     * @return 
+     */
+
+    private ResponseEntity<?> forecastDummy() {
+        Gson gson = new Gson();
+        BufferedReader br = new BufferedReader(new InputStreamReader(
+                           this.getClass().getResourceAsStream("/predict.json")));
+        Map results=gson.fromJson(br, Map.class);
+        log.info("got data =====> ");
+        log.info(results);
+        return new ResponseEntity<Map<String, Map>>(results, HttpStatus.OK);
 
     }
 

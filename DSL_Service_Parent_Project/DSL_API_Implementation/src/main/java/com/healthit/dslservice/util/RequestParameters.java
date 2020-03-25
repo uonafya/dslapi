@@ -28,22 +28,25 @@ public class RequestParameters {
     Cache cache = DslCache.getCache();
 
     public static void isValidPeriod(String pe) throws DslException {
-        try {
-            Integer.parseInt(pe);
-        } catch (Exception e) {
-            Message msg = new Message();
-            msg.setMessageType(MessageType.NUMBER_FORMAT_ERROR);
-            msg.setMesageContent("Please check the period parameter, format YYYY or YYYYmm");
-            DslException dslExc = new DslException(msg);
-            throw dslExc;
-        }
-        if (pe.trim().length() != 4 && pe.trim().length() != 6) {
-            log.info("the period passed: " + pe);
-            Message msg = new Message();
-            msg.setMessageType(MessageType.YEAR_FORMAT_ERROR);
-            msg.setMesageContent("Please check the period parameter, format YYYY or YYYYmm");
-            DslException dslExc = new DslException(msg);
-            throw dslExc;
+        String[] periodList=pe.split(";");
+        for(int x=0;x<periodList.length;x++){
+            try {
+                Integer.parseInt(periodList[x]);
+            } catch (Exception e) {
+                Message msg = new Message();
+                msg.setMessageType(MessageType.NUMBER_FORMAT_ERROR);
+                msg.setMesageContent("Please check the period parameter(s), format YYYY or YYYYmm");
+                DslException dslExc = new DslException(msg);
+                throw dslExc;
+            }
+            if (periodList[x].trim().length() != 4 && periodList[x].trim().length() != 6) {
+                log.info("the period passed: " + periodList[x]);
+                Message msg = new Message();
+                msg.setMessageType(MessageType.YEAR_FORMAT_ERROR);
+                msg.setMesageContent("Please check the period parameter(s), format YYYY or YYYYmm");
+                DslException dslExc = new DslException(msg);
+                throw dslExc;
+            }
         }
     }
 

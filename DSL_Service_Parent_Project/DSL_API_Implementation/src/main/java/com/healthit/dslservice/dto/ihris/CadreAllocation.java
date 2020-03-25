@@ -9,10 +9,12 @@ package com.healthit.dslservice.dto.ihris;
  *
  * @author duncan
  */
-public class CadreAllocation {
+public class CadreAllocation implements Cloneable {
+
     private String cadre;
     private String cadreCount; //total number allocated
     private String id;
+    private String period;
 
     public String getCadre() {
         return cadre;
@@ -37,6 +39,18 @@ public class CadreAllocation {
     public void setId(String id) {
         this.id = id;
     }
-    
-    
+
+    public String getPeriod() {
+        return period;
+    }
+
+    public void setPeriod(String period) {
+        this.period = period;
+    }
+
+    public Object clone() throws CloneNotSupportedException {
+        CadreAllocation cadreAllocation = (CadreAllocation) super.clone();
+        return cadreAllocation;
+    }
+
 }

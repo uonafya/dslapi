@@ -13,7 +13,11 @@
 
 This DSL Web API is provided in a RESTful architectural style. It supports one HTTP method, the GET method, as the resources exposed are read only, providing historical facts in the health space.
 
-Resources exposed from the API are the National human resource capacity, health key perfomance indicators, data from the kenya health master facility list.
+Resources exposed from the API are the National human resource capacity, health key perfomance indicators, data from the Kenya health master facility list.
+
+*References*
+
+$servername is the host server address. This currently resolves to 41.89.94.105
 // ======================DHIS============================>>>
 // ======================DHIS============================>>>
 
@@ -85,6 +89,35 @@ include::{snippets}/test-indicators-values-returned-with-path-and-request-parame
 include::{snippets}/test-indicators-values-returned-with-path-and-request-parameters/response-fields.adoc[]
 
 // ==================================================>>>
+
+
+// ==================================================>>>
+
+== Get indicator Values per level basis
+Requesting orgunit level wise indicator values using a HTTP path parameter; gets indicator values for level below requested orgunit
+
+=== Curl Request
+include::{snippets}/test-indicators-values-requested-per-level-basis/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-indicators-values-requested-per-level-basis/http-request.adoc[]
+
+=== Request parameters definition
+include::{snippets}/test-indicators-values-requested-per-level-basis/request-parameters.adoc[]
+
+=== Path parameter definition
+include::{snippets}/test-indicators-values-requested-per-level-basis/path-parameters.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-indicators-values-requested-per-level-basis/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-indicators-values-requested-per-level-basis/response-fields.adoc[]
+
+// ==================================================>>>
+
 
 == Get available indicator groups
 Requesting a list of indicator groups
@@ -216,7 +249,7 @@ include::{snippets}/test-cadre-groups-returned-api-call/response-fields.adoc[]
 // ==================================================>>>
 
 == Get cadres under a cadre group
-Requesting a list of indicators under same indicator group
+Requesting a list of cadres under same cadre group
 
 === Curl Request
 include::{snippets}/test-cadres-by-group-id-returned/curl-request.adoc[]
@@ -234,6 +267,35 @@ include::{snippets}/test-cadres-by-group-id-returned/request-parameters.adoc[]
 
 === Response fields definition
 include::{snippets}/test-cadres-by-group-id-returned/response-fields.adoc[]
+
+
+
+// ==================================================>>>
+
+== Get Cadre group count/allocation
+Requesting for cadre group count values. Atleast one of the request parameters must be provided to get cadre group allocation;
+If not, only a list of cadre group available is given.
+
+=== Curl Request
+include::{snippets}/test-cadres-group-values-returned-with-request-parameters/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-cadres-group-values-returned-with-request-parameters/http-request.adoc[]
+
+=== Request parameters definition
+include::{snippets}/test-cadres-group-values-returned-with-request-parameters/request-parameters.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-cadres-group-values-returned-with-request-parameters/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-cadres-group-values-returned-with-request-parameters/response-fields.adoc[]
+
+
+// ==================================================>>>
+
 
 // =======================KHMFL===========================>>>
 // =======================KHMFL===========================>>>
@@ -424,6 +486,55 @@ include::{snippets}/test-facilities-by-owner-type-id-returned/path-parameters.ad
 include::{snippets}/test-facilities-by-owner-type-id-returned/response-fields.adoc[]
 
 
+// =======================RESOURCES===========================>>>
+// =======================RESOURCES===========================>>>
+
+*Health infrastructure resources*
+
+== Get cots count
+Requesting the count of beds along the orgunit structure
+
+=== Curl Request
+include::{snippets}/test-facilities-get-cots-count-returned/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-facilities-get-cots-count-returned/http-request.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-facilities-get-cots-count-returned/http-response.adoc[]
+
+=== Path parameter definition
+include::{snippets}/test-facilities-get-cots-count-returned/path-parameters.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-facilities-get-cots-count-returned/response-fields.adoc[]
+
+// ==================================================>>>
+
+
+== Get beds count
+Requesting the count of beds along the orgunit structure
+
+=== Curl Request
+include::{snippets}/test-facilities-get-beds-count-returned/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-facilities-get-beds-count-returned/http-request.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-facilities-get-beds-count-returned/http-response.adoc[]
+
+=== Path parameter definition
+include::{snippets}/test-facilities-get-beds-count-returned/path-parameters.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-facilities-get-beds-count-returned/response-fields.adoc[]
+
+
 // =======================Location===========================>>>
 // =======================Location===========================>>>
 
@@ -485,4 +596,33 @@ include::{snippets}/test-counties-returned-api-call/http-response.adoc[]
 
 === Response fields definition
 include::{snippets}/test-counties-returned-api-call/response-fields.adoc[]
+// ==================================================>>>
+
+// ==================================================>>>
+
+== Get indicator projections and time series data
+Request for indicator projections and timeseries data.
+In this senario, periodtype (defined as x) is set to yearly where as
+The periodspan (defined as x too) is set to 12
+
+=== Curl Request
+include::{snippets}/test-predictor/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-predictor/http-request.adoc[]
+
+=== Request parameters definition
+include::{snippets}/test-predictor/request-parameters.adoc[]
+
+=== Path parameter definition
+include::{snippets}/test-predictor/path-parameters.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-predictor/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-predictor/response-fields.adoc[]
+
 // ==================================================>>>

@@ -4,13 +4,13 @@
     <parent>
         <artifactId>DSL_Service_Layer</artifactId>
         <groupId>com.healthit</groupId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0</version>
     
     </parent>
 
     <groupId>com.healthit</groupId>
     <artifactId>DSL_API</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     <packaging>war</packaging>
     
     <name>DSL API</name>
@@ -53,11 +53,9 @@
         <dependency>
             <groupId>com.healthit</groupId>
             <artifactId>DSL_API_Implementation</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0</version>
         </dependency>
   
-        
-
         <dependency>
             <groupId>org.springframework.restdocs</groupId>
             <artifactId>spring-restdocs-mockmvc</artifactId>

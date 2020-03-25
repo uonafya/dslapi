@@ -58,7 +58,7 @@ public class IhrisApisDocumentationTest {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(this.context).alwaysDo(document("{method-name}",
                 preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint()))).apply(documentationConfiguration(this.restDocumentation).uris()
                 .withScheme("http")
-                .withHost("41.89.94.105/dsl/api")
+                .withHost("servername/dsl/api")
                 .withPort(80))
                 .build();
     }
@@ -80,17 +80,21 @@ public class IhrisApisDocumentationTest {
         String periodDec = "Period parameter. Can be an explicit year, YYYY (eg 2018) which will give the stated year values, or YYYYmm (eg 201801) which gives "
                 + "cadre count upto that given month";
         this.mockMvc.perform(
-                get("/cadres?pe=2017&ouid=23408&id=33").accept(MediaType.APPLICATION_JSON))
+                get("/cadres?pe=2017&ouid=18&id=33&periodtype=monthly").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()).andDo(document("test-cadres-values-returned-with-request-parameters", requestParameters(
                 parameterWithName("pe").description(periodDec),
                 parameterWithName("ouid").description("Organisation unit id, if not provided defaults to national"),
-                parameterWithName("id").description("Cadre ID, if not provided gives count for all cadres")
+                parameterWithName("id").description("Cadre ID, if not provided gives count for all cadres"),
+                parameterWithName("periodtype").description("Values: (yearly or montly)."
+                        + " Dictates wheather to return data aggregate per year or dissegrage to monthly"
+                        + "If not provided defaults to yearly")
         ), responseFields(
                 fieldWithPath("[].cadre")
                         .description("Cadre name"),
                 fieldWithPath("[].cadreCount")
                         .description("Cadre count"),
-                fieldWithPath("[].id").description("Cadre Id")
+                fieldWithPath("[].id").description("Cadre Id"),
+                fieldWithPath("[].period").description("Period requested")
         )
         ));
     }
@@ -100,10 +104,13 @@ public class IhrisApisDocumentationTest {
         String periodDec = "Period parameter. Can be an explicit year, YYYY (eg 2018) which will give the stated year values, or YYYYmm (eg 201801) which gives "
                 + "cadre count upto that given month";
         this.mockMvc.perform(
-                RestDocumentationRequestBuilders.get("/cadres/{id}?pe=2017&ouid=23408", 33).accept(MediaType.APPLICATION_JSON))
+                RestDocumentationRequestBuilders.get("/cadres/{id}?pe=2017&ouid=23408&periodtype=yearly", 33).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()).andDo(document("test-cadres-values-returned-with-path-and-request-parameters", pathParameters(
                 parameterWithName("id").description("Cadre ID, if not provided gives count for all cadres")
         ), requestParameters(
+                parameterWithName("periodtype").description("Values: (yearly or montly). "
+                        + "Dictates wheather to return data aggregate per year or dissegrage to monthly."
+                        + "If not provided defaults to yearly"),
                 parameterWithName("pe").description(periodDec),
                 parameterWithName("ouid").description("Organisation unit id, if not provided defaults to national")
         ), responseFields(
@@ -111,7 +118,32 @@ public class IhrisApisDocumentationTest {
                         .description("Cadre name"),
                 fieldWithPath("[].cadreCount")
                         .description("Cadre count"),
-                fieldWithPath("[].id").description("Cadre Id")
+                fieldWithPath("[].id").description("Cadre Id"),
+                fieldWithPath("[].period").description("Period requested")
+        )
+        ));
+    }
+    
+    
+    
+    
+    @Test
+    public void testCadresGroupValuesReturnedWithRequestParameters() throws Exception {
+        String periodDec = "Period parameter. Can be an explicit year, YYYY (eg 2018) which will give the stated year values, or YYYYmm (eg 201801) which gives "
+                + "cadre count upto that given month";
+        this.mockMvc.perform(
+                get("/cadregroups?pe=2017&ouid=18&id=2").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andDo(document("test-cadres-group-values-returned-with-request-parameters", requestParameters(
+                parameterWithName("pe").description(periodDec),
+                parameterWithName("ouid").description("Organisation unit id, if not provided defaults to national"),
+                parameterWithName("id").description("Cadre group ID, if not provided gives count for all cadre groups")
+        ), responseFields(
+                fieldWithPath("[].cadre")
+                        .description("Cadre group name"),
+                fieldWithPath("[].cadreCount")
+                        .description("Cadre count"),
+                fieldWithPath("[].id").description("Cadre group Id"),
+                fieldWithPath("[].period").description("Period")
         )
         ));
     }

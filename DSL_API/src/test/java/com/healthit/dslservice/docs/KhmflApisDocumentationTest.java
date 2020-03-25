@@ -30,6 +30,7 @@ import org.springframework.web.context.WebApplicationContext;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
+import static org.springframework.restdocs.request.RequestDocumentation.requestParameters;
 
 /**
  *
@@ -52,7 +53,7 @@ public class KhmflApisDocumentationTest {
         this.mockMvc = MockMvcBuilders.webAppContextSetup(this.context).alwaysDo(document("{method-name}",
                 preprocessRequest(prettyPrint()), preprocessResponse(prettyPrint()))).apply(documentationConfiguration(this.restDocumentation).uris()
                 .withScheme("http")
-                .withHost("41.89.94.105/dsl/api")
+                .withHost("servername/dsl/api")
                 .withPort(80))
                 .build();
     }
@@ -66,7 +67,8 @@ public class KhmflApisDocumentationTest {
                         .description("Facility ID"),
                 fieldWithPath("[].name")
                         .description("Facility Name"),
-                fieldWithPath("[].wardId").description("Ward Id that facility belongs to")
+                fieldWithPath("[].parentid").description("Parent Id (ward) that facility belongs to"),
+                fieldWithPath("[].level").description("Level in the org unit hierarchy")
         )));
     }
 
@@ -93,7 +95,8 @@ public class KhmflApisDocumentationTest {
                         .description("Facility ID"),
                 fieldWithPath("[].name")
                         .description("Facility Name"),
-                fieldWithPath("[].wardId").description("Ward Id that facility belongs to")
+                fieldWithPath("[].parentid").description("Parent Id (ward) that facility belongs to"),
+                fieldWithPath("[].level").description("Level in the org unit hierarchy")
         )
         ));
     }
@@ -121,7 +124,9 @@ public class KhmflApisDocumentationTest {
                         .description("Facility ID"),
                 fieldWithPath("[].name")
                         .description("Facility Name"),
-                fieldWithPath("[].wardId").description("Ward Id that facility belongs to")
+                fieldWithPath("[].parentid").description("Parent Id (ward) that facility belongs to"),
+                fieldWithPath("[].level").description("Level in the org unit hierarchy")
+
         )
         ));
     }
@@ -149,7 +154,10 @@ public class KhmflApisDocumentationTest {
                         .description("Facility ID"),
                 fieldWithPath("[].name")
                         .description("Facility Name"),
-                fieldWithPath("[].wardId").description("Ward Id that facility belongs to")
+                fieldWithPath("[].parentid").description("Parent Id (ward) that facility belongs to"),
+                fieldWithPath("[].level").description("Level in the org unit hierarchy")
+
+                
         )
         ));
     }
@@ -177,7 +185,48 @@ public class KhmflApisDocumentationTest {
                         .description("Facility ID"),
                 fieldWithPath("[].name")
                         .description("Facility Name"),
-                fieldWithPath("[].wardId").description("Ward Id that facility belongs to")
+                fieldWithPath("[].parentid").description("Parent Id (ward) that facility belongs to"),
+                fieldWithPath("[].level").description("Level in the org unit hierarchy")
+
+        )
+        ));
+    }
+    
+    
+    @Test
+    public void testFacilitiesGetCotsCountReturned() throws Exception {
+        this.mockMvc.perform(
+                RestDocumentationRequestBuilders.get("/resource/cots?&ouid=23506;32;13613637").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andDo(document("test-facilities-get-cots-count-returned", requestParameters(
+                parameterWithName("ouid").description("Single org unit id or semi-colon seperated organisation unit id, if not provided defaults to national")
+        ), responseFields(
+                fieldWithPath("[].id")
+                        .description("Organisation unit ID"),
+                fieldWithPath("[].name")
+                        .description("Organisation unit Name"),
+                fieldWithPath("[].parentid").description("Parent Ids' or this organisation unit"),
+                fieldWithPath("[].level").description("Level in the org unit hierarchy"),
+                fieldWithPath("[].count").description("Number of cots in this org unit")
+
+        )
+        ));
+    }
+    
+    @Test
+    public void testFacilitiesGetBedsCountReturned() throws Exception {
+        this.mockMvc.perform(
+                RestDocumentationRequestBuilders.get("/resource/beds?&ouid=23506;32;13613637").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andDo(document("test-facilities-get-beds-count-returned", requestParameters(
+                parameterWithName("ouid").description("Single org unit id or semi-colon seperated organisation unit id, if not provided defaults to national")
+        ), responseFields(
+                fieldWithPath("[].id")
+                        .description("Organisation unit ID"),
+                fieldWithPath("[].name")
+                        .description("Organisation unit Name"),
+                fieldWithPath("[].parentid").description("Parent Ids' or this organisation unit"),
+                fieldWithPath("[].level").description("Level in the org unit hierarchy"),
+                fieldWithPath("[].count").description("Number of beds in this org unit")
+
         )
         ));
     }

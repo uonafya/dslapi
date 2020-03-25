@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.healthit</groupId>
         <artifactId>DSL_Support_Parent_Project</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>1.0</version>
     </parent>
     <artifactId>DSL_JDBC_Service</artifactId>
     <name>DSL JDBC Service</name>

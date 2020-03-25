@@ -11,14 +11,14 @@ package com.healthit.dslservice.dto.adminstrationlevel;
  */
 public class Constituency extends Adminstration{
    
-    private String CountyId;
+    private String parentid;
 
-    public String getCountyId() {
-        return CountyId;
+    public String getParentid() {
+        return parentid;
     }
 
-    public void setCountyId(String CountyId) {
-        this.CountyId = CountyId;
+    public void setParentid(String parentid) {
+        this.parentid = parentid;
     }
     
     

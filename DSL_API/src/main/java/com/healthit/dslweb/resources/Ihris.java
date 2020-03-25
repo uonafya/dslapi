@@ -41,19 +41,21 @@ public class Ihris {
     @RequestMapping(value = "/cadregroups", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getCadreGroups(
             @RequestParam(value = "pe", required = false) String pe,
-            @RequestParam(value = "ou", required = false) String ou,
-            @RequestParam(value = "cadregroupid", required = false) String cadreGroup) {
+            @RequestParam(value = "ouid", required = false) String ouid,
+            @RequestParam(value = "id", required = false) String cadreGroup) {
         System.out.println("without group");
         try {
 
             IhrisDao ihris = new IhrisDao();
             if (pe == null
-                    && ou == null
+                    && ouid == null
                     && cadreGroup == null) {
                 List<CadreGroup> cadreGroupList = ihris.getAllCadresGroup();
                 return new ResponseEntity<List>(cadreGroupList, HttpStatus.OK);
             } else {
-                List<CadreAllocation> cadreAllocationList = ihris.getCadreGroupAllocation(pe, ou, cadreGroup);
+                List<CadreAllocation> cadreAllocationList = ihris.getCadreGroupAllocation(pe, ouid, cadreGroup);
+                log.info("======>>>");
+                log.info(cadreAllocationList);
                 return new ResponseEntity<List>(cadreAllocationList, HttpStatus.OK);
             }
         } catch (DslException ex) {
@@ -72,6 +74,7 @@ public class Ihris {
             @RequestParam(value = "pe", required = false) String pe,
             @RequestParam(value = "ouid", required = false) String ou,
             @RequestParam(value = "id", required = false) String cadre,
+            @RequestParam(value = "periodtype", required = false) String periodtype,
             @RequestParam(value = "groupId", required = false) String groupId
     ) {
         try {
@@ -80,7 +83,7 @@ public class Ihris {
                     || ou != null
                     || cadre != null) {
 
-                List<CadreAllocation> cadreAllocationList = ihris.getCadreAllocation(pe, ou, cadre);
+                List<CadreAllocation> cadreAllocationList = ihris.getCadreAllocation(pe, ou, cadre,periodtype);
                 return new ResponseEntity<List>(cadreAllocationList, HttpStatus.OK);
             } else if (groupId != null) {// return list of indicators in this group id
                 List<Cadre> cadreGroupList = ihris.getCadresByGroup(Integer.parseInt(groupId));
@@ -105,11 +108,12 @@ public class Ihris {
     public ResponseEntity<?> getSingleCadreAllocation(
             @RequestParam(value = "pe", required = false) String pe,
             @RequestParam(value = "ouid", required = false) String ou,
+            @RequestParam(value = "periodtype", required = false) String periodtype,
             @PathVariable("id") String id
     ) {
         try {
             IhrisDao ihris = new IhrisDao();
-            List<CadreAllocation> cadreAllocationList = ihris.getCadreAllocation(pe, ou, id);
+            List<CadreAllocation> cadreAllocationList = ihris.getCadreAllocation(pe, ou, id,periodtype);
             return new ResponseEntity<List>(cadreAllocationList, HttpStatus.OK);
 
         } catch (DslException ex) {
