@@ -9,6 +9,8 @@ import com.healthit.dslservice.DslException;
 import com.healthit.dslservice.dto.ihris.Cadre;
 import com.healthit.dslservice.dto.ihris.CadreAllocation;
 import com.healthit.dslservice.dto.ihris.CadreGroup;
+import com.healthit.dslservice.message.Message;
+import com.healthit.dslservice.message.MessageType;
 import com.healthit.dslservice.util.CacheKeys;
 import com.healthit.dslservice.util.Database;
 import com.healthit.dslservice.util.DslCache;
@@ -464,6 +466,12 @@ public class IhrisDao {
                 log.debug(cadreAllocationList);
                 while(cadreAllocationList ==null){
                     pe=Integer.toString((Integer.parseInt(pe)-1));
+                    if(pe.equals("2008")){
+                        Message msg = new Message();
+                        msg.setMessageType(MessageType.MISSING_DATA);
+                        msg.setMesageContent("No data for this orunit on requested this period");
+                        throw new DslException(msg);
+                    }
                     nationalCadreCount = createsCadreCountQueryIfMonthlyTypePeriod(pe, ou, cadre, periodtype, true);
                     nationalCadreCount = appendCadresCountParts(pe, ou, cadre, periodtype);
                     rs = db.executeQuery(nationalCadreCount);

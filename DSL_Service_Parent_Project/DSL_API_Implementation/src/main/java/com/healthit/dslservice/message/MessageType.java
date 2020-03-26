@@ -12,4 +12,5 @@ public class MessageType {
     public final static String MISSING_DB_ENRTY_VALUE="Error Code: 1009 Object not found";
     public final static String MISSING_PARAMETER_VALUE="Error Code: 1011 Missing parameter value";
     public final static String ORGUNIT_LEVEL="Error Code: 1013 Provided level higher than orgunit level";
+    public final static String MISSING_DATA="Error Code: 1015 No data found";
 }
