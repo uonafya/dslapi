@@ -227,23 +227,27 @@ public class IhrisDao {
         } finally {
             db.CloseConnection();
         }
-        
-        
+
         Map<String, Object> metadata = new HashMap();
         Map<String, Object> orgdetail = new HashMap();
-        if (ou.equals("18")) {
+        if (ou != null) {
+            if (ou.equals("18")) {
+                metadata.put("orgunitname", "Kenya");
+                metadata.put("orgunitid", "18");
+            } else {
+                orgdetail = getOrgUnitDetails(ou);
+                metadata.put("orgunitname", orgdetail.get("name"));
+                metadata.put("orgunitid", orgdetail.get("id"));
+            }
+        } else {
             metadata.put("orgunitname", "Kenya");
             metadata.put("orgunitid", "18");
-        } else {
-            orgdetail = getOrgUnitDetails(ou);
-            metadata.put("orgunitname", orgdetail.get("name"));
-            metadata.put("orgunitid",  orgdetail.get("id"));
         }
 
         resultsetEnvelop.put("data", cadreAllocationList);
         resultsetEnvelop.put("metadata", metadata);
         return resultsetEnvelop;
-        
+
     }
 
     private List<CadreAllocation> formatCadreAllocationMonthly(ResultSet rs, String requestedPeriod) throws SQLException {
