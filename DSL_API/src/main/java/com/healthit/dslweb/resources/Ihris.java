@@ -14,6 +14,7 @@ import com.healthit.dslservice.dto.ihris.CadreAllocation;
 import com.healthit.dslservice.dto.ihris.CadreGroup;
 import com.healthit.dslservice.message.Message;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.springframework.http.HttpStatus;
@@ -53,10 +54,10 @@ public class Ihris {
                 List<CadreGroup> cadreGroupList = ihris.getAllCadresGroup();
                 return new ResponseEntity<List>(cadreGroupList, HttpStatus.OK);
             } else {
-                List<CadreAllocation> cadreAllocationList = ihris.getCadreGroupAllocation(pe, ouid, cadreGroup);
+                Map<String, Object> cadreAllocationList = ihris.getCadreGroupAllocation(pe, ouid, cadreGroup);
                 log.info("======>>>");
                 log.info(cadreAllocationList);
-                return new ResponseEntity<List>(cadreAllocationList, HttpStatus.OK);
+                return new ResponseEntity<Map<String, Object>>(cadreAllocationList, HttpStatus.OK);
             }
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -83,8 +84,8 @@ public class Ihris {
                     || ou != null
                     || cadre != null) {
 
-                List<CadreAllocation> cadreAllocationList = ihris.getCadreAllocation(pe, ou, cadre,periodtype);
-                return new ResponseEntity<List>(cadreAllocationList, HttpStatus.OK);
+                Map<String, Object> cadreAllocationList = ihris.getCadreAllocation(pe, ou, cadre,periodtype);
+                return new ResponseEntity<Map<String, Object>>(cadreAllocationList, HttpStatus.OK);
             } else if (groupId != null) {// return list of indicators in this group id
                 List<Cadre> cadreGroupList = ihris.getCadresByGroup(Integer.parseInt(groupId));
                 return new ResponseEntity<List>(cadreGroupList, HttpStatus.OK);
@@ -113,8 +114,8 @@ public class Ihris {
     ) {
         try {
             IhrisDao ihris = new IhrisDao();
-            List<CadreAllocation> cadreAllocationList = ihris.getCadreAllocation(pe, ou, id,periodtype);
-            return new ResponseEntity<List>(cadreAllocationList, HttpStatus.OK);
+            Map<String, Object> cadreAllocationList = ihris.getCadreAllocation(pe, ou, id,periodtype);
+            return new ResponseEntity<Map<String, Object>>(cadreAllocationList, HttpStatus.OK);
 
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);

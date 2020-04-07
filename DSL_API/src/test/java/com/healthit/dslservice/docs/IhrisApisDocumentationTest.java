@@ -89,12 +89,20 @@ public class IhrisApisDocumentationTest {
                         + " Dictates wheather to return data aggregate per year or dissegrage to monthly"
                         + "If not provided defaults to yearly")
         ), responseFields(
-                fieldWithPath("[].cadre")
+                fieldWithPath("metadata")
+                        .description("Carries metadata for the payload"),
+                fieldWithPath("data")
+                        .description("Carries data for the payload"),
+                fieldWithPath("metadata.orgunitname")
+                        .description("requested organisation unit name"),
+                fieldWithPath("metadata.orgunitid")
+                        .description("requested organisation unit id"),
+                fieldWithPath("data[].cadre")
                         .description("Cadre name"),
-                fieldWithPath("[].cadreCount")
+                fieldWithPath("data[].cadreCount")
                         .description("Cadre count"),
-                fieldWithPath("[].id").description("Cadre Id"),
-                fieldWithPath("[].period").description("Period requested")
+                fieldWithPath("data[].id").description("Cadre Id"),
+                fieldWithPath("data[].period").description("Period requested")
         )
         ));
     }
@@ -114,19 +122,24 @@ public class IhrisApisDocumentationTest {
                 parameterWithName("pe").description(periodDec),
                 parameterWithName("ouid").description("Organisation unit id, if not provided defaults to national")
         ), responseFields(
-                fieldWithPath("[].cadre")
+                fieldWithPath("metadata")
+                        .description("Carries metadata for the payload"),
+                fieldWithPath("data")
+                        .description("Carries data for the payload"),
+                fieldWithPath("metadata.orgunitname")
+                        .description("requested organisation unit name"),
+                fieldWithPath("metadata.orgunitid")
+                        .description("requested organisation unit id"),
+                fieldWithPath("data[].cadre")
                         .description("Cadre name"),
-                fieldWithPath("[].cadreCount")
+                fieldWithPath("data[].cadreCount")
                         .description("Cadre count"),
-                fieldWithPath("[].id").description("Cadre Id"),
-                fieldWithPath("[].period").description("Period requested")
+                fieldWithPath("data[].id").description("Cadre Id"),
+                fieldWithPath("data[].period").description("Period requested")
         )
         ));
     }
-    
-    
-    
-    
+
     @Test
     public void testCadresGroupValuesReturnedWithRequestParameters() throws Exception {
         String periodDec = "Period parameter. Can be an explicit year, YYYY (eg 2018) which will give the stated year values, or YYYYmm (eg 201801) which gives "
@@ -138,12 +151,20 @@ public class IhrisApisDocumentationTest {
                 parameterWithName("ouid").description("Organisation unit id, if not provided defaults to national"),
                 parameterWithName("id").description("Cadre group ID, if not provided gives count for all cadre groups")
         ), responseFields(
-                fieldWithPath("[].cadre")
-                        .description("Cadre group name"),
-                fieldWithPath("[].cadreCount")
+                fieldWithPath("metadata")
+                        .description("Carries metadata for the payload"),
+                fieldWithPath("data")
+                        .description("Carries data for the payload"),
+                fieldWithPath("metadata.orgunitname")
+                        .description("requested organisation unit name"),
+                fieldWithPath("metadata.orgunitid")
+                        .description("requested organisation unit id"),
+                fieldWithPath("data[].cadre")
+                        .description("Cadre name"),
+                fieldWithPath("data[].cadreCount")
                         .description("Cadre count"),
-                fieldWithPath("[].id").description("Cadre group Id"),
-                fieldWithPath("[].period").description("Period")
+                fieldWithPath("data[].id").description("Cadre Id"),
+                fieldWithPath("data[].period").description("Period requested")
         )
         ));
     }
