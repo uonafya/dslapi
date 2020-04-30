@@ -7,7 +7,7 @@
         <version>1.0</version>
     </parent>
     <groupId>com.healthit</groupId>
-    <artifactId>DSL_API_Implementation</artifactId>
+    <artifactId>dsl_api_implementation</artifactId>
     <version>1.0</version>
     <packaging>jar</packaging>
     <properties>
@@ -16,7 +16,7 @@
         <javax.version>2.5</javax.version>
         <odata.version>4.6.0</odata.version>        
     </properties>
-    <name>DSL API Implementation</name>
+    <name>dsl api implementation</name>
     
     <dependencies>
         

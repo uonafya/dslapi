@@ -9,11 +9,11 @@
     </parent>
 
     <groupId>com.healthit</groupId>
-    <artifactId>DSL_API</artifactId>
+    <artifactId>dsl_api</artifactId>
     <version>1.0</version>
     <packaging>war</packaging>
     
-    <name>DSL API</name>
+    <name>dsl api</name>
 
     <properties>
         <endorsed.dir>${project.build.directory}/endorsed</endorsed.dir>

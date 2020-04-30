@@ -3,17 +3,14 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.healthit</groupId>
-        <artifactId>DSL_Support_Parent_Project</artifactId>
+        <artifactId>DSL_Service_Layer</artifactId>
         <version>1.0</version>
     </parent>
-    <artifactId>DSL_JDBC_Service</artifactId>
-    <name>DSL JDBC Service</name>
-    <packaging>jar</packaging>
-    <dependencies>
-        <dependency>
-            <groupId>postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>9.1-901-1.jdbc4</version>
-        </dependency>
-    </dependencies>
+    <artifactId>dsl_support_parent_project</artifactId>
+    <packaging>pom</packaging>
+    <name>dsl support parent project</name>
+    <modules>
+        <module>dsl_jdbc_service</module>
+        <module>dsl_system_support</module>
+    </modules>
 </project>
