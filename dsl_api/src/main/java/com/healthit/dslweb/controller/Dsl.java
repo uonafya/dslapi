@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.healthit.dslweb.resources;
+package com.healthit.dslweb.controller;
 
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;

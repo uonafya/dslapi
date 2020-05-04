@@ -3,10 +3,10 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.healthit</groupId>
-        <artifactId>DSL_Service_Layer</artifactId>
+        <artifactId>dsl_service_layer</artifactId>
         <version>1.0</version>
     </parent>
-    <artifactId>dsl_service</artifactId>
+    <artifactId>dsl_service_parent_project</artifactId>
     <packaging>pom</packaging>
     <name>dsl service parent project</name>
     <modules>

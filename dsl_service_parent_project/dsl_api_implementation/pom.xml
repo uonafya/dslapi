@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.healthit</groupId>
-        <artifactId>DSL_Service</artifactId>
+        <artifactId>dsl_service_parent_project</artifactId>
         <version>1.0</version>
     </parent>
     <groupId>com.healthit</groupId>
@@ -72,12 +72,12 @@
         
         <dependency>
             <groupId>com.healthit</groupId>
-            <artifactId>DSL_JDBC_Service</artifactId>
+            <artifactId>dsl_jdbc_service</artifactId>
             <version>1.0</version>
         </dependency>
         <dependency>
             <groupId>com.healthit</groupId>
-            <artifactId>DSL_System_Support</artifactId>
+            <artifactId>dsl_system_support</artifactId>
             <version>1.0</version>
         </dependency>
         <dependency>

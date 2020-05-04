@@ -1,4 +1,4 @@
-package com.healthit.dslweb.resources;
+package com.healthit.dslweb.controller;
 
 import com.google.gson.Gson;
 import com.healthit.dslservice.DslException;

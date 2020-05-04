@@ -11,7 +11,7 @@
         http://www.springframework.org/schema/context
         http://www.springframework.org/schema/context/spring-context.xsd">
     
-    <context:component-scan base-package="com.healthit.dslweb.resources"/>
+    <context:component-scan base-package="com.healthit.dslweb.controller"/>
 <!--    <context:component-scan base-package="com.healthit" />
     <context:component-scan base-package="com.healthit" />
     <context:component-scan base-package="com.healthit" />

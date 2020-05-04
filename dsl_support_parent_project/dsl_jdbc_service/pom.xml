@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.healthit</groupId>
-        <artifactId>DSL_Support_Parent_Project</artifactId>
+        <artifactId>dsl_support_parent_project</artifactId>
         <version>1.0</version>
     </parent>
     <artifactId>dsl_jdbc_service</artifactId>
