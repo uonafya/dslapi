@@ -35,7 +35,7 @@ public class SurveyDao {
     final static Logger log = Logger.getLogger(SurveyDao.class);
     Cache cache = DslCache.getCache();
 
-    private String sourceSql = "SELECT id,source FROM source";
+    private String sourceSql = "SELECT id,source FROM survey_source";
 
     public List<Map<String, String>> getDataSources() throws DslException {
         Element ele = cache.get(CacheKeys.surveySources);
@@ -69,64 +69,372 @@ public class SurveyDao {
         }
     }
 
+    private List<Map<String, String>> getBasicIndicatorInfo(int sourceId) throws DslException {
+        String indicatorQuery = "";
+        List<Map<String, String>> result = new ArrayList();
+        if (sourceId == 2 || sourceId == 3 || sourceId == 4 || sourceId == 5 || sourceId == 6) {
+            indicatorQuery = "SELECT Distinct ind.indicator_id as id, ind.name as name, '" + DataSource.getSources().get(sourceId) + "' as source '' as description,"
+                    + " '" + sourceId + "' as source_id FROM "
+                    + " dim_survey_indicator ind inner join fact_survey fs on ind.indicator_id=fs.indicator_id "
+                    + " inner join dim_survey_source source on fs.source_id = source.source_id where "
+                    + "source.name='" + DataSource.getSources().get(sourceId) + "'";
+        } else if (sourceId == 7) {
+            indicatorQuery = "SELECT Distinct ind.indicator_id as id, ind.name as name, '" + DataSource.getSources().get(sourceId) + "' as source, description, "
+                    + "'" + sourceId + "' as source_id  FROM "
+                    + " dim_steps_indicator ind dim_steps_indicator";
+        } else if (sourceId == 8) {
+            indicatorQuery = "SELECT Distinct ind.indicator_id as id, ind.name as name, '" + DataSource.getSources().get(sourceId) + "' as source, description, "
+                    + "'" + sourceId + "' as source_id  FROM "
+                    + " dim_steps_indicator ind dim_khds_indicator";
+        } else {
+            Message msg = new Message();
+            msg.setMesageContent("This id does not exist ");
+            msg.setMessageType(MessageType.MISSING_DB_ENRTY_VALUE);
+            throw new DslException(msg);
+        }
+
+        Database db = new Database();
+        ResultSet rs = db.executeQuery(indicatorQuery);
+        try {
+            while (rs.next()) {
+                Map<String, String> payLoad = new HashMap();
+                payLoad.put("id", rs.getString("id"));
+                payLoad.put("name", rs.getString("name"));
+                payLoad.put("source", rs.getString("source"));
+                payLoad.put("source id", rs.getString("source_id"));
+                payLoad.put("description", rs.getString("description"));
+                result.add(payLoad);
+            }
+        } catch (SQLException ex) {
+            Message msg = new Message();
+            msg.setMesageContent(ex.getMessage());
+            msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+            throw new DslException(msg);
+        }
+
+        return result;
+    }
+
+    /**
+     * fetches a list of indicators for a given source id
+     *
+     * @param id
+     * @return
+     * @throws DslException
+     */
     public List<Map<String, String>> getIndicators(String id) throws DslException {
         int sourceId = Integer.parseInt(id);
         List<Map<String, String>> result = new ArrayList();
-        String indicatorQuery = "";
-        if (sourceId == 2 || sourceId == 3 || sourceId == 4 || sourceId == 5 || sourceId == 6) {
-            indicatorQuery = "SELECT Distinct ind.indicator_id as id, ind.name as name, '" + DataSource.getSources().get(sourceId) + "' as source '' as description FROM "
-                    + " dim_survey_indicator ind inner join fact_survey fs on ind.indicator_id=fs.indicator_id "
-                    + " inner join dim_survey_source source on fs.source_id = source.source_id where "
-                    + "source.name=" + DataSource.getSources().get(sourceId);
-        } else if (sourceId == 7) {
-            indicatorQuery = "SELECT Distinct ind.indicator_id as id, ind.name as name, '" + DataSource.getSources().get(sourceId) + "' as source, description FROM "
-                    + " dim_steps_indicator ind dim_steps_indicator";
-        } else if (sourceId == 8) {
-            indicatorQuery = "SELECT Distinct ind.indicator_id as id, ind.name as name, '" + DataSource.getSources().get(sourceId) + "' as source, description FROM "
-                    + " dim_steps_indicator ind dim_khds_indicator";
+        return getBasicIndicatorInfo(sourceId);
+    }
+
+    /**
+     * Builds sql to use for fetching requested survey data and metadata
+     *
+     * @param sourceId
+     * @param indicatorId
+     * @param orgId
+     * @param category_id
+     * @return
+     * @throws DslException
+     */
+    private String getSurveySql(int sourceId, int indicatorId, String orgId, String category_id) throws DslException {
+        log.debug("get survey sql funct");
+        String catFilter = "";
+        if (category_id != null) {
+            if (category_id.trim().length() != 0) {
+                String[] catGroups = category_id.trim().split(",");
+                for (int y = 0; y < catGroups.length; y++) {
+                    String[] catLength = catGroups[y].trim().split(";");
+                    String genderFilter = "";
+                    String ageFilter = "";
+                    for (int x = 0; x < catLength.length; x++) {
+                        String getGenderDtailSQL = "select survey_age_id, survey_gender_id from survey_combine_category where id=" + catLength[x];
+                        Database db = new Database();
+                        ResultSet rs = db.executeQuery(getGenderDtailSQL);
+
+                        try {
+                            if (rs.next()) {
+                                String ageID = rs.getString("survey_age_id");
+                                String genderId = rs.getString("survey_gender_id");
+
+                                if (ageID != null) {
+                                    ageFilter = " dim_surv_age.age_id=" + Integer.parseInt(ageID);
+                                }
+                                if (genderId != null) {
+                                    genderFilter = " dim_surv_gender.gender_id=" + Integer.parseInt(genderId);
+                                }
+                                if (x == 0) {
+                                    catFilter += " and (";
+                                }
+                                if (x > 0) {
+                                    catFilter += " or ";
+                                }
+                                catFilter += ageFilter + genderFilter;
+                                if (x == catLength.length - 1) {
+                                    catFilter += ")";
+                                }
+                            }
+                        } catch (SQLException ex) {
+                            log.error(ex);
+                        }
+
+                    }
+                }
+
+            }
+
+        }
+        log.debug("Build survey common org unit join");
+        String orgSeg = "";
+        if (orgId != null && orgId != "18") {
+            orgSeg = " inner join surv_comm_org surv_org on surv_org.name=dim_surv_org.name and surv_comm_org.id=" + orgId;
         } else {
-            Message msg = new Message();
-            msg.setMesageContent("This id does not exist ");
-            msg.setMessageType(MessageType.MISSING_DB_ENRTY_VALUE);
-            throw new DslException(msg);
+            orgSeg = " inner join surv_comm_org surv_org on surv_org.name=dim_surv_org.name and surv_org.name='Kenya'";
         }
 
+        String getSurveyDataSql = "SELECT Distinct fs.value as value, dim_ind.indicator_id as id, dim_ind.name as name, '" + DataSource.getSources().get(sourceId) + "' as source, '' as description, "
+                + "  '" + sourceId + "' as source_id, dim_surv_age.age as age,surv_cat2.id age_id, dim_surv_gender.name as gender,surv_cat.id gender_id,"
+                + " surv_org.name as org_name,  surv_org.id as orgId FROM dim_survey_indicator dim_ind "
+                + " inner join fact_survey fs on dim_ind.indicator_id=fs.indicator_id   "
+                + " inner join dim_survey_gender dim_surv_gender on dim_surv_gender.gender_id = fs.gender_id"
+                + " inner join dim_survey_age dim_surv_age on dim_surv_age.age_id = fs.age_id  "
+                + " inner join survey_category surv_cat on surv_cat.category=dim_surv_gender.name "
+                + " inner join survey_category surv_cat2 on surv_cat2.category=dim_surv_age.age"
+                + " inner join dim_survey_source source on fs.source_id = source.source_id   "
+                + " inner join dim_survey_orgunit dim_surv_org on fs.orgunit_id=dim_surv_org.orgunit_id   "
+                + orgSeg
+                + "      where source.name='" + DataSource.getSources().get(sourceId) + "'"
+                + "     and dim_ind.indicator_id =" + indicatorId
+                + catFilter;
+
+        log.debug(getSurveyDataSql);
+        return getSurveyDataSql;
+    }
+
+    /**
+     * Gets all avaialble data for a particular indicator
+     *
+     * @param sourceId
+     * @param indicatorId
+     * @return
+     */
+    private String getSurveyAvailableDimesions(int sourceId, int indicatorId) {
+        log.debug("get survey available dimesions");
+        String sql = "Select fs.indicator_id, surv_org.name as org_name,surv_org.id as orgunit_id,surv_cat2.id as age_id, surv_cat2.category as age,surv_cat.id as gender_id,surv_cat.category as gender FROM fact_survey fs"
+                + " inner join dim_survey_indicator dim_ind  on dim_ind.indicator_id=fs.indicator_id   "
+                + " inner join dim_survey_gender dim_surv_gender on dim_surv_gender.gender_id = fs.gender_id"
+                + " inner join dim_survey_age dim_surv_age on dim_surv_age.age_id = fs.age_id  "
+                + " inner join dim_survey_source source on fs.source_id = source.source_id   "
+                + " inner join dim_survey_orgunit dim_surv_org on fs.orgunit_id=dim_surv_org.orgunit_id   "
+                + " inner join surv_comm_org surv_org on surv_org.name=dim_surv_org.name "
+                + " inner join survey_category surv_cat on surv_cat.category=dim_surv_gender.name"
+                + " inner join survey_category surv_cat2 on surv_cat2.category=dim_surv_age.age"
+                + " where source.name='" + DataSource.getSources().get(sourceId) + "'"
+                + " and dim_ind.indicator_id =" + indicatorId;
+        log.debug(sql);
+        return sql;
+    }
+
+    /**
+     * Gets survey data requested and the metadata
+     *
+     * @param queryToRun
+     * @return
+     * @throws DslException
+     */
+    private Map<String, Object> getCoreSurveyData(String queryToRun) throws DslException {
+        log.debug("get core survey data values");
         Database db = new Database();
-        ResultSet rs = db.executeQuery(indicatorQuery);
+        ResultSet rs = db.executeQuery(queryToRun);
+        Map<String, Object> result = new HashMap();
+        List<Map> indicatorDetails = new ArrayList();
+        List<Map> orgUnits = new ArrayList();
+        List<List<Map<String, Object>>> categories = new ArrayList();
+        List<String> periods = new ArrayList();
+        List<String> addedOrgsUnit = new ArrayList();
+        List<String> addedIndicators = new ArrayList();
+        List<Map> data = new ArrayList();
+        log.debug("Build payload");
         try {
             while (rs.next()) {
-                Map<String, String> payLoad = new HashMap();
-                payLoad.put("id", rs.getString("id"));
-                payLoad.put("name", rs.getString("name"));
-                payLoad.put("source", rs.getString("source"));
-                payLoad.put("description", rs.getString("description"));
-                result.add(payLoad);
+                //indicator
+
+                String sourceId = rs.getString("source_id");
+                int indicatorId = rs.getInt("id");
+                String addedVals = sourceId + ":" + Integer.toString(indicatorId);
+                if (!addedIndicators.contains(addedVals)) {
+                    addedIndicators.add(addedVals);
+                    Map<String, Object> indicatorDetail = new HashMap();
+                    indicatorDetail.put("name", rs.getString("name"));
+                    indicatorDetail.put("id", rs.getInt("id"));
+                    indicatorDetail.put("source", rs.getString("source"));
+                    indicatorDetail.put("source id", sourceId);
+                    indicatorDetail.put("description", rs.getString("description"));
+                    indicatorDetails.add(indicatorDetail);
+                }
+
+                String orgName = rs.getString("org_name");
+
+                if (!addedOrgsUnit.contains(orgName)) {
+                    //orgunits
+                    Map<String, Object> orgUnit = new HashMap();
+                    if (orgName.equals("Kenya")) {
+                        orgUnit.put("id", 18);
+                    } else {
+                        orgUnit.put("id", rs.getInt("orgId"));
+                    }
+                    orgUnit.put("name", orgName);
+                    addedOrgsUnit.add(orgName);
+                    orgUnits.add(orgUnit);
+                }
+
+                //categories & data
+                List<Map<String, Object>> category = new ArrayList();
+                Map<String, Object> dataHolder = new HashMap();
+
+                String gender = rs.getString("gender");
+                String age = rs.getString("age");
+                if (!gender.equals("n/a")) {
+                    Map<String, Object> categoryHolder = new HashMap();
+                    categoryHolder.put("name", gender);
+                    categoryHolder.put("id", rs.getInt("gender_id"));
+                    category.add(categoryHolder);
+                }
+                if (!age.equals("n/a")) {
+                    Map<String, Object> categoryHolder = new HashMap();
+                    categoryHolder.put("name", age);
+                    categoryHolder.put("id", rs.getInt("age_id"));
+                    category.add(categoryHolder);
+                }
+                if (category.size() != 0) {
+                    categories.add(category);
+                    dataHolder.put("category", category);
+                }
+
+                dataHolder.put("source_id", rs.getInt("source_id"));
+                dataHolder.put("indicator_id", rs.getInt("id"));
+                dataHolder.put("value", rs.getInt("value"));
+                data.add(dataHolder);
+
             }
         } catch (SQLException ex) {
             Message msg = new Message();
             msg.setMesageContent(ex.getMessage());
             msg.setMessageType(MessageType.SQL_QUERY_ERROR);
             throw new DslException(msg);
+        } finally {
+            db.CloseConnection();
         }
-        return result;
+
+        result.put("indicators", indicatorDetails);
+        result.put("orgunits", orgUnits);
+        result.put("categories", categories);
+        result.put("periods", periods);
+        Map<String, Object> envelop = new HashMap();
+        envelop.put("metadata", result);
+        envelop.put("data", data);
+        return envelop;
     }
-    
-    public List<Map<String, String>> getIndicatorValue(String sId,String iId) throws DslException {
+
+    private Map<String, Object> getAvailableDimesionData(String queryToRun) throws DslException {
+        log.debug("get available dimension data");
+        Database db = new Database();
+        ResultSet rs = db.executeQuery(queryToRun);
+        Map<String, Object> result = new HashMap();
+        List<Map> orgUnits = new ArrayList();
+        List<String> addedOrgsUnit = new ArrayList();
+        List<List<Map<String, Object>>> categories = new ArrayList();
+        List<String> periods = new ArrayList();
+        try {
+            while (rs.next()) {
+                //orgunits
+                Map<String, Object> orgUnit = new HashMap();
+                String orgName = rs.getString("org_name");
+                if (orgName.equals("Kenya")) {
+                    orgUnit.put("id", 18);
+                } else {
+                    orgUnit.put("id", rs.getInt("orgunit_id"));
+                }
+                orgUnit.put("name", orgName);
+                if (!addedOrgsUnit.contains(orgName)) {
+                    addedOrgsUnit.add(orgName);
+                    orgUnits.add(orgUnit);
+                }
+
+                //categories
+                List<Map<String, Object>> category = new ArrayList();
+
+                String gender = rs.getString("gender");
+                String age = rs.getString("age");
+                if (!gender.equals("n/a")) {
+                    Map<String, Object> categoryHolder = new HashMap();
+                    categoryHolder.put("name", gender);
+                    categoryHolder.put("id", rs.getInt("gender_id"));
+                    category.add(categoryHolder);
+                }
+                if (!age.equals("n/a")) {
+                    Map<String, Object> categoryHolder = new HashMap();
+                    categoryHolder.put("name", age);
+                    categoryHolder.put("id", rs.getInt("age_id"));
+                    category.add(categoryHolder);
+                }
+                if (category.size() != 0) {
+                    categories.add(category);
+                }
+
+            }
+        } catch (SQLException ex) {
+            Message msg = new Message();
+            msg.setMesageContent(ex.getMessage());
+            msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+            throw new DslException(msg);
+        } finally {
+            db.CloseConnection();
+        }
+        log.debug("build payload");
+        result.put("orgunits", orgUnits);
+        result.put("categories", categories);
+        result.put("periods", periods);
+        Map<String, Object> envelop = new HashMap();
+        envelop.put("available", result);
+        return envelop;
+    }
+
+    public Map<String, Object> getIndicatorValue(String sId, String iId, String orgId, String pe, String category_id) throws DslException {
+        log.info("get survey data values");
         int sourceId = Integer.parseInt(sId);
         int indicatorId = Integer.parseInt(iId);
-        List<Map<String, String>> result = new ArrayList();
-        String indicatorQuery = "";
+        Map<String, Object> result = new HashMap();
         if (sourceId == 2 || sourceId == 3 || sourceId == 4 || sourceId == 5 || sourceId == 6) {
-            indicatorQuery = "SELECT Distinct ind.indicator_id as id, ind.name as name, '" + DataSource.getSources().get(sourceId) + "' as source '' as description FROM "
-                    + " dim_survey_indicator ind inner join fact_survey fs on ind.indicator_id=fs.indicator_id "
-                    + " inner join dim_survey_source source on fs.source_id = source.source_id where "
-                    + "source.name=" + DataSource.getSources().get(sourceId);
+            String indicatorQuery = getSurveySql(sourceId, indicatorId, orgId, category_id);
+            Map<String, Object> coreSurvey = getCoreSurveyData(indicatorQuery);
+            String availableDataDimesions = getSurveyAvailableDimesions(sourceId, indicatorId);
+            Map<String, Object> surveyDimensions = getAvailableDimesionData(availableDataDimesions);
+
+            log.info("assemble survey payload");
+            Map<String, Object> dictionary = new HashMap();
+
+            Map<String, Object> survMeta = (Map<String, Object>) coreSurvey.get("metadata");
+
+            dictionary.put("indicators", survMeta.get("indicators"));
+            dictionary.put("orgunits", survMeta.get("orgunits"));
+            dictionary.put("categories", survMeta.get("categories"));
+            dictionary.put("periods", survMeta.get("periods"));
+            dictionary.put("available", surveyDimensions.get("available"));
+
+            result.put("dictionary", dictionary);
+            result.put("data", coreSurvey.get("data"));
+
+            return result;
         } else if (sourceId == 7) {
-            indicatorQuery = "SELECT Distinct ind.indicator_id as id, ind.name as name, '" + DataSource.getSources().get(sourceId) + "' as source, description FROM "
-                    + " dim_steps_indicator ind dim_steps_indicator";
+            String indicatorQuery = "SELECT Distinct ind.indicator_id as id, ind.name as name, '" + DataSource.getSources().get(sourceId) + "' as source, description, "
+                    + "'" + sourceId + "' as source_id  FROM "
+                    + " dim_steps_indicator ind";
         } else if (sourceId == 8) {
-            indicatorQuery = "SELECT Distinct ind.indicator_id as id, ind.name as name, '" + DataSource.getSources().get(sourceId) + "' as source, description FROM "
-                    + " dim_steps_indicator ind dim_khds_indicator";
+            String indicatorQuery = "SELECT Distinct ind.indicator_id as id, ind.name as name, '" + DataSource.getSources().get(sourceId) + "' as source, description, "
+                    + "'" + sourceId + "' as source_id  FROM "
+                    + " dim_khds_indicator ind";
         } else {
             Message msg = new Message();
             msg.setMesageContent("This id does not exist ");
@@ -134,23 +442,6 @@ public class SurveyDao {
             throw new DslException(msg);
         }
 
-        Database db = new Database();
-        ResultSet rs = db.executeQuery(indicatorQuery);
-        try {
-            while (rs.next()) {
-                Map<String, String> payLoad = new HashMap();
-                payLoad.put("id", rs.getString("id"));
-                payLoad.put("name", rs.getString("name"));
-                payLoad.put("source", rs.getString("source"));
-                payLoad.put("description", rs.getString("description"));
-                result.add(payLoad);
-            }
-        } catch (SQLException ex) {
-            Message msg = new Message();
-            msg.setMesageContent(ex.getMessage());
-            msg.setMessageType(MessageType.SQL_QUERY_ERROR);
-            throw new DslException(msg);
-        }
         return result;
     }
 

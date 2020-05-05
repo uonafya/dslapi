@@ -49,27 +49,19 @@ public class SurveyController {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-    @RequestMapping(value = "sources/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> getIndicatorsInSurveySource(
-            @PathVariable("id") String id
-    ) {
-        SurveyDao survey = new SurveyDao();
-        try {
-            return new ResponseEntity(survey.getIndicators(id), HttpStatus.OK);
-        } catch (DslException ex) {
-            return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
     
     @RequestMapping(value = "sources/{sourceId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getIndicatorValue(
-            @RequestParam(value = "id") String indicatorId,
-            @PathVariable("sourceId") String sourceId
+            @RequestParam(value = "id",required = false) String indicatorId,
+            @RequestParam(value = "orgId",required = false) String orgId,
+            @RequestParam(value = "pe",required = false) String pe,
+            @RequestParam(value = "cat_id",required = false) String category_id,
+            @PathVariable(value="sourceId",required = true) String sourceId
     ) {
         SurveyDao survey = new SurveyDao();
         try {
-            return new ResponseEntity(survey.getIndicatorValue(sourceId,indicatorId), HttpStatus.OK);
+            if(indicatorId==null) return new ResponseEntity(survey.getIndicators(sourceId), HttpStatus.OK);
+            else return new ResponseEntity(survey.getIndicatorValue(sourceId,indicatorId, orgId, pe, category_id), HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
