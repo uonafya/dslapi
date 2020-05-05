@@ -81,11 +81,11 @@ public class SurveyDao {
         } else if (sourceId == 7) {
             indicatorQuery = "SELECT Distinct ind.indicator_id as id, ind.name as name, '" + DataSource.getSources().get(sourceId) + "' as source, description, "
                     + "'" + sourceId + "' as source_id  FROM "
-                    + " dim_steps_indicator ind dim_steps_indicator";
+                    + " dim_steps_indicator ind";
         } else if (sourceId == 8) {
             indicatorQuery = "SELECT Distinct ind.indicator_id as id, ind.name as name, '" + DataSource.getSources().get(sourceId) + "' as source, description, "
                     + "'" + sourceId + "' as source_id  FROM "
-                    + " dim_steps_indicator ind dim_khds_indicator";
+                    + " dim_steps_indicator ind";
         } else {
             Message msg = new Message();
             msg.setMesageContent("This id does not exist ");
@@ -129,7 +129,7 @@ public class SurveyDao {
     }
 
     /**
-     * Builds sql to use for fetching requested survey data and metadata
+     * Builds sql to use for fetching requested steps srvey data and metadata
      *
      * @param sourceId
      * @param indicatorId
@@ -213,6 +213,90 @@ public class SurveyDao {
     }
 
     /**
+     * Builds sql to use for fetching requested survey data and metadata
+     *
+     * @param sourceId
+     * @param indicatorId
+     * @param orgId
+     * @param category_id
+     * @return
+     * @throws DslException
+     */
+    private String getStepsSurveySql(int sourceId, int indicatorId, String orgId, String category_id) throws DslException {
+        log.debug("get steps survey sql funct");
+        String catFilter = "";
+        if (category_id != null) {
+            if (category_id.trim().length() != 0) {
+                String[] catGroups = category_id.trim().split(",");
+                for (int y = 0; y < catGroups.length; y++) {
+                    String[] catLength = catGroups[y].trim().split(";");
+                    String genderFilter = "";
+                    String ageFilter = "";
+                    for (int x = 0; x < catLength.length; x++) {
+                        String getGenderDtailSQL = "select steps_age_id, steps_gender_id from survey_combine_category where id=" + catLength[x];
+                        Database db = new Database();
+                        ResultSet rs = db.executeQuery(getGenderDtailSQL);
+
+                        try {
+                            if (rs.next()) {
+                                String ageID = rs.getString("steps_age_id");
+                                String genderId = rs.getString("steps_gender_id");
+
+                                if (ageID != null) {
+                                    ageFilter = " dim_stps_age.age_id=" + Integer.parseInt(ageID);
+                                }
+                                if (genderId != null) {
+                                    genderFilter = " dim_stps_gender.gender_id=" + Integer.parseInt(genderId);
+                                }
+                                if (x == 0) {
+                                    catFilter += " and (";
+                                }
+                                if (x > 0) {
+                                    catFilter += " or ";
+                                }
+                                catFilter += ageFilter + genderFilter;
+                                if (x == catLength.length - 1) {
+                                    catFilter += ")";
+                                }
+                            }
+                        } catch (SQLException ex) {
+                            log.error(ex);
+                        }
+
+                    }
+                }
+
+            }
+
+        }
+        log.debug("Build survey common org unit join");
+        String orgSeg = "";
+        if (orgId != null && orgId != "18") {
+            orgSeg = " inner join surv_comm_org comm_org on dim_stps_org.name=comm_org.name and comm_org.id=" + orgId;
+        } else {
+            orgSeg = " inner join surv_comm_org comm_org on dim_stps_org.name=comm_org.name and comm_org.name='Kenya'";
+        }
+
+        String getSurveyDataSql = "SELECT dim_stps_indicator.indicator_id as id, dim_stps_org.name as org_name,comm_org.id as orgId, dim_stps_age.age as age, "
+                + " surv_comb_cat.id as age_id , value as value,dim_stps_indicator.name as name, '" + DataSource.getSources().get(sourceId) + "' as source, "
+                + " dim_stps_indicator.description as description, '" + sourceId + "' as source_id, dim_stps_gender.name as gender,surv_comb_cat2.id gender_id "
+                + " FROM public.fact_steps fs "
+                + " inner join dim_steps_age dim_stps_age on  fs.age_id = dim_stps_age.age_id"
+                + " inner join dim_steps_orgunit dim_stps_org on dim_stps_org.orgunit_id = fs.orgunit_id"
+                + " inner join dim_steps_gender dim_stps_gender on fs.gender_id=dim_stps_gender.gender_id"
+                + " inner join survey_combine_category surv_comb_cat on surv_comb_cat.steps_age_id = dim_stps_age.age_id "
+                + " inner join survey_combine_category surv_comb_cat2 on surv_comb_cat2.steps_gender_id = dim_stps_gender.gender_id "
+                + orgSeg
+                + "  inner join dim_steps_indicator dim_stps_indicator on fs.indicator_id = dim_stps_indicator.indicator_id"
+                + "  where "
+                + "  dim_stps_indicator.indicator_id =" + indicatorId
+                + catFilter;
+
+        log.debug(getSurveyDataSql);
+        return getSurveyDataSql;
+    }
+
+    /**
      * Gets all avaialble data for a particular indicator
      *
      * @param sourceId
@@ -221,18 +305,35 @@ public class SurveyDao {
      */
     private String getSurveyAvailableDimesions(int sourceId, int indicatorId) {
         log.debug("get survey available dimesions");
-        String sql = "Select fs.indicator_id, surv_org.name as org_name,surv_org.id as orgunit_id,surv_cat2.id as age_id, surv_cat2.category as age,surv_cat.id as gender_id,surv_cat.category as gender FROM fact_survey fs"
-                + " inner join dim_survey_indicator dim_ind  on dim_ind.indicator_id=fs.indicator_id   "
-                + " inner join dim_survey_gender dim_surv_gender on dim_surv_gender.gender_id = fs.gender_id"
-                + " inner join dim_survey_age dim_surv_age on dim_surv_age.age_id = fs.age_id  "
-                + " inner join dim_survey_source source on fs.source_id = source.source_id   "
-                + " inner join dim_survey_orgunit dim_surv_org on fs.orgunit_id=dim_surv_org.orgunit_id   "
-                + " inner join surv_comm_org surv_org on surv_org.name=dim_surv_org.name "
-                + " inner join survey_category surv_cat on surv_cat.category=dim_surv_gender.name"
-                + " inner join survey_category surv_cat2 on surv_cat2.category=dim_surv_age.age"
-                + " where source.name='" + DataSource.getSources().get(sourceId) + "'"
-                + " and dim_ind.indicator_id =" + indicatorId;
-        log.debug(sql);
+        String sql = "";
+        if (sourceId == 2 || sourceId == 3 || sourceId == 4 || sourceId == 5 || sourceId == 6) {
+            sql = "Select fs.indicator_id, surv_org.name as org_name,surv_org.id as orgunit_id,surv_cat2.id as age_id, surv_cat2.category as age,surv_cat.id as gender_id,surv_cat.category as gender FROM fact_survey fs"
+                    + " inner join dim_survey_indicator dim_ind  on dim_ind.indicator_id=fs.indicator_id   "
+                    + " inner join dim_survey_gender dim_surv_gender on dim_surv_gender.gender_id = fs.gender_id"
+                    + " inner join dim_survey_age dim_surv_age on dim_surv_age.age_id = fs.age_id  "
+                    + " inner join dim_survey_source source on fs.source_id = source.source_id   "
+                    + " inner join dim_survey_orgunit dim_surv_org on fs.orgunit_id=dim_surv_org.orgunit_id   "
+                    + " inner join surv_comm_org surv_org on surv_org.name=dim_surv_org.name "
+                    + " inner join survey_category surv_cat on surv_cat.category=dim_surv_gender.name"
+                    + " inner join survey_category surv_cat2 on surv_cat2.category=dim_surv_age.age"
+                    + " where source.name='" + DataSource.getSources().get(sourceId) + "'"
+                    + " and dim_ind.indicator_id =" + indicatorId;
+
+        } else if (sourceId == 7) {
+
+            sql = "Select fs.indicator_id, surv_org.name as org_name,surv_org.id as orgunit_id,surv_cat2.id as age_id, surv_cat2.category as age,surv_cat.id as gender_id,surv_cat.category as gender "
+                    + " FROM public.fact_steps fs "
+                    + " inner join dim_steps_age dim_stps_age on  fs.age_id = dim_stps_age.age_id"
+                    + " inner join dim_steps_gender dim_stps_gender on  fs.gender_id = dim_stps_gender.gender_id"
+                    + " inner join dim_steps_orgunit dim_stps_org on dim_stps_org.orgunit_id = fs.orgunit_id"
+                    + " inner join survey_category surv_cat on surv_cat.category=dim_stps_gender.name"
+                    + " inner join survey_category surv_cat2 on surv_cat2.category=dim_stps_age.age"
+                    + " inner join surv_comm_org surv_org on dim_stps_org.name=dim_stps_org.name"
+                    + "  inner join dim_steps_indicator dim_stps_indicator on fs.indicator_id = dim_stps_indicator.indicator_id"
+                    + "  where "
+                    + "  dim_stps_indicator.indicator_id =" + indicatorId;
+            log.debug(sql);
+        }
         return sql;
     }
 
@@ -344,6 +445,7 @@ public class SurveyDao {
         Map<String, Object> result = new HashMap();
         List<Map> orgUnits = new ArrayList();
         List<String> addedOrgsUnit = new ArrayList();
+        List<String> addedCategoriesUnit = new ArrayList();
         List<List<Map<String, Object>>> categories = new ArrayList();
         List<String> periods = new ArrayList();
         try {
@@ -367,19 +469,25 @@ public class SurveyDao {
 
                 String gender = rs.getString("gender");
                 String age = rs.getString("age");
+                String ageGender="";
                 if (!gender.equals("n/a")) {
                     Map<String, Object> categoryHolder = new HashMap();
                     categoryHolder.put("name", gender);
-                    categoryHolder.put("id", rs.getInt("gender_id"));
+                    int genderId=rs.getInt("gender_id");
+                    categoryHolder.put("id",genderId);
                     category.add(categoryHolder);
+                    ageGender+=genderId;
                 }
                 if (!age.equals("n/a")) {
                     Map<String, Object> categoryHolder = new HashMap();
                     categoryHolder.put("name", age);
-                    categoryHolder.put("id", rs.getInt("age_id"));
+                    int ageId=rs.getInt("age_id");
+                    categoryHolder.put("id", ageId);
                     category.add(categoryHolder);
+                    ageGender+=ageId;
                 }
-                if (category.size() != 0) {
+                if (category.size() != 0 && !addedCategoriesUnit.contains(ageGender) && ageGender.length()!=0) {
+                    addedCategoriesUnit.add(ageGender);
                     categories.add(category);
                 }
 
@@ -401,6 +509,46 @@ public class SurveyDao {
         return envelop;
     }
 
+    private String getStepsSurveySql() {
+        String sql = "SELECT fact_id, indicator_id, dim_stps_org.name ,comm_org.id  as org_id, dim_stps_age.age, surv_comb_cat.id as age_id , value"
+                + "FROM public.fact_steps fs\n"
+                + "inner join dim_steps_age dim_stps_age on  fs.age_id = dim_stps_age.age_id"
+                + "inner join dim_steps_orgunit dim_stps_org on dim_stps_org.orgunit_id = fs.orgunit_id"
+                + "inner join survey_combine_category surv_comb_cat on surv_comb_cat.steps_age_id = dim_stps_age.age_id "
+                + "inner join surv_comm_org comm_org on dim_stps_org.name=comm_org.name";
+        return sql;
+    }
+
+    /**
+     *
+     * @param survData Map<String, Object> with keys: metadata, available, data
+     * The metadata is a Map<String, Object> that holds metadata to return and
+     * has keys indicators,orgunits,categories,periods The available is a
+     * Map<String, Object> that holds a list of available category data for the
+     * indicator The data is a list of maps holding availble data value with
+     * keys, source_id, category group (array of maps/dict), indicator id and
+     * value
+     * @return
+     */
+    private Map<String, Object> resultAssember(Map<String, Object> survData) {
+        Map<String, Object> envelop = new HashMap();
+        Map<String, Object> result = new HashMap();
+        Map<String, Object> dictionary = new HashMap();
+        log.debug("surv meta type :"+survData.get("metadata"));
+        Map<String, Object> survMeta = (Map<String, Object>) survData.get("metadata");
+
+        dictionary.put("indicators", survMeta.get("indicators"));
+        dictionary.put("orgunits", survMeta.get("orgunits"));
+        dictionary.put("categories", survMeta.get("categories"));
+        dictionary.put("periods", survMeta.get("periods"));
+        dictionary.put("available", survData.get("available"));
+
+        result.put("dictionary", dictionary);
+        result.put("data", survData.get("data"));
+        envelop.put("result", result);
+        return envelop;
+    }
+
     public Map<String, Object> getIndicatorValue(String sId, String iId, String orgId, String pe, String category_id) throws DslException {
         log.info("get survey data values");
         int sourceId = Integer.parseInt(sId);
@@ -413,24 +561,37 @@ public class SurveyDao {
             Map<String, Object> surveyDimensions = getAvailableDimesionData(availableDataDimesions);
 
             log.info("assemble survey payload");
-            Map<String, Object> dictionary = new HashMap();
+//            Map<String, Object> dictionary = new HashMap();
+//
+            Map<String, Object> survMeta = (Map<String, Object>) coreSurvey.get("metadata");
+//
+//            dictionary.put("indicators", survMeta.get("indicators"));
+//            dictionary.put("orgunits", survMeta.get("orgunits"));
+//            dictionary.put("categories", survMeta.get("categories"));
+//            dictionary.put("periods", survMeta.get("periods"));
+//            dictionary.put("available", surveyDimensions.get("available"));
+//
+//            result.put("dictionary", dictionary);
+//            result.put("data", coreSurvey.get("data"));
 
+            Map<String, Object> survData = new HashMap();
+            survData.put("metadata", survMeta);
+            survData.put("available", surveyDimensions.get("available"));
+            survData.put("data", coreSurvey.get("data"));
+
+            return resultAssember(survData);
+        } else if (sourceId == 7) {
+            String indicatorQuery = getStepsSurveySql(sourceId, indicatorId, orgId, category_id);
+            Map<String, Object> coreSurvey = getCoreSurveyData(indicatorQuery);
+            String availableDataDimesions = getSurveyAvailableDimesions(sourceId, indicatorId);
+            Map<String, Object> surveyDimensions = getAvailableDimesionData(availableDataDimesions);
             Map<String, Object> survMeta = (Map<String, Object>) coreSurvey.get("metadata");
 
-            dictionary.put("indicators", survMeta.get("indicators"));
-            dictionary.put("orgunits", survMeta.get("orgunits"));
-            dictionary.put("categories", survMeta.get("categories"));
-            dictionary.put("periods", survMeta.get("periods"));
-            dictionary.put("available", surveyDimensions.get("available"));
-
-            result.put("dictionary", dictionary);
-            result.put("data", coreSurvey.get("data"));
-
-            return result;
-        } else if (sourceId == 7) {
-            String indicatorQuery = "SELECT Distinct ind.indicator_id as id, ind.name as name, '" + DataSource.getSources().get(sourceId) + "' as source, description, "
-                    + "'" + sourceId + "' as source_id  FROM "
-                    + " dim_steps_indicator ind";
+            Map<String, Object> survData = new HashMap();
+            survData.put("metadata", survMeta);
+            survData.put("available", surveyDimensions.get("available"));
+            survData.put("data", coreSurvey.get("data"));
+            return resultAssember(survData);
         } else if (sourceId == 8) {
             String indicatorQuery = "SELECT Distinct ind.indicator_id as id, ind.name as name, '" + DataSource.getSources().get(sourceId) + "' as source, description, "
                     + "'" + sourceId + "' as source_id  FROM "

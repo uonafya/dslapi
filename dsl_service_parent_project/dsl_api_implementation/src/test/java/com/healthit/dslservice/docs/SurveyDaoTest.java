@@ -28,9 +28,13 @@ public class SurveyDaoTest {
     @Test
     public void testGetSurveySql() throws Exception {
         SurveyDao sDao=new SurveyDao();
+        // other survey test
         //String sql=sDao.getSurveySql(2, 7320, null, 4;1);
         //String sql=sDao.getSurveySql(2, 7320, null, null);
         //sDao.getSurveyAvailableDimesions(2, 7320);
+        
+        // steps test
+        //sDao.getStepsSurveySql(7, 7320, null, "4;1");
     }
 
 }
