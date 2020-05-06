@@ -73,7 +73,7 @@ public class SurveyDao {
         String indicatorQuery = "";
         List<Map<String, String>> result = new ArrayList();
         if (sourceId == 2 || sourceId == 3 || sourceId == 4 || sourceId == 5 || sourceId == 6) {
-            indicatorQuery = "SELECT Distinct ind.indicator_id as id, ind.name as name, '" + DataSource.getSources().get(sourceId) + "' as source '' as description,"
+            indicatorQuery = "SELECT Distinct ind.indicator_id as id, ind.name as name, '" + DataSource.getSources().get(sourceId) + "' as source, '' as description,"
                     + " '" + sourceId + "' as source_id FROM "
                     + " dim_survey_indicator ind inner join fact_survey fs on ind.indicator_id=fs.indicator_id "
                     + " inner join dim_survey_source source on fs.source_id = source.source_id where "
@@ -128,6 +128,62 @@ public class SurveyDao {
         return getBasicIndicatorInfo(sourceId);
     }
 
+    private String getSurveyCategoryFilterQueryPart(String category_id) throws DslException {
+        String catFilter = "";
+
+        if (category_id.trim().length() != 0) {
+            String[] catGroups = category_id.trim().split(",");
+            for (int y = 0; y < catGroups.length; y++) {
+                String[] catLength = catGroups[y].trim().split(";");
+
+                String innerCatFilter = "";
+                if (y == 0) {
+                    catFilter += " and ("; //outer bracket
+                    innerCatFilter += " (";
+                } else {
+                    innerCatFilter += " or (";
+                }
+
+                for (int x = 0; x < catLength.length; x++) {
+                    String genderFilter = "";
+                    String ageFilter = "";
+                    String getGenderDtailSQL = "select survey_age_id, survey_gender_id from survey_combine_category where id=" + catLength[x];
+                    Database db = new Database();
+                    ResultSet rs = db.executeQuery(getGenderDtailSQL);
+
+                    try {
+                        if (rs.next()) {
+                            String ageID = rs.getString("survey_age_id");
+                            String genderId = rs.getString("survey_gender_id");
+
+                            if (ageID != null) {
+                                ageFilter = " dim_surv_age.age_id=" + Integer.parseInt(ageID);
+                            }
+                            if (genderId != null) {
+                                genderFilter = " dim_surv_gender.gender_id=" + Integer.parseInt(genderId);
+                            }
+                            if (x == 0) {
+                                innerCatFilter += ageFilter + genderFilter;
+                            } else {
+                                innerCatFilter += " and " + ageFilter + genderFilter;
+                            }
+                        }
+                    } catch (SQLException ex) {
+                        log.error(ex);
+                    }
+
+                }
+                innerCatFilter += ")";
+                catFilter = catFilter + innerCatFilter;
+                if (y == catGroups.length - 1) {
+                    catFilter += ")"; //outer bracket
+                }
+            }
+
+        }
+        return catFilter;
+    }
+
     /**
      * Builds sql to use for fetching requested steps srvey data and metadata
      *
@@ -142,52 +198,11 @@ public class SurveyDao {
         log.debug("get survey sql funct");
         String catFilter = "";
         if (category_id != null) {
-            if (category_id.trim().length() != 0) {
-                String[] catGroups = category_id.trim().split(",");
-                for (int y = 0; y < catGroups.length; y++) {
-                    String[] catLength = catGroups[y].trim().split(";");
-                    String genderFilter = "";
-                    String ageFilter = "";
-                    for (int x = 0; x < catLength.length; x++) {
-                        String getGenderDtailSQL = "select survey_age_id, survey_gender_id from survey_combine_category where id=" + catLength[x];
-                        Database db = new Database();
-                        ResultSet rs = db.executeQuery(getGenderDtailSQL);
-
-                        try {
-                            if (rs.next()) {
-                                String ageID = rs.getString("survey_age_id");
-                                String genderId = rs.getString("survey_gender_id");
-
-                                if (ageID != null) {
-                                    ageFilter = " dim_surv_age.age_id=" + Integer.parseInt(ageID);
-                                }
-                                if (genderId != null) {
-                                    genderFilter = " dim_surv_gender.gender_id=" + Integer.parseInt(genderId);
-                                }
-                                if (x == 0) {
-                                    catFilter += " and (";
-                                }
-                                if (x > 0) {
-                                    catFilter += " or ";
-                                }
-                                catFilter += ageFilter + genderFilter;
-                                if (x == catLength.length - 1) {
-                                    catFilter += ")";
-                                }
-                            }
-                        } catch (SQLException ex) {
-                            log.error(ex);
-                        }
-
-                    }
-                }
-
-            }
-
+            catFilter = getSurveyCategoryFilterQueryPart(category_id);
         }
         log.debug("Build survey common org unit join");
         String orgSeg = "";
-        if (orgId != null && orgId != "18") {
+        if (orgId != null && !orgId.equals("18")) {
             orgSeg = " inner join surv_comm_org surv_org on surv_org.name=dim_surv_org.name and surv_comm_org.id=" + orgId;
         } else {
             orgSeg = " inner join surv_comm_org surv_org on surv_org.name=dim_surv_org.name and surv_org.name='Kenya'";
@@ -213,6 +228,75 @@ public class SurveyDao {
     }
 
     /**
+     * Generates filter for where clause (age and gender) for steps data
+     *
+     * @param category_id
+     * @return
+     * @throws DslException
+     */
+    private String getStepsCategoryFilterQueryPart(String category_id) throws DslException {
+        String catFilter = "";
+        if (category_id.trim().length() != 0) {
+            String[] catGroups = category_id.trim().split(",");
+            log.debug("category groups " + catGroups + " length: " + catGroups.length);
+            for (int y = 0; y < catGroups.length; y++) {
+                String[] catLength = catGroups[y].trim().split(";");
+                log.debug("category group " + catLength + " length " + catLength.length);
+                String innerCatFilter = "";
+                if (y == 0) {
+                    catFilter += " and ("; //outer bracket
+                    innerCatFilter += " (";
+                } else {
+                    innerCatFilter += " or (";
+                }
+
+                for (int x = 0; x < catLength.length; x++) {
+                    String genderFilter = "";
+                    String ageFilter = "";
+                    log.debug("Select steps categories");
+                    String getGenderDtailSQL = "select steps_age_id, steps_gender_id from survey_combine_category where id=" + catLength[x];
+                    Database db = new Database();
+                    log.debug("Select steps categories sql: " + getGenderDtailSQL);
+                    ResultSet rs = db.executeQuery(getGenderDtailSQL);
+
+                    try {
+                        if (rs.next()) {
+                            String ageID = rs.getString("steps_age_id");
+                            String genderId = rs.getString("steps_gender_id");
+
+                            if (ageID != null) {
+                                ageFilter = " dim_stps_age.age_id=" + Integer.parseInt(ageID);
+                            }
+                            if (genderId != null) {
+                                genderFilter = " dim_stps_gender.gender_id=" + Integer.parseInt(genderId);
+                            }
+
+                            if (x == 0) {
+                                innerCatFilter += ageFilter + genderFilter;
+                            } else {
+                                innerCatFilter += " and " + ageFilter + genderFilter;
+                            }
+
+                        }
+                    } catch (SQLException ex) {
+                        log.error(ex);
+                    }
+
+                }
+
+                innerCatFilter += ")";
+                catFilter = catFilter + innerCatFilter;
+                if (y == catGroups.length - 1) {
+                    catFilter += ")"; //outer bracket
+                }
+
+            }
+
+        }
+        return catFilter;
+    }
+
+    /**
      * Builds sql to use for fetching requested survey data and metadata
      *
      * @param sourceId
@@ -226,52 +310,12 @@ public class SurveyDao {
         log.debug("get steps survey sql funct");
         String catFilter = "";
         if (category_id != null) {
-            if (category_id.trim().length() != 0) {
-                String[] catGroups = category_id.trim().split(",");
-                for (int y = 0; y < catGroups.length; y++) {
-                    String[] catLength = catGroups[y].trim().split(";");
-                    String genderFilter = "";
-                    String ageFilter = "";
-                    for (int x = 0; x < catLength.length; x++) {
-                        String getGenderDtailSQL = "select steps_age_id, steps_gender_id from survey_combine_category where id=" + catLength[x];
-                        Database db = new Database();
-                        ResultSet rs = db.executeQuery(getGenderDtailSQL);
-
-                        try {
-                            if (rs.next()) {
-                                String ageID = rs.getString("steps_age_id");
-                                String genderId = rs.getString("steps_gender_id");
-
-                                if (ageID != null) {
-                                    ageFilter = " dim_stps_age.age_id=" + Integer.parseInt(ageID);
-                                }
-                                if (genderId != null) {
-                                    genderFilter = " dim_stps_gender.gender_id=" + Integer.parseInt(genderId);
-                                }
-                                if (x == 0) {
-                                    catFilter += " and (";
-                                }
-                                if (x > 0) {
-                                    catFilter += " or ";
-                                }
-                                catFilter += ageFilter + genderFilter;
-                                if (x == catLength.length - 1) {
-                                    catFilter += ")";
-                                }
-                            }
-                        } catch (SQLException ex) {
-                            log.error(ex);
-                        }
-
-                    }
-                }
-
-            }
+            catFilter = getStepsCategoryFilterQueryPart(category_id);
 
         }
         log.debug("Build survey common org unit join");
         String orgSeg = "";
-        if (orgId != null && orgId != "18") {
+        if (orgId != null && !orgId.equals("18")) {
             orgSeg = " inner join surv_comm_org comm_org on dim_stps_org.name=comm_org.name and comm_org.id=" + orgId;
         } else {
             orgSeg = " inner join surv_comm_org comm_org on dim_stps_org.name=comm_org.name and comm_org.name='Kenya'";
@@ -296,6 +340,98 @@ public class SurveyDao {
         return getSurveyDataSql;
     }
 
+    private String getKdhsSurveySql(int sourceId, int indicatorId, String orgId, String category_id, String pe) throws DslException {
+        log.debug("get kdhs survey sql funct");
+        String catFilter = "";
+        if (category_id != null) {
+            if (category_id.trim().length() != 0) {
+                String[] catGroups = category_id.trim().split(",");
+                for (int y = 0; y < catGroups.length; y++) {
+                    String[] catLength = catGroups[y].trim().split(";");
+
+                    String innerCatFilter = "";
+                    if (y == 0) {
+                        catFilter += " and ("; //outer bracket
+                        innerCatFilter += " (";
+                    } else {
+                        innerCatFilter += " or (";
+                    }
+
+                    for (int x = 0; x < catLength.length; x++) {
+                        String categoryFilter = "";
+                        String getGenderDtailSQL = "select kdhs_category_id from survey_combine_category where id=" + catLength[x];
+                        Database db = new Database();
+                        ResultSet rs = db.executeQuery(getGenderDtailSQL);
+
+                        try {
+                            if (rs.next()) {
+                                String kdhs_category_id = rs.getString("kdhs_category_id");
+
+                                if (kdhs_category_id != null) {
+                                    categoryFilter = " dim_surv_cat.category_id=" + Integer.parseInt(kdhs_category_id);
+                                }
+
+                                if (x == 0) {
+                                    innerCatFilter += categoryFilter;
+                                } else {
+                                    innerCatFilter += " and " + categoryFilter;
+                                }
+
+                            }
+                        } catch (SQLException ex) {
+                            log.error(ex);
+                        }
+
+                    }
+                    innerCatFilter += ")";
+                    catFilter = catFilter + innerCatFilter;
+                    if (y == catGroups.length - 1) {
+                        catFilter += ")"; //outer bracket
+                    }
+                }
+
+            }
+
+        }
+        log.debug("Build survey common org unit join");
+        String orgSeg = "";
+        if (orgId != null && !orgId.equals("18")) {
+            orgSeg = " inner join surv_comm_org comm_org on dim_surv_org.name=comm_org.name and comm_org.id=" + orgId;
+        } else {
+            orgSeg = " inner join surv_comm_org comm_org on dim_surv_org.name=comm_org.name and comm_org.name='Kenya'";
+        }
+        if (pe != null) {
+            try {
+                Integer.parseInt(pe);
+                if (pe.length() != 4) {
+                    throw new Exception();
+                }
+            } catch (Exception ex) {
+                Message msg = new Message();
+                msg.setMesageContent("The period: " + pe + " must be a valid period number");
+                msg.setMessageType(MessageType.NUMBER_FORMAT_ERROR);
+                throw new DslException(msg);
+            }
+            catFilter = " and fs.period=" + pe + " " + catFilter;
+        }
+
+        String getSurveyDataSql = "SELECT dim_surv_indicator.indicator_id as id, dim_surv_org.name as org_name,comm_org.id as orgId, dim_surv_cat.category_id as category_id, "
+                + " value as value,fs.period as period, dim_surv_indicator.name as name, '" + DataSource.getSources().get(sourceId) + "' as source,surv_comb_cat.cat as category_name, "
+                + " dim_surv_indicator.description as description, '" + sourceId + "' as source_id "
+                + " FROM public.fact_kdhs fs "
+                + " inner join dim_kdhs_category dim_surv_cat on  fs.category_id = dim_surv_cat.category_id"
+                + " inner join dim_khds_orgunit dim_surv_org on dim_surv_org.orgunit_id = fs.orgunit_id"
+                + " inner join survey_combine_category surv_comb_cat on surv_comb_cat.kdhs_category_id = dim_surv_cat.category_id "
+                + orgSeg
+                + "  inner join dim_khds_indicator dim_surv_indicator on fs.indicator_id = dim_surv_indicator.indicator_id"
+                + "  where "
+                + "  dim_surv_indicator.indicator_id =" + indicatorId
+                + catFilter;
+
+        log.debug(getSurveyDataSql);
+        return getSurveyDataSql;
+    }
+
     /**
      * Gets all avaialble data for a particular indicator
      *
@@ -303,10 +439,21 @@ public class SurveyDao {
      * @param indicatorId
      * @return
      */
-    private String getSurveyAvailableDimesions(int sourceId, int indicatorId) {
+    private String getSurveyAvailableDimesions(int sourceId, int indicatorId, String orgId, String pe, String category_id) {
         log.debug("get survey available dimesions");
         String sql = "";
-        if (sourceId == 2 || sourceId == 3 || sourceId == 4 || sourceId == 5 || sourceId == 6) {
+        if (sourceId == 2 || sourceId == 3 || sourceId == 4 || sourceId == 5 || sourceId == 6) { //others
+
+            String orgFilter = orgId != null ? " and surv_org.id=" + orgId : "";
+            String catFilter = "";
+            if (category_id != null) {
+                try {
+                    catFilter = getSurveyCategoryFilterQueryPart(category_id);
+                } catch (DslException ex) {
+                    log.error(ex);
+                }
+            }
+
             sql = "Select fs.indicator_id, surv_org.name as org_name,surv_org.id as orgunit_id,surv_cat2.id as age_id, surv_cat2.category as age,surv_cat.id as gender_id,surv_cat.category as gender FROM fact_survey fs"
                     + " inner join dim_survey_indicator dim_ind  on dim_ind.indicator_id=fs.indicator_id   "
                     + " inner join dim_survey_gender dim_surv_gender on dim_surv_gender.gender_id = fs.gender_id"
@@ -317,10 +464,18 @@ public class SurveyDao {
                     + " inner join survey_category surv_cat on surv_cat.category=dim_surv_gender.name"
                     + " inner join survey_category surv_cat2 on surv_cat2.category=dim_surv_age.age"
                     + " where source.name='" + DataSource.getSources().get(sourceId) + "'"
-                    + " and dim_ind.indicator_id =" + indicatorId;
+                    + " and dim_ind.indicator_id =" + indicatorId + orgFilter + catFilter;
 
-        } else if (sourceId == 7) {
-
+        } else if (sourceId == 7) { //steps
+            String orgFilter = orgId != null ? " and surv_org.id=" + orgId : "";
+            String catFilter = "";
+            if (category_id != null) {
+                try {
+                    catFilter = getStepsCategoryFilterQueryPart(category_id);
+                } catch (DslException ex) {
+                    log.error(ex);
+                }
+            }
             sql = "Select fs.indicator_id, surv_org.name as org_name,surv_org.id as orgunit_id,surv_cat2.id as age_id, surv_cat2.category as age,surv_cat.id as gender_id,surv_cat.category as gender "
                     + " FROM public.fact_steps fs "
                     + " inner join dim_steps_age dim_stps_age on  fs.age_id = dim_stps_age.age_id"
@@ -328,10 +483,25 @@ public class SurveyDao {
                     + " inner join dim_steps_orgunit dim_stps_org on dim_stps_org.orgunit_id = fs.orgunit_id"
                     + " inner join survey_category surv_cat on surv_cat.category=dim_stps_gender.name"
                     + " inner join survey_category surv_cat2 on surv_cat2.category=dim_stps_age.age"
-                    + " inner join surv_comm_org surv_org on dim_stps_org.name=dim_stps_org.name"
+                    + " inner join surv_comm_org surv_org on dim_stps_org.name=surv_org.name"
                     + "  inner join dim_steps_indicator dim_stps_indicator on fs.indicator_id = dim_stps_indicator.indicator_id"
                     + "  where "
-                    + "  dim_stps_indicator.indicator_id =" + indicatorId;
+                    + "  dim_stps_indicator.indicator_id =" + indicatorId + orgFilter + catFilter;
+            log.debug(sql);
+        } else if (sourceId == 8) {//kdhs
+
+            String orgFilter = orgId != null ? " and surv_org.id=" + orgId : "";
+            String peFilter = pe != null ? " and fs.period=" + pe : "";
+            String categoryFilter = category_id != null ? " and surv_cat.id=" + category_id : "";
+            sql = "Select fs.indicator_id, surv_org.name as org_name,surv_org.id as orgunit_id,surv_cat.id as age_id,surv_cat.category as category_name, surv_cat.id as category_id, fs.period as period "
+                    + " FROM public.fact_kdhs fs "
+                    + " inner join dim_kdhs_category dim_kdhs_cat on  fs.category_id = dim_kdhs_cat.category_id"
+                    + " inner join dim_khds_orgunit dim_kdhs_org on dim_kdhs_org.orgunit_id = fs.orgunit_id"
+                    + " inner join survey_category surv_cat on surv_cat.category=dim_kdhs_cat.name"
+                    + " inner join surv_comm_org surv_org on dim_kdhs_org.name=surv_org.name"
+                    + "  inner join dim_khds_indicator dim_kdhs_indicator on fs.indicator_id = dim_kdhs_indicator.indicator_id"
+                    + "  where "
+                    + "  dim_kdhs_indicator.indicator_id =" + indicatorId + orgFilter + categoryFilter + peFilter;
             log.debug(sql);
         }
         return sql;
@@ -344,7 +514,7 @@ public class SurveyDao {
      * @return
      * @throws DslException
      */
-    private Map<String, Object> getCoreSurveyData(String queryToRun) throws DslException {
+    private Map<String, Object> getCoreSurveyData(String queryToRun, String survey_type) throws DslException {
         log.debug("get core survey data values");
         Database db = new Database();
         ResultSet rs = db.executeQuery(queryToRun);
@@ -354,6 +524,7 @@ public class SurveyDao {
         List<List<Map<String, Object>>> categories = new ArrayList();
         List<String> periods = new ArrayList();
         List<String> addedOrgsUnit = new ArrayList();
+        List<String> addedCategoriesUnit = new ArrayList();
         List<String> addedIndicators = new ArrayList();
         List<Map> data = new ArrayList();
         log.debug("Build payload");
@@ -363,7 +534,19 @@ public class SurveyDao {
 
                 String sourceId = rs.getString("source_id");
                 int indicatorId = rs.getInt("id");
-                String addedVals = sourceId + ":" + Integer.toString(indicatorId);
+                String priod = "";
+                if (survey_type == "kdhs") {
+                    String dbPeriod = rs.getString("period");
+                    if (dbPeriod != null) {
+                        if (dbPeriod.equals("n/a")) {
+                            priod = "";
+                        } else {
+                            priod = dbPeriod;
+                        }
+                    }
+                }
+
+                String addedVals = sourceId + ":" + Integer.toString(indicatorId) + ":" + priod;
                 if (!addedIndicators.contains(addedVals)) {
                     addedIndicators.add(addedVals);
                     Map<String, Object> indicatorDetail = new HashMap();
@@ -372,6 +555,10 @@ public class SurveyDao {
                     indicatorDetail.put("source", rs.getString("source"));
                     indicatorDetail.put("source id", sourceId);
                     indicatorDetail.put("description", rs.getString("description"));
+                    if (survey_type == "kdhs" && priod.length() != 0) {
+                        indicatorDetail.put("period", priod);
+                        periods.add(priod);
+                    }
                     indicatorDetails.add(indicatorDetail);
                 }
 
@@ -393,29 +580,57 @@ public class SurveyDao {
                 //categories & data
                 List<Map<String, Object>> category = new ArrayList();
                 Map<String, Object> dataHolder = new HashMap();
+                String gender = "";
+                String age = "";
+                String kdhs_category = "";
+                String _category = "";
+                if (!survey_type.equals("kdhs")) {
+                    gender = rs.getString("gender");
+                    age = rs.getString("age");
+                } else {
+                    kdhs_category = rs.getString("category_name");
+                }
 
-                String gender = rs.getString("gender");
-                String age = rs.getString("age");
-                if (!gender.equals("n/a")) {
+                if (!gender.equals("n/a") && !survey_type.equals("kdhs")) {
                     Map<String, Object> categoryHolder = new HashMap();
+                    int genderId = rs.getInt("gender_id");
                     categoryHolder.put("name", gender);
-                    categoryHolder.put("id", rs.getInt("gender_id"));
+                    categoryHolder.put("id", genderId);
                     category.add(categoryHolder);
+                    _category += genderId;
                 }
-                if (!age.equals("n/a")) {
+                if (!age.equals("n/a") && !survey_type.equals("kdhs")) {
                     Map<String, Object> categoryHolder = new HashMap();
+                    int ageId = rs.getInt("age_id");
                     categoryHolder.put("name", age);
-                    categoryHolder.put("id", rs.getInt("age_id"));
+                    categoryHolder.put("id", ageId);
                     category.add(categoryHolder);
+                    _category += ageId;
                 }
+                if (!kdhs_category.equals("n/a") && survey_type.equals("kdhs")) {
+                    Map<String, Object> categoryHolder = new HashMap();
+                    int categoryId = rs.getInt("category_id");
+                    categoryHolder.put("name", kdhs_category);
+                    categoryHolder.put("id", categoryId);
+                    category.add(categoryHolder);
+                    _category += categoryId;
+                }
+
                 if (category.size() != 0) {
-                    categories.add(category);
+                    if (!addedCategoriesUnit.contains(_category) && _category.length() != 0) {
+                        categories.add(category);
+                        addedCategoriesUnit.add(_category);
+                    }
+
                     dataHolder.put("category", category);
                 }
 
                 dataHolder.put("source_id", rs.getInt("source_id"));
                 dataHolder.put("indicator_id", rs.getInt("id"));
                 dataHolder.put("value", rs.getInt("value"));
+                if (survey_type == "kdhs" && priod.length() != 0) {
+                    dataHolder.put("period", priod);
+                }
                 data.add(dataHolder);
 
             }
@@ -438,7 +653,7 @@ public class SurveyDao {
         return envelop;
     }
 
-    private Map<String, Object> getAvailableDimesionData(String queryToRun) throws DslException {
+    private Map<String, Object> getAvailableDimesionData(String queryToRun, String survey_type) throws DslException {
         log.debug("get available dimension data");
         Database db = new Database();
         ResultSet rs = db.executeQuery(queryToRun);
@@ -467,27 +682,52 @@ public class SurveyDao {
                 //categories
                 List<Map<String, Object>> category = new ArrayList();
 
-                String gender = rs.getString("gender");
-                String age = rs.getString("age");
-                String ageGender="";
-                if (!gender.equals("n/a")) {
+                String gender = "";
+                String age = "";
+                String _category = "";
+                String kdhs_category = "";
+                if (!survey_type.equals("kdhs")) {
+                    gender = rs.getString("gender");
+                    age = rs.getString("age");
+                } else {
+                    kdhs_category = rs.getString("category_name");
+                }
+
+                if (!gender.equals("n/a") && !survey_type.equals("kdhs")) {
                     Map<String, Object> categoryHolder = new HashMap();
                     categoryHolder.put("name", gender);
-                    int genderId=rs.getInt("gender_id");
-                    categoryHolder.put("id",genderId);
+                    int genderId = rs.getInt("gender_id");
+                    categoryHolder.put("id", genderId);
                     category.add(categoryHolder);
-                    ageGender+=genderId;
+                    _category += genderId;
                 }
-                if (!age.equals("n/a")) {
+                if (!age.equals("n/a") && !survey_type.equals("kdhs")) {
                     Map<String, Object> categoryHolder = new HashMap();
                     categoryHolder.put("name", age);
-                    int ageId=rs.getInt("age_id");
+                    int ageId = rs.getInt("age_id");
                     categoryHolder.put("id", ageId);
                     category.add(categoryHolder);
-                    ageGender+=ageId;
+                    _category += ageId;
                 }
-                if (category.size() != 0 && !addedCategoriesUnit.contains(ageGender) && ageGender.length()!=0) {
-                    addedCategoriesUnit.add(ageGender);
+                if (!kdhs_category.equals("n/a") && survey_type.equals("kdhs")) {
+
+                    Map<String, Object> categoryHolder = new HashMap();
+                    categoryHolder.put("name", kdhs_category);
+                    int catId = rs.getInt("category_id");
+                    categoryHolder.put("id", catId);
+                    category.add(categoryHolder);
+                    _category += catId;
+
+                }
+                //periods
+                if (survey_type.equals("kdhs")) {
+                    String period = rs.getString("period");
+                    if (period != null && !period.equals("n/a")) {
+                        periods.add(period);
+                    }
+                }
+                if (category.size() != 0 && !addedCategoriesUnit.contains(_category) && _category.length() != 0) {
+                    addedCategoriesUnit.add(_category);
                     categories.add(category);
                 }
 
@@ -509,16 +749,6 @@ public class SurveyDao {
         return envelop;
     }
 
-    private String getStepsSurveySql() {
-        String sql = "SELECT fact_id, indicator_id, dim_stps_org.name ,comm_org.id  as org_id, dim_stps_age.age, surv_comb_cat.id as age_id , value"
-                + "FROM public.fact_steps fs\n"
-                + "inner join dim_steps_age dim_stps_age on  fs.age_id = dim_stps_age.age_id"
-                + "inner join dim_steps_orgunit dim_stps_org on dim_stps_org.orgunit_id = fs.orgunit_id"
-                + "inner join survey_combine_category surv_comb_cat on surv_comb_cat.steps_age_id = dim_stps_age.age_id "
-                + "inner join surv_comm_org comm_org on dim_stps_org.name=comm_org.name";
-        return sql;
-    }
-
     /**
      *
      * @param survData Map<String, Object> with keys: metadata, available, data
@@ -534,7 +764,7 @@ public class SurveyDao {
         Map<String, Object> envelop = new HashMap();
         Map<String, Object> result = new HashMap();
         Map<String, Object> dictionary = new HashMap();
-        log.debug("surv meta type :"+survData.get("metadata"));
+        log.debug("surv meta type :" + survData.get("metadata"));
         Map<String, Object> survMeta = (Map<String, Object>) survData.get("metadata");
 
         dictionary.put("indicators", survMeta.get("indicators"));
@@ -556,23 +786,12 @@ public class SurveyDao {
         Map<String, Object> result = new HashMap();
         if (sourceId == 2 || sourceId == 3 || sourceId == 4 || sourceId == 5 || sourceId == 6) {
             String indicatorQuery = getSurveySql(sourceId, indicatorId, orgId, category_id);
-            Map<String, Object> coreSurvey = getCoreSurveyData(indicatorQuery);
-            String availableDataDimesions = getSurveyAvailableDimesions(sourceId, indicatorId);
-            Map<String, Object> surveyDimensions = getAvailableDimesionData(availableDataDimesions);
+            Map<String, Object> coreSurvey = getCoreSurveyData(indicatorQuery, "others");
+            String availableDataDimesions = getSurveyAvailableDimesions(sourceId, indicatorId, orgId, pe, category_id);
+            Map<String, Object> surveyDimensions = getAvailableDimesionData(availableDataDimesions, "others");
 
             log.info("assemble survey payload");
-//            Map<String, Object> dictionary = new HashMap();
-//
             Map<String, Object> survMeta = (Map<String, Object>) coreSurvey.get("metadata");
-//
-//            dictionary.put("indicators", survMeta.get("indicators"));
-//            dictionary.put("orgunits", survMeta.get("orgunits"));
-//            dictionary.put("categories", survMeta.get("categories"));
-//            dictionary.put("periods", survMeta.get("periods"));
-//            dictionary.put("available", surveyDimensions.get("available"));
-//
-//            result.put("dictionary", dictionary);
-//            result.put("data", coreSurvey.get("data"));
 
             Map<String, Object> survData = new HashMap();
             survData.put("metadata", survMeta);
@@ -582,9 +801,9 @@ public class SurveyDao {
             return resultAssember(survData);
         } else if (sourceId == 7) {
             String indicatorQuery = getStepsSurveySql(sourceId, indicatorId, orgId, category_id);
-            Map<String, Object> coreSurvey = getCoreSurveyData(indicatorQuery);
-            String availableDataDimesions = getSurveyAvailableDimesions(sourceId, indicatorId);
-            Map<String, Object> surveyDimensions = getAvailableDimesionData(availableDataDimesions);
+            Map<String, Object> coreSurvey = getCoreSurveyData(indicatorQuery, "steps");
+            String availableDataDimesions = getSurveyAvailableDimesions(sourceId, indicatorId, orgId, pe, category_id);
+            Map<String, Object> surveyDimensions = getAvailableDimesionData(availableDataDimesions, "steps");
             Map<String, Object> survMeta = (Map<String, Object>) coreSurvey.get("metadata");
 
             Map<String, Object> survData = new HashMap();
@@ -593,9 +812,19 @@ public class SurveyDao {
             survData.put("data", coreSurvey.get("data"));
             return resultAssember(survData);
         } else if (sourceId == 8) {
-            String indicatorQuery = "SELECT Distinct ind.indicator_id as id, ind.name as name, '" + DataSource.getSources().get(sourceId) + "' as source, description, "
-                    + "'" + sourceId + "' as source_id  FROM "
-                    + " dim_khds_indicator ind";
+
+            String indicatorQuery = getKdhsSurveySql(sourceId, indicatorId, orgId, category_id, pe);
+            Map<String, Object> coreSurvey = getCoreSurveyData(indicatorQuery, "kdhs");
+            String availableDataDimesions = getSurveyAvailableDimesions(sourceId, indicatorId, orgId, pe, category_id);
+            Map<String, Object> surveyDimensions = getAvailableDimesionData(availableDataDimesions, "kdhs");
+            Map<String, Object> survMeta = (Map<String, Object>) coreSurvey.get("metadata");
+
+            Map<String, Object> survData = new HashMap();
+            survData.put("metadata", survMeta);
+            survData.put("available", surveyDimensions.get("available"));
+            survData.put("data", coreSurvey.get("data"));
+            return resultAssember(survData);
+
         } else {
             Message msg = new Message();
             msg.setMesageContent("This id does not exist ");
@@ -603,7 +832,6 @@ public class SurveyDao {
             throw new DslException(msg);
         }
 
-        return result;
     }
 
 }

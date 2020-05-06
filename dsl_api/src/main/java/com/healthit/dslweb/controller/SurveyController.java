@@ -11,6 +11,7 @@ import com.healthit.dslservice.dao.SurveyDao;
 import com.healthit.dslservice.dto.dhis.Indicator;
 import com.healthit.dslservice.dto.dhis.IndicatorGoup;
 import com.healthit.dslservice.message.Message;
+import com.healthit.dslservice.message.MessageType;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.List;
@@ -49,19 +50,28 @@ public class SurveyController {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    
+
     @RequestMapping(value = "sources/{sourceId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getIndicatorValue(
-            @RequestParam(value = "id",required = false) String indicatorId,
-            @RequestParam(value = "orgId",required = false) String orgId,
-            @RequestParam(value = "pe",required = false) String pe,
-            @RequestParam(value = "cat_id",required = false) String category_id,
-            @PathVariable(value="sourceId",required = true) String sourceId
+            @RequestParam(value = "id", required = false) String indicatorId,
+            @RequestParam(value = "orgId", required = false) String orgId,
+            @RequestParam(value = "pe", required = false) String pe,
+            @RequestParam(value = "catId", required = false) String category_id,
+            @PathVariable(value = "sourceId", required = true) String sourceId
     ) {
         SurveyDao survey = new SurveyDao();
         try {
-            if(indicatorId==null) return new ResponseEntity(survey.getIndicators(sourceId), HttpStatus.OK);
-            else return new ResponseEntity(survey.getIndicatorValue(sourceId,indicatorId, orgId, pe, category_id), HttpStatus.OK);
+            if (indicatorId == null && (orgId != null || pe != null || category_id != null)) {
+                Message msg = new Message();
+                msg.setMesageContent("Wrong URL construction");
+                msg.setMessageType(MessageType.MISSING_PARAMETER_VALUE);
+                throw new DslException(msg);
+            }
+            if (indicatorId == null) {
+                return new ResponseEntity(survey.getIndicators(sourceId), HttpStatus.OK);
+            } else {
+                return new ResponseEntity(survey.getIndicatorValue(sourceId, indicatorId, orgId, pe, category_id), HttpStatus.OK);
+            }
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
