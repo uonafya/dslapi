@@ -203,7 +203,7 @@ public class SurveyDao {
         log.debug("Build survey common org unit join");
         String orgSeg = "";
         if (orgId != null && !orgId.equals("18")) {
-            orgSeg = " inner join surv_comm_org surv_org on surv_org.name=dim_surv_org.name and surv_comm_org.id=" + orgId;
+            orgSeg = " inner join surv_comm_org surv_org on surv_org.name=dim_surv_org.name and surv_org.id=" + orgId;
         } else {
             orgSeg = " inner join surv_comm_org surv_org on surv_org.name=dim_surv_org.name and surv_org.name='Kenya'";
         }
@@ -296,6 +296,56 @@ public class SurveyDao {
         return catFilter;
     }
 
+    private String getKdhsCategoryFilterQueryPart(String category_id) throws DslException {
+        String catFilter = "";
+        if (category_id.trim().length() != 0) {
+            String[] catGroups = category_id.trim().split(",");
+            for (int y = 0; y < catGroups.length; y++) {
+                String[] catLength = catGroups[y].trim().split(";");
+
+                String innerCatFilter = "";
+                if (y == 0) {
+                    catFilter += " and ("; //outer bracket
+                    innerCatFilter += " (";
+                } else {
+                    innerCatFilter += " or (";
+                }
+
+                for (int x = 0; x < catLength.length; x++) {
+                    String categoryFilter = "";
+                    String getGenderDtailSQL = "select kdhs_category_id from survey_combine_category where id=" + catLength[x];
+                    Database db = new Database();
+                    ResultSet rs = db.executeQuery(getGenderDtailSQL);
+
+                    try {
+                        if (rs.next()) {
+                            String kdhs_category_id = rs.getString("kdhs_category_id");
+
+                            categoryFilter = " dim_surv_cat.category_id=" + Integer.parseInt(kdhs_category_id);
+
+                            if (x == 0) {
+                                innerCatFilter += categoryFilter;
+                            } else {
+                                innerCatFilter += " and " + categoryFilter;
+                            }
+
+                        }
+                    } catch (SQLException ex) {
+                        log.error(ex);
+                    }
+
+                }
+                innerCatFilter += ")";
+                catFilter = catFilter + innerCatFilter;
+                if (y == catGroups.length - 1) {
+                    catFilter += ")"; //outer bracket
+                }
+            }
+
+        }
+        return catFilter;
+    }
+
     /**
      * Builds sql to use for fetching requested survey data and metadata
      *
@@ -343,59 +393,9 @@ public class SurveyDao {
     private String getKdhsSurveySql(int sourceId, int indicatorId, String orgId, String category_id, String pe) throws DslException {
         log.debug("get kdhs survey sql funct");
         String catFilter = "";
-        boolean conTinue = true;
         if (category_id != null) {
-            if (category_id.trim().length() != 0) {
-                String[] catGroups = category_id.trim().split(",");
-                for (int y = 0; y < catGroups.length; y++) {
-                    String[] catLength = catGroups[y].trim().split(";");
 
-                    String innerCatFilter = "";
-                    if (y == 0) {
-                        catFilter += " and ("; //outer bracket
-                        innerCatFilter += " (";
-                    } else {
-                        innerCatFilter += " or (";
-                    }
-
-                    for (int x = 0; x < catLength.length; x++) {
-                        String categoryFilter = "";
-                        String getGenderDtailSQL = "select kdhs_category_id from survey_combine_category where id=" + catLength[x];
-                        Database db = new Database();
-                        ResultSet rs = db.executeQuery(getGenderDtailSQL);
-
-                        try {
-                            if (rs.next()) {
-                                String kdhs_category_id = rs.getString("kdhs_category_id");
-
-                                if (kdhs_category_id != null) {
-                                    conTinue=false;
-                                    categoryFilter = " dim_surv_cat.category_id=" + Integer.parseInt(kdhs_category_id);
-                                } else {
-                                    continue;
-                                }
-
-                                if (x == 0) {
-                                    innerCatFilter += categoryFilter;
-                                } else {
-                                    innerCatFilter += " and " + categoryFilter;
-                                }
-
-                            }
-                        } catch (SQLException ex) {
-                            log.error(ex);
-                        }
-
-                    }
-                    innerCatFilter += ")";
-                    catFilter = catFilter + innerCatFilter;
-                    if (y == catGroups.length - 1) {
-                        catFilter += ")"; //outer bracket
-                    }
-                }
-
-            }
-
+            catFilter = getKdhsCategoryFilterQueryPart(category_id);
         }
         log.debug("Build survey common org unit join");
         String orgSeg = "";
@@ -416,14 +416,11 @@ public class SurveyDao {
                 msg.setMessageType(MessageType.NUMBER_FORMAT_ERROR);
                 throw new DslException(msg);
             }
-            if (!conTinue) {
-                catFilter = " and fs.period=" + pe + " " + catFilter;
-            } else {
-                catFilter = " and fs.period=" + pe;
-            }
+            catFilter = " and fs.period=" + pe + " " + catFilter;
+
         }
 
-        String getSurveyDataSql = "SELECT dim_surv_indicator.indicator_id as id, dim_surv_org.name as org_name,comm_org.id as orgId, dim_surv_cat.category_id as category_id, "
+        String getSurveyDataSql = "SELECT dim_surv_indicator.indicator_id as id, dim_surv_org.name as org_name,comm_org.id as orgId, surv_comb_cat.id as category_id, "
                 + " value as value,fs.period as period, dim_surv_indicator.name as name, '" + DataSource.getSources().get(sourceId) + "' as source,surv_comb_cat.cat as category_name, "
                 + " dim_surv_indicator.description as description, '" + sourceId + "' as source_id "
                 + " FROM public.fact_kdhs fs "
@@ -447,7 +444,7 @@ public class SurveyDao {
      * @param indicatorId
      * @return
      */
-    private String getSurveyAvailableDimesions(int sourceId, int indicatorId, String orgId, String pe, String category_id) {
+    private String getSurveyAvailableDimesions(int sourceId, int indicatorId, String orgId, String pe, String category_id) throws DslException {
         log.debug("get survey available dimesions");
         String sql = "";
         if (sourceId == 2 || sourceId == 3 || sourceId == 4 || sourceId == 5 || sourceId == 6) { //others
@@ -500,12 +497,12 @@ public class SurveyDao {
 
             String orgFilter = orgId != null ? " and surv_org.id=" + orgId : "";
             String peFilter = pe != null ? " and fs.period=" + pe : "";
-            String categoryFilter = category_id != null ? " and surv_cat.id=" + category_id : "";
+            String categoryFilter = getKdhsCategoryFilterQueryPart(category_id);
             sql = "Select fs.indicator_id, surv_org.name as org_name,surv_org.id as orgunit_id,surv_cat.id as age_id,surv_cat.category as category_name, surv_cat.id as category_id, fs.period as period "
                     + " FROM public.fact_kdhs fs "
-                    + " inner join dim_kdhs_category dim_kdhs_cat on  fs.category_id = dim_kdhs_cat.category_id"
+                    + " inner join dim_kdhs_category dim_surv_cat on  fs.category_id = dim_surv_cat.category_id"
                     + " inner join dim_khds_orgunit dim_kdhs_org on dim_kdhs_org.orgunit_id = fs.orgunit_id"
-                    + " inner join survey_category surv_cat on surv_cat.category=dim_kdhs_cat.name"
+                    + " inner join survey_category surv_cat on surv_cat.category=dim_surv_cat.name"
                     + " inner join surv_comm_org surv_org on dim_kdhs_org.name=surv_org.name"
                     + "  inner join dim_khds_indicator dim_kdhs_indicator on fs.indicator_id = dim_kdhs_indicator.indicator_id"
                     + "  where "
