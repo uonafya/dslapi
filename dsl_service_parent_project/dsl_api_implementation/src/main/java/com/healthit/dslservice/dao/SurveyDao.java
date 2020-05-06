@@ -85,7 +85,7 @@ public class SurveyDao {
         } else if (sourceId == 8) {
             indicatorQuery = "SELECT Distinct ind.indicator_id as id, ind.name as name, '" + DataSource.getSources().get(sourceId) + "' as source, description, "
                     + "'" + sourceId + "' as source_id  FROM "
-                    + " dim_steps_indicator ind";
+                    + " dim_khds_indicator ind";
         } else {
             Message msg = new Message();
             msg.setMesageContent("This id does not exist ");
@@ -343,6 +343,7 @@ public class SurveyDao {
     private String getKdhsSurveySql(int sourceId, int indicatorId, String orgId, String category_id, String pe) throws DslException {
         log.debug("get kdhs survey sql funct");
         String catFilter = "";
+        boolean conTinue = true;
         if (category_id != null) {
             if (category_id.trim().length() != 0) {
                 String[] catGroups = category_id.trim().split(",");
@@ -368,7 +369,10 @@ public class SurveyDao {
                                 String kdhs_category_id = rs.getString("kdhs_category_id");
 
                                 if (kdhs_category_id != null) {
+                                    conTinue=false;
                                     categoryFilter = " dim_surv_cat.category_id=" + Integer.parseInt(kdhs_category_id);
+                                } else {
+                                    continue;
                                 }
 
                                 if (x == 0) {
@@ -412,7 +416,11 @@ public class SurveyDao {
                 msg.setMessageType(MessageType.NUMBER_FORMAT_ERROR);
                 throw new DslException(msg);
             }
-            catFilter = " and fs.period=" + pe + " " + catFilter;
+            if (!conTinue) {
+                catFilter = " and fs.period=" + pe + " " + catFilter;
+            } else {
+                catFilter = " and fs.period=" + pe;
+            }
         }
 
         String getSurveyDataSql = "SELECT dim_surv_indicator.indicator_id as id, dim_surv_org.name as org_name,comm_org.id as orgId, dim_surv_cat.category_id as category_id, "
