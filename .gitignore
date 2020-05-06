@@ -7,3 +7,7 @@
 /DSL_Support_Parent_Project/target/
 /DSL_Service_Parent_Project/target/
 nb-configuration.xml
+/dsl_support_parent_project/dsl_system_support/target/
+/dsl_support_parent_project/dsl_jdbc_service/target/
+/dsl_service_parent_project/dsl_api_implementation/target/
+/dsl_api/target/

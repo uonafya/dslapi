@@ -2,14 +2,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.healthit</groupId>
-    <artifactId>DSL_Service_Layer</artifactId>
+    <artifactId>dsl_service_layer</artifactId>
     <version>1.0</version>
     <packaging>pom</packaging>
-    <name>DSL Service Layer</name>
+    <name>dsl service layer</name>
     <modules>
-        <module>DSL_API</module>
-        <module>DSL_Support_Parent_Project</module>
-        <module>DSL_Service_Parent_Project</module>
+        <module>dsl_support_parent_project</module>
+        <module>dsl_api</module>
+        <module>dsl_service_parent_project</module>
     </modules>
    
     
@@ -110,5 +110,5 @@
         </dependency>
        
     </dependencies>
-   
+    
 </project>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.healthit</groupId>
+        <artifactId>dsl_service_layer</artifactId>
+        <version>1.0</version>
+    </parent>
+    <artifactId>dsl_support_parent_project</artifactId>
+    <packaging>pom</packaging>
+    <name>dsl support parent project</name>
+    <modules>
+        <module>dsl_jdbc_service</module>
+        <module>dsl_system_support</module>
+    </modules>
+</project>
