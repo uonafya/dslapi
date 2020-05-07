@@ -393,8 +393,9 @@ public class SurveyDao {
     private String getKdhsSurveySql(int sourceId, int indicatorId, String orgId, String category_id, String pe) throws DslException {
         log.debug("get kdhs survey sql funct");
         String catFilter = "";
+        log.debug("check category_id status");
         if (category_id != null) {
-
+            log.debug("category_id not null");
             catFilter = getKdhsCategoryFilterQueryPart(category_id);
         }
         log.debug("Build survey common org unit join");
@@ -416,7 +417,7 @@ public class SurveyDao {
                 msg.setMessageType(MessageType.NUMBER_FORMAT_ERROR);
                 throw new DslException(msg);
             }
-            catFilter = " and fs.period=" + pe + " " + catFilter;
+            catFilter = " and fs.period='" + pe + "' " + catFilter;
 
         }
 
@@ -496,8 +497,15 @@ public class SurveyDao {
         } else if (sourceId == 8) {//kdhs
 
             String orgFilter = orgId != null ? " and surv_org.id=" + orgId : "";
-            String peFilter = pe != null ? " and fs.period=" + pe : "";
-            String categoryFilter = getKdhsCategoryFilterQueryPart(category_id);
+            String peFilter = pe != null ? " and fs.period='" + pe +"'": "";
+            String categoryFilter="";
+            if (category_id != null) {
+                try {
+                    categoryFilter = getKdhsCategoryFilterQueryPart(category_id);
+                } catch (DslException ex) {
+                    log.error(ex);
+                }
+            }
             sql = "Select fs.indicator_id, surv_org.name as org_name,surv_org.id as orgunit_id,surv_cat.id as age_id,surv_cat.category as category_name, surv_cat.id as category_id, fs.period as period "
                     + " FROM public.fact_kdhs fs "
                     + " inner join dim_kdhs_category dim_surv_cat on  fs.category_id = dim_surv_cat.category_id"
@@ -788,7 +796,6 @@ public class SurveyDao {
         log.info("get survey data values");
         int sourceId = Integer.parseInt(sId);
         int indicatorId = Integer.parseInt(iId);
-        Map<String, Object> result = new HashMap();
         if (sourceId == 2 || sourceId == 3 || sourceId == 4 || sourceId == 5 || sourceId == 6) {
             String indicatorQuery = getSurveySql(sourceId, indicatorId, orgId, category_id);
             Map<String, Object> coreSurvey = getCoreSurveyData(indicatorQuery, "others");
@@ -817,7 +824,6 @@ public class SurveyDao {
             survData.put("data", coreSurvey.get("data"));
             return resultAssember(survData);
         } else if (sourceId == 8) {
-
             String indicatorQuery = getKdhsSurveySql(sourceId, indicatorId, orgId, category_id, pe);
             Map<String, Object> coreSurvey = getCoreSurveyData(indicatorQuery, "kdhs");
             String availableDataDimesions = getSurveyAvailableDimesions(sourceId, indicatorId, orgId, pe, category_id);
