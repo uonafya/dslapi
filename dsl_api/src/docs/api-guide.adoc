@@ -17,7 +17,7 @@ Resources exposed from the API are the National human resource capacity, health 
 
 *References*
 
-$servername is the host server address. This currently resolves to 41.89.94.105
+$servername is the host server address. This currently resolves to dsl.health.go.ke
 // ======================DHIS============================>>>
 // ======================DHIS============================>>>
 
@@ -157,6 +157,85 @@ include::{snippets}/test-indicators-by-group-id-returned/request-parameters.adoc
 
 === Response fields definition
 include::{snippets}/test-indicators-by-group-id-returned/response-fields.adoc[]
+
+
+
+// ==================================================>>>
+
+
+// =======================survey data===========================>>>
+// =======================survey data===========================>>>
+
+== Getting survey sources
+Requesting a list of survey sources
+
+=== Curl Request
+include::{snippets}/test-survey-sources/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-survey-sources/http-request.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-survey-sources/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-survey-sources/response-fields.adoc[]
+
+// ==================================================>>>
+
+== Getting survey indicators by source
+Requesting a list of survey indicators
+
+=== Curl Request
+include::{snippets}/get-indicators-from-a-source/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/get-indicators-from-a-source/http-request.adoc[]
+
+=== Path parameter definition
+include::{snippets}/get-indicators-from-a-source/path-parameters.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/get-indicators-from-a-source/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/get-indicators-from-a-source/response-fields.adoc[]
+
+// ==================================================>>>
+
+
+// ==================================================>>>
+
+== Getting survey indicators values
+Requesting survey indicator value
+
+=== Curl Request
+include::{snippets}/test--survey-indicators-values-returned/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test--survey-indicators-values-returned/http-request.adoc[]
+
+=== Path parameter definition
+include::{snippets}/test--survey-indicators-values-returned/path-parameters.adoc[]
+
+=== Request parameters definition
+include::{snippets}/test--survey-indicators-values-returned/request-parameters.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test--survey-indicators-values-returned/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/test--survey-indicators-values-returned/response-fields.adoc[]
+
+// ==================================================>>>
+
+
 // =======================Ihris===========================>>>
 // =======================Ihris===========================>>>
 

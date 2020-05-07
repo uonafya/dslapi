@@ -39,7 +39,7 @@ import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 @ContextConfiguration("file:src/main/webapp/WEB-INF/spring-servlet.xml")
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
-public class DhisApisDocumentationTest {
+public class SurveyApisDocumentationTest {
 
     @Autowired
     private WebApplicationContext context;
@@ -59,343 +59,137 @@ public class DhisApisDocumentationTest {
     }
 
     @Test
-    public void testIndicatorsReturnedApiCall() throws Exception {
+    public void testSourcesReturnedApiCall() throws Exception {
         this.mockMvc.perform(
-                get("/indicators").accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk()).andDo(document("test-indicators-returned-api-call", responseFields(
+                get("/survey/sources").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andDo(document("test-survey-sources", responseFields(
                 fieldWithPath("[].id")
-                        .description("Indicator ID"),
+                        .description("Data source ID"),
                 fieldWithPath("[].name")
-                        .description("Indicator Name"),
-                fieldWithPath("[].groupId").description("Indicator Group Id"),
-                fieldWithPath("[].description").description("Indicator description")
+                        .description("Data source name")
         )));
     }
 
     @Test
-    public void testIndicatorsValuesReturnedWithRequestParameters() throws Exception {
-        String periodDec = "Period parameter. Can be an explicit year, YYYY (eg 2018) which will give the stated year values, or YYYYmm which gives "
-                + "values for only a particular month. Simicolon seperate period to get data for different periods";
+    public void testSurveySourceIndicatorListing() throws Exception {
         this.mockMvc.perform(
-                get("/indicators?pe=2017&ouid=23408&id=61829").accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk()).andDo(document("test-indicators-values-returned-with-request-parameters", requestParameters(
-                parameterWithName("pe").description(periodDec),
-                parameterWithName("ouid").description("Organisation unit id, if not provided defaults to national. Simicolon seperate org unit id to get data for different organisation units"),
-                parameterWithName("id").description("Indicator ID which is mandatory.  Simicolon seperate indicator ids to get data for different indicators")
-        ),
-                responseFields(
-                        fieldWithPath("result")
-                                .description("Response envelope object"),
-                        //                Meta data section
-                        fieldWithPath("result.dictionary")
-                                .description("Carries metadata for the payload"),
-                        fieldWithPath("result.dictionary.orgunits")
-                                .description("Metadata for organization units contained in the reponse payload"),
-                        fieldWithPath("result.dictionary.orgunits[]")
-                                .description("List of organisation unit(s)"),
-                        fieldWithPath("result.dictionary.orgunits[].id")
-                                .description("Organisation unit id"),
-                        fieldWithPath("result.dictionary.orgunits[].name")
-                                .description("Organisation unit name"),
-                        fieldWithPath("result.dictionary.indicators")
-                                .description("Metadata for indicators contained in the reponse payload"),
-                        fieldWithPath("result.dictionary.indicators[]")
-                                .description("List of indicator(s) in the payload"),
-                        fieldWithPath("result.dictionary.indicators[].id")
-                                .description("Indicator ID"),
-                        fieldWithPath("result.dictionary.indicators[].name")
-                                .description("Indicator name"),
-                        fieldWithPath("result.dictionary.indicators[].description")
-                                .description("Indicator description"),
-                        fieldWithPath("result.dictionary.indicators[].last_updated")
-                                .description("Indicator indicator update date"),
-                        fieldWithPath("result.dictionary.indicators[].date_created")
-                                .description("Indicator creation date"),
-                        fieldWithPath("result.dictionary.indicators[].source")
-                                .description("Source for this Indicator"),
-                        //
-                        fieldWithPath("result.dictionary.parameters")
-                                .description("Metadata for requested parameters value"),
-                        fieldWithPath("result.dictionary.parameters.period")
-                                .description("List of period id(s) requested"),
-                        fieldWithPath("result.dictionary.parameters.location")
-                                .description("List of organanisation unit id(s) requested"),
-                        fieldWithPath("result.dictionary.parameters.location[].ouid")
-                                .description("Organanisation unit id"),
-                        fieldWithPath("result.dictionary.parameters.location[].name")
-                                .description("Organanisation unit name"),
-                        fieldWithPath("result.dictionary.parameters.indicators")
-                                .description("List of indicator id(s) requested"),
-                        //                data section 
-                        fieldWithPath("result.data")
-                                .description("The reponse payload"),
-                        fieldWithPath("result.data.61829")
-                                .description("Indicator id"),
-                        fieldWithPath("result.data.61829.[]")
-                                .description("List of response data associated with this indicator"),
-                        fieldWithPath("result.data.61829.[].value")
-                                .description("Indicator value (The key performance indicator value)"),
-                        fieldWithPath("result.data.61829.[].period")
-                                .description("Indicator period id "),
-                        fieldWithPath("result.data.61829.[].ou")
-                                .description("Indicator organisation unit id")
-                )
-        ));
-    }
-
-    @Test
-    public void testIndicatorsValuesReturnedWithPathAndRequestParameters() throws Exception {
-        String periodDec = "Period parameter. Can be an explicit year, YYYY (eg 2018) which will give the stated year values, or YYYYmm which gives "
-                + "values for only a particular month";
-        this.mockMvc.perform(
-                RestDocumentationRequestBuilders.get("/indicators/{id}?pe=2017&ouid=23408", 61829).accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk()).andDo(document("test-indicators-values-returned-with-path-and-request-parameters", pathParameters(
-                parameterWithName("id").description("Indicator ID which is mandatory")
-        ), requestParameters(
-                parameterWithName("pe").description(periodDec),
-                parameterWithName("ouid").description("Organisation unit id, if not provided defaults to national")
+                RestDocumentationRequestBuilders.get("/survey/sources/{source_id}", 3).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andDo(document("get-indicators-from-a-source", pathParameters(
+                parameterWithName("source_id").description("Survey source id")
         ), responseFields(
-                fieldWithPath("result")
-                        .description("Response envelope object"),
-                //                Meta data section
-                fieldWithPath("result.dictionary")
-                        .description("Carries metadata for the payload"),
-                fieldWithPath("result.dictionary.orgunits")
-                        .description("Metadata for organization units contained in the reponse payload"),
-                fieldWithPath("result.dictionary.orgunits[]")
-                        .description("List of organisation unit(s)"),
-                fieldWithPath("result.dictionary.orgunits[].id")
-                        .description("Organisation unit id"),
-                fieldWithPath("result.dictionary.orgunits[].name")
-                        .description("Organisation unit name"),
-                fieldWithPath("result.dictionary.indicators")
-                        .description("Metadata for indicators contained in the reponse payload"),
-                fieldWithPath("result.dictionary.indicators[]")
-                        .description("List of indicator(s) in the payload"),
-                fieldWithPath("result.dictionary.indicators[].id")
-                        .description("Indicator ID"),
-                fieldWithPath("result.dictionary.indicators[].name")
-                        .description("Indicator name"),
-                fieldWithPath("result.dictionary.indicators[].description")
-                        .description("Indicator description"),
-                fieldWithPath("result.dictionary.indicators[].last_updated")
-                        .description("Indicator indicator update date"),
-                fieldWithPath("result.dictionary.indicators[].date_created")
-                        .description("Indicator creation date"),
-                fieldWithPath("result.dictionary.indicators[].source")
-                        .description("Source for this Indicator"),
-                //
-                fieldWithPath("result.dictionary.parameters")
-                        .description("Metadata for requested parameters value"),
-                fieldWithPath("result.dictionary.parameters.period")
-                        .description("List of period id(s) requested"),
-                fieldWithPath("result.dictionary.parameters.location")
-                        .description("List of organanisation unit id(s) requested"),
-                fieldWithPath("result.dictionary.parameters.location[].ouid")
-                        .description("Organanisation unit id"),
-                fieldWithPath("result.dictionary.parameters.location[].name")
-                        .description("Organanisation unit name"),
-                fieldWithPath("result.dictionary.parameters.indicators")
-                        .description("List of indicator id(s) requested"),
-                //                data section 
-                fieldWithPath("result.data")
-                        .description("The reponse payload"),
-                fieldWithPath("result.data.61829")
-                        .description("Indicator id"),
-                fieldWithPath("result.data.61829.[]")
-                        .description("List of response data associated with this indicator"),
-                fieldWithPath("result.data.61829.[].value")
-                        .description("Indicator value (The key performance indicator value)"),
-                fieldWithPath("result.data.61829.[].period")
-                        .description("Indicator period id "),
-                fieldWithPath("result.data.61829.[].ou")
-                        .description("Indicator organisation unit id")
-        )
-        ));
-    }
-
-    @Test
-    public void testIndicatorsValuesRequestedPerLevelBasis() throws Exception {
-        String periodDec = "Period parameter. Can be an explicit year, YYYY (eg 2018) which will give the stated year values, or YYYYmm which gives "
-                + "values for only a particular month";
-        this.mockMvc.perform(
-                RestDocumentationRequestBuilders.get("/indicators/{id}?pe=2017&ouid=18&level=2", 61829).accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk()).andDo(document("test-indicators-values-requested-per-level-basis", pathParameters(
-                parameterWithName("id").description("Indicator ID which is mandatory")
-        ), requestParameters(
-                parameterWithName("pe").description(periodDec),
-                parameterWithName("ouid").description("Organisation unit id, if not provided defaults to national"),
-                parameterWithName("level").description("Organisation unit level whose indicator value are to be returned.  "
-                        + "\n"
-                        + "Level 1= National, Leve 2 = County, Level 3= Sub-County, Level 4= Ward, Level 5 = Facility")
-        ), responseFields(
-                fieldWithPath("result")
-                        .description("Response envelope object"),
-                //                Meta data section
-                fieldWithPath("result.dictionary")
-                        .description("Carries metadata for the payload"),
-                fieldWithPath("result.dictionary.orgunits")
-                        .description("Metadata for organization units contained in the reponse payload"),
-                fieldWithPath("result.dictionary.orgunits[]")
-                        .description("List of organisation unit(s)"),
-                fieldWithPath("result.dictionary.orgunits[].id")
-                        .description("Organisation unit id"),
-                fieldWithPath("result.dictionary.orgunits[].name")
-                        .description("Organisation unit name"),
-                fieldWithPath("result.dictionary.indicators")
-                        .description("Metadata for indicators contained in the reponse payload"),
-                fieldWithPath("result.dictionary.indicators[]")
-                        .description("List of indicator(s) in the payload"),
-                fieldWithPath("result.dictionary.indicators[].id")
-                        .description("Indicator ID"),
-                fieldWithPath("result.dictionary.indicators[].name")
-                        .description("Indicator name"),
-                fieldWithPath("result.dictionary.indicators[].description")
-                        .description("Indicator description"),
-                fieldWithPath("result.dictionary.indicators[].last_updated")
-                        .description("Indicator indicator update date"),
-                fieldWithPath("result.dictionary.indicators[].date_created")
-                        .description("Indicator creation date"),
-                fieldWithPath("result.dictionary.indicators[].source")
-                        .description("Source for this Indicator"),
-                //
-                fieldWithPath("result.dictionary.parameters")
-                        .description("Metadata for requested parameters value"),
-                fieldWithPath("result.dictionary.parameters.period")
-                        .description("List of period id(s) requested"),
-                fieldWithPath("result.dictionary.parameters.location")
-                        .description("List of organanisation unit id(s) requested"),
-                fieldWithPath("result.dictionary.parameters.location[].ouid")
-                        .description("Organanisation unit id"),
-                fieldWithPath("result.dictionary.parameters.location[].name")
-                        .description("Organanisation unit name"),
-                fieldWithPath("result.dictionary.parameters.indicators")
-                        .description("List of indicator id(s) requested"),
-                //                data section 
-                fieldWithPath("result.data")
-                        .description("The reponse payload"),
-                fieldWithPath("result.data.61829")
-                        .description("Indicator id"),
-                fieldWithPath("result.data.61829.[]")
-                        .description("List of response data associated with this indicator"),
-                fieldWithPath("result.data.61829.[].value")
-                        .description("Indicator value (The key performance indicator value)"),
-                fieldWithPath("result.data.61829.[].period")
-                        .description("Indicator period id "),
-                fieldWithPath("result.data.61829.[].ou")
-                        .description("Indicator organisation unit id")
-        )
-        ));
-    }
-
-    @Test
-    public void testIndicatorGroupsReturnedApiCall() throws Exception {
-        this.mockMvc.perform(
-                get("/indicatorgroups").accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk()).andDo(document("test-indicator-groups-returned-api-call", responseFields(
-                fieldWithPath("[].id")
-                        .description("Indicator group ID"),
+                fieldWithPath("[].source id")
+                        .description("Indicator source id"),
                 fieldWithPath("[].name")
-                        .description("Indicator group Name"))));
-    }
-
-    @Test
-    public void testIndicatorsByGroupIdReturned() throws Exception {
-
-        this.mockMvc.perform(
-                get("/indicators?groupId=31591").accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk()).andDo(document("test-indicators-by-group-id-returned", requestParameters(
-                parameterWithName("groupId").description("Indicator group ID. Returns indicators under this indicator group")
-        ), responseFields(
+                        .description("Indicator name"),
+                fieldWithPath("[].description")
+                        .description("Indicator description"),
                 fieldWithPath("[].id")
-                        .description("Indicator ID"),
-                fieldWithPath("[].name")
-                        .description("Indicator Name"),
-                fieldWithPath("[].groupId").description("Indicator Group Id"),
-                fieldWithPath("[].description").description("Indicator description")
+                        .description("Indicator id"),
+                fieldWithPath("[].source")
+                        .description("Indicator source name")
         )
         ));
     }
 
     @Test
-    public void testPredictor() throws Exception {
-        //http://localhost:8080/DSL_API/api/forecast/61829?ouid=23408&periodtype=yearly&periodspan=12
-        String periodDec = "Indicate weather to make yearly or monthly projections, defaults to yearly";
+    public void testSurveyIndicatorsValuesReturned() throws Exception {
+        String avail = "availble for request for the combination of given url parameters";
+        String catDecription="You can filter the returned indicator data using the category(catID), period(pe) and orgId parameters."
+                + "pe takes a peiod if available from the requested indicator. This can be checked from 'available' field of responce json "
+                + "($/survey/sources/{source_id}?id=9530). eg. pe=2016."
+                + "orgId takes an organisation id for which to return its data eg orId=18"
+                + "The catID takes a list of categories slice the requested indicator against. It takes a comma separated list of categories from"
+                + " gotten from the 'available' field of response json. eg, catID=1,2,3; Some indicator categories may be request in groups the occur"
+                + "in if available. eg, female (id=x) that are age18-20 (id=y), this is requested as catID=x;y ";
         this.mockMvc.perform(
-                RestDocumentationRequestBuilders.get("/forecast/{id}?ouid=23408&periodtype=x&periodspan=x", 61829).accept(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk()).andDo(document("test-predictor", pathParameters(
-                parameterWithName("id").description("Indicator ID which is mandatory")
+                RestDocumentationRequestBuilders.get("/survey/sources/{source_id}?id=9530&catID=7;65,18", 7).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andDo(document("test--survey-indicators-values-returned", pathParameters(
+                parameterWithName("source_id").description("Survey source id")
         ), requestParameters(
-                parameterWithName("ouid").description("Organisation unit id, if not provided defaults to national"),
-                parameterWithName("periodtype").description(periodDec),
-                parameterWithName("periodspan").description("Number of months (if periodtype is monthly) or years (if periodtype is yearly) to project,"
-                        + "if not provided defaults to 2")
+                parameterWithName("id").description("Survey indicator ID gotten from $/survey/sources/{source_id}"),
+                parameterWithName("catID").description(catDecription)
         ), responseFields(
                 fieldWithPath("result")
                         .description("Response envelope object"),
                 //                Meta data section
                 fieldWithPath("result.dictionary")
                         .description("Carries metadata for the payload"),
+                fieldWithPath("result.dictionary.available")
+                        .description("Carries metadata showing all available data combination that can be requested for the combination of given url parameters"),
+                fieldWithPath("result.dictionary.available.orgunits")
+                        .description("Available organization units " + avail),
+                fieldWithPath("result.dictionary.available.orgunits[]")
+                        .description("List of organisation unit(s) " + avail),
+                fieldWithPath("result.dictionary.available.orgunits[].id")
+                        .description("Organisation unit id"),
+                fieldWithPath("result.dictionary.available.orgunits[].name")
+                        .description("Organisation unit name"),
+                fieldWithPath("result.dictionary.available.categories")
+                        .description("Available indicator categories " + avail),
+                fieldWithPath("result.dictionary.available.categories[]")
+                        .description("List of indicator categories " + avail),
+                fieldWithPath("result.dictionary.available.categories[][]")
+                        .description("An array that holds categories can be requested in combination"),
+                fieldWithPath("result.dictionary.available.categories[][].name")
+                        .description("Name of the indicator category"),
+                fieldWithPath("result.dictionary.available.categories[][].id")
+                        .description("ID of the indicator category"),
+                fieldWithPath("result.dictionary.available.periods")
+                        .description("Available periods units " + avail),
+                fieldWithPath("result.dictionary.available.periods[]")
+                        .description("List of period(s) " + avail),
                 fieldWithPath("result.dictionary.orgunits")
-                        .description("Metadata for organization units contained in the reponse payload"),
+                        .description("Requested organization units "),
                 fieldWithPath("result.dictionary.orgunits[]")
-                        .description("List of organisation unit(s)"),
+                        .description("List of requested organisation unit(s)"),
                 fieldWithPath("result.dictionary.orgunits[].id")
                         .description("Organisation unit id"),
                 fieldWithPath("result.dictionary.orgunits[].name")
                         .description("Organisation unit name"),
+                fieldWithPath("result.dictionary.categories")
+                        .description("Requested indicator categories"),
+                fieldWithPath("result.dictionary.categories[]")
+                        .description("List of requested indicator categories"),
+                fieldWithPath("result.dictionary.categories[][]")
+                        .description("An array that holds categories that are requested in combination"),
+                fieldWithPath("result.dictionary.categories[][].name")
+                        .description("Name of the indicator category"),
+                fieldWithPath("result.dictionary.categories[][].id")
+                        .description("ID of the indicator category"),
+                fieldWithPath("result.dictionary.periods")
+                        .description("Periods requested "),
+                fieldWithPath("result.dictionary.periods[]")
+                        .description("List of requested period(s)"),
                 fieldWithPath("result.dictionary.indicators")
-                        .description("Metadata for indicators contained in the reponse payload"),
+                        .description("Requested indicator(s)"),
                 fieldWithPath("result.dictionary.indicators[]")
-                        .description("List of indicator(s) in the payload"),
-                fieldWithPath("result.dictionary.indicators[].id")
-                        .description("Indicator ID"),
+                        .description("List of requested indicator(s)"),
                 fieldWithPath("result.dictionary.indicators[].name")
-                        .description("Indicator name"),
+                        .description("Name of the indicator"),
+                fieldWithPath("result.dictionary.indicators[].id")
+                        .description("ID of the indicator"),
+                fieldWithPath("result.dictionary.indicators[].source id")
+                        .description("Data source ID of the indicator"),
                 fieldWithPath("result.dictionary.indicators[].description")
-                        .description("Indicator description"),
-                fieldWithPath("result.dictionary.indicators[].last_updated")
-                        .description("Indicator indicator update date"),
-                fieldWithPath("result.dictionary.indicators[].date_created")
-                        .description("Indicator creation date"),
+                        .description("description of the indicator"),
                 fieldWithPath("result.dictionary.indicators[].source")
-                        .description("Source for this Indicator"),
-                //
-                fieldWithPath("result.dictionary.parameters")
-                        .description("Metadata for requested parameters value"),
-                fieldWithPath("result.dictionary.parameters.periodtype")
-                        .description("Period type selected, could be 'yearly' or 'monthly'"),
-                fieldWithPath("result.dictionary.parameters.periodspan")
-                        .description("Period span selected"),
-                fieldWithPath("result.dictionary.parameters.location")
-                        .description("List of organanisation unit id(s) requested"),
-                fieldWithPath("result.dictionary.parameters.indicators")
-                        .description("List of indicator id(s) requested"),
-                //                data section 
+                        .description("Data source name of the indicator"),
                 fieldWithPath("result.data")
-                        .description("The reponse payload"),
-                fieldWithPath("result.data.61829")
-                        .description("Indicator id"),
-                fieldWithPath("result.data.61829.18")
-                        .description("Org unit id"),
-                fieldWithPath("result.data.61829.18.trend")
-                        .description("Data showing the overall historical trend of the indicator"),
-                fieldWithPath("result.data.61829.18.projection")
-                        .description("Projection of the indicator over the selected period"),
-                fieldWithPath("result.data.61829.18.yearly")
-                        .description("Average trend of the indicator in a given year"),
-                fieldWithPath("result.data.61829.18.trend[].time")
-                        .description("Period"),
-                fieldWithPath("result.data.61829.18.trend[].value")
-                        .description("Value for this period"),
-                fieldWithPath("result.data.61829.18.projection[].time")
-                        .description("Period"),
-                fieldWithPath("result.data.61829.18.projection[].value")
-                        .description("Value for this period"),
-                fieldWithPath("result.data.61829.18.yearly[].time")
-                        .description("Period"),
-                fieldWithPath("result.data.61829.18.yearly[].value")
-                        .description("Value for this period")
+                        .description("Data payload"),
+                fieldWithPath("result.data[]")
+                        .description("List of data requested"),
+                fieldWithPath("result.data[].source_id")
+                        .description("Data source id for this indicator"),
+                fieldWithPath("result.data[].category[]")
+                        .description("Indicator category of this data value that was requested combined"),
+                fieldWithPath("result.data[].category[].name")
+                        .description("Name of the category"),
+                fieldWithPath("result.data[].category[].id")
+                        .description("ID of the category"),
+                fieldWithPath("result.data[].indicator_id")
+                        .description("Indicator ID"),
+                fieldWithPath("result.data[].value")
+                        .description("Value of this indicator and its parameters matrix")
         )
         ));
     }
