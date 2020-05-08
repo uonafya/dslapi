@@ -189,8 +189,13 @@ public class DhisDao {
      * @return qeuery string appended with org unit patameter
      * @throws DslException
      */
-    private String insertOrgUntiPartByLevel(String ouid, String level, String sqlString) throws DslException {
-        Database db = new Database();
+    private String insertOrgUntiPartByLevel(String ouid, String level, String sqlString) throws DslException{
+        Database db = null;
+        try {
+            db = new Database();
+        } catch (DslException ex) {
+            throw ex;
+        }
         List paramsList = new ArrayList();
         Map params = new HashMap();
         params.put("type", "integer");

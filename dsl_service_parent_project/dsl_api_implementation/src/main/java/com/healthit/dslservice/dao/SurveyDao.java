@@ -110,6 +110,8 @@ public class SurveyDao {
             msg.setMesageContent(ex.getMessage());
             msg.setMessageType(MessageType.SQL_QUERY_ERROR);
             throw new DslException(msg);
+        }finally{
+            db.CloseConnection();
         }
 
         return result;
@@ -170,6 +172,8 @@ public class SurveyDao {
                         }
                     } catch (SQLException ex) {
                         log.error(ex);
+                    }finally{
+                        db.CloseConnection();
                     }
 
                 }
@@ -280,6 +284,8 @@ public class SurveyDao {
                         }
                     } catch (SQLException ex) {
                         log.error(ex);
+                    }finally{
+                        db.CloseConnection();
                     }
 
                 }
@@ -332,6 +338,8 @@ public class SurveyDao {
                         }
                     } catch (SQLException ex) {
                         log.error(ex);
+                    }finally{
+                        db.CloseConnection();
                     }
 
                 }
