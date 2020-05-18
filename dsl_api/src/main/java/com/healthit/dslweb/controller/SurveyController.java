@@ -3,8 +3,8 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-
 package com.healthit.dslweb.controller;
+
 import com.healthit.dslservice.DslException;
 import com.healthit.dslservice.dao.SurveyDao;
 import com.healthit.dslservice.message.Message;
@@ -42,6 +42,8 @@ public class SurveyController {
         }
     }
 
+    @CrossOrigin
+    @ResponseBody
     @RequestMapping(value = "sources/{sourceId}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getIndicatorValue(
             @RequestParam(value = "id", required = false) String indicatorId,
