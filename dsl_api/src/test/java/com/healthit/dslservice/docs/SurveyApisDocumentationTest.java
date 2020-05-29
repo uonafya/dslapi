@@ -93,14 +93,14 @@ public class SurveyApisDocumentationTest {
 
     @Test
     public void testSurveyIndicatorsValuesReturned() throws Exception {
-        String avail = "availble for request for the combination of given url parameters";
-        String catDecription="You can filter the returned indicator data using the category(catID), period(pe) and orgId parameters."
-                + "pe takes a peiod if available from the requested indicator. This can be checked from 'available' field of responce json "
-                + "($/survey/sources/{source_id}?id=9530). eg. pe=2016."
-                + "orgId takes an organisation id for which to return its data eg orId=18"
-                + "The catID takes a list of categories slice the requested indicator against. It takes a comma separated list of categories from"
-                + " gotten from the 'available' field of response json. eg, catID=1,2,3; Some indicator categories may be request in groups the occur"
-                + "in if available. eg, female (id=x) that are age18-20 (id=y), this is requested as catID=x;y ";
+        String avail = "availble that, can be requested through the request parameters";
+        String catDecription="You can filter the returned indicator data using the category(catId), period(pe) and orgId parameters. "
+                + "pe takes a period if available from the requested indicator. This can be checked from 'available' field of the response json "
+                + "($/survey/sources/{source_id}?id=9530). eg. pe=2016. "
+                + "orgId takes an organisation id for which to return its data eg orId=18. will return data for organisation unit with id 18. "
+                + "The catId takes a list of categories to return data for. It takes a comma separated list of category ID's, that can be "
+                + " gotten from the 'available' field of response json. eg, catId=1,2,3; Some indicator categories may be request in groups "
+                + "if available. eg, female (id=x) that are age 18-20 (id=y), this is requested as catId=x;y ";
         this.mockMvc.perform(
                 RestDocumentationRequestBuilders.get("/survey/sources/{source_id}?id=9530&catID=7;65,18", 7).accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()).andDo(document("test--survey-indicators-values-returned", pathParameters(
@@ -115,7 +115,7 @@ public class SurveyApisDocumentationTest {
                 fieldWithPath("result.dictionary")
                         .description("Carries metadata for the payload"),
                 fieldWithPath("result.dictionary.available")
-                        .description("Carries metadata showing all available data combination that can be requested for the combination of given url parameters"),
+                        .description("Carries metadata showing all available data dimensions that can be requested through the request parameters"),
                 fieldWithPath("result.dictionary.available.orgunits")
                         .description("Available organization units " + avail),
                 fieldWithPath("result.dictionary.available.orgunits[]")
