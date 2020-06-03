@@ -345,6 +345,10 @@ public class DhisDao {
      */
     public List<Indicator> getIndicators() throws DslException {
         List<Indicator> indicatorList = new ArrayList();
+        
+        Element ele = cache.get(CacheKeys.indicatorName);
+
+        if (ele == null) {
         Database db = new Database();
         ResultSet rs = db.executeQuery(getIndicatorNames);
         log.info("Fetching ndicators");
@@ -363,10 +367,17 @@ public class DhisDao {
                 indicator.setDescription(desc);
                 indicatorList.add(indicator);
             }
+            cache.put(new Element(CacheKeys.indicatorName, indicatorList));
         } catch (SQLException ex) {
             log.error(ex);
         } finally {
             db.CloseConnection();
+        } 
+        }else {
+            long startTime = System.nanoTime();
+            indicatorList =  (List<Indicator>) ele.getObjectValue();
+            long endTime = System.nanoTime();
+            log.info("Time taken to fetch data from cache " + (endTime - startTime) / 1000000);
         }
         return indicatorList;
     }
