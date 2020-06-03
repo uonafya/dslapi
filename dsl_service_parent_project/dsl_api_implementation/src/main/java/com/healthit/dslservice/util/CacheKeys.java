@@ -28,4 +28,5 @@ public class CacheKeys {
     public static String indicatorGroupTable = "INDICATORGROUPTable";
     public static String surveySources = "SURVEYSOURCES";
     public static String commodityNames = "COMMODITYNAMES";
+    public static String pandemicsList = "PANDEMICLIST";
 }
