@@ -19,18 +19,8 @@ import org.apache.log4j.Logger;
 import com.healthit.dslservice.DslException;
 import com.healthit.dslservice.message.Message;
 import com.healthit.dslservice.message.MessageType;
-import java.io.FileInputStream;
 import java.util.Properties;
-import java.util.logging.Level;
 import org.apache.commons.dbcp2.BasicDataSource;
-
-import org.apache.commons.dbcp2.ConnectionFactory;
-import org.apache.commons.dbcp2.DriverManagerConnectionFactory;
-import org.apache.commons.dbcp2.PoolableConnection;
-import org.apache.commons.dbcp2.PoolableConnectionFactory;
-import org.apache.commons.dbcp2.PoolingDriver;
-import org.apache.commons.pool2.ObjectPool;
-import org.apache.commons.pool2.impl.GenericObjectPool;
 
 /**
  *
@@ -70,6 +60,8 @@ public class Database {
 
             dataSource.setMinIdle(100);
             dataSource.setMaxIdle(1000);
+            
+            dataSource.setMaxTotal(100);
 
             conn = dataSource.getConnection();
             connectionIsOpen = true;
