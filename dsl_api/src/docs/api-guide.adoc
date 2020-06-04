@@ -236,6 +236,59 @@ include::{snippets}/test--survey-indicators-values-returned/response-fields.adoc
 // ==================================================>>>
 
 
+
+// =======================Pandemic (covid)===========================>>>
+// =======================Pandemic===========================>>>
+
+== Getting a list of pandemics and there indicators.
+
+Requesting a list of pandemics
+
+=== Curl Request
+include::{snippets}/test-pandemics-sources/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-pandemics-sources/http-request.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-pandemics-sources/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-pandemics-sources/response-fields.adoc[]
+
+// ==================================================>>>
+// ==================================================>>>
+
+== Getting Pandemic values
+Requesting Pandemic data values.
+
+_N.B Covid 19 data values are only available at county level_
+
+=== Curl Request
+include::{snippets}/test-pandemics-values-returned/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-pandemics-values-returned/http-request.adoc[]
+
+=== Path parameter definition
+include::{snippets}/test-pandemics-values-returned/path-parameters.adoc[]
+
+=== Request parameters definition
+include::{snippets}/test-pandemics-values-returned/request-parameters.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-pandemics-values-returned/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-pandemics-values-returned/response-fields.adoc[]
+
+// ==================================================>>>
+
+
 // =======================Ihris===========================>>>
 // =======================Ihris===========================>>>
 
