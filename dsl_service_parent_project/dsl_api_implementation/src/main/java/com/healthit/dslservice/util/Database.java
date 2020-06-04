@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
 import com.healthit.dslservice.DslException;
 import com.healthit.dslservice.message.Message;
 import com.healthit.dslservice.message.MessageType;
+import java.io.IOException;
 import java.util.Properties;
 import org.apache.commons.dbcp2.BasicDataSource;
 
@@ -29,7 +30,6 @@ import org.apache.commons.dbcp2.BasicDataSource;
 public class Database {
 
     private static Connection conn = null;
-    private static boolean connectionIsOpen = false;
     private static BasicDataSource dataSource;
     private static Properties properties = null;
 
@@ -42,36 +42,45 @@ public class Database {
             = Logger.getLogger(Database.class.getCanonicalName());
 
     public Database() throws DslException {
-        if (!connectionIsOpen) {
-            connect();
-        }
+        connect();
+
     }
 
     private static void connect() throws DslException {
         try {
-            log.info("creating connection pool");
-            properties = new Properties();
-            properties.load(Database.class.getResourceAsStream("/database.properties"));
-            dataSource = new BasicDataSource();
-            dataSource.setDriverClassName(properties.getProperty(DB_DRIVER_CLASS));
-            dataSource.setUrl(properties.getProperty(DB_URL));
-            dataSource.setUsername(properties.getProperty(DB_USERNAME));
-            dataSource.setPassword(properties.getProperty(DB_PASSWORD));
+            if (conn != null) {
+                if (!conn.isValid(3)) {
+                    createDbConnection();
+                }
+            } else {
+                createDbConnection();
+            }
 
-            dataSource.setMinIdle(100);
-            dataSource.setMaxIdle(1000);
-            
-            dataSource.setMaxTotal(100);
-
-            conn = dataSource.getConnection();
-            connectionIsOpen = true;
         } catch (Exception ex) {
             log.error(ex);
             Message msg = new Message();
             msg.setMessageType(MessageType.DB_CONNECTION_ERROR);
-            msg.setMesageContent("Database connection error");
+            msg.setMesageContent("Database connection error: " + ex.getMessage());
             throw new DslException(msg);
         }
+    }
+
+    private static void createDbConnection() throws SQLException, IOException {
+        log.info("creating connection pool");
+        properties = new Properties();
+        properties.load(Database.class.getResourceAsStream("/database.properties"));
+        dataSource = new BasicDataSource();
+        dataSource.setDriverClassName(properties.getProperty(DB_DRIVER_CLASS));
+        dataSource.setUrl(properties.getProperty(DB_URL));
+        dataSource.setUsername(properties.getProperty(DB_USERNAME));
+        dataSource.setPassword(properties.getProperty(DB_PASSWORD));
+
+        dataSource.setMinIdle(100);
+        dataSource.setMaxIdle(1000);
+
+        dataSource.setMaxTotal(100);
+
+        conn = dataSource.getConnection();
     }
 
     public Connection getConn() {
