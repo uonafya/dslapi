@@ -86,6 +86,7 @@ public class PandemicDao {
     public Map<String, Map> getPandemicData(String pandemicSource, String indicatorId, String orgId, String startDate, String endDate) throws DslException {
         String cacheName = pandemicSource + indicatorId + orgId + startDate + endDate;
         Element ele = cache.get(cacheName);
+        Map<String, Map> envelop = new HashMap();
         Map<String, Map> result = new HashMap();
         Map<String, Object> dictionary = new HashMap();
         Map<Integer, List<Map>> data = new HashMap();
@@ -144,8 +145,8 @@ public class PandemicDao {
 
                 result.put("data", data);
                 result.put("dictionary", dictionary);
-
-                cache.put(new Element(cacheName, result));
+                envelop.put("result", result);
+                cache.put(new Element(cacheName, envelop));
             } catch (SQLException ex) {
                 log.error(ex);
             } finally {
@@ -157,10 +158,10 @@ public class PandemicDao {
             }
         } else {
             long startTime = System.nanoTime();
-            result = (Map<String, Map>) ele.getObjectValue();
+            envelop = (Map<String, Map>) ele.getObjectValue();
             long endTime = System.nanoTime();
             log.info("Time taken to fetch data from cache " + (endTime - startTime) / 1000000);
         }
-        return result;
+        return envelop;
     }
 }
