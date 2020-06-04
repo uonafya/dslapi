@@ -4,12 +4,16 @@ import com.healthit.dslservice.DslException;
 import static com.healthit.dslservice.dao.DhisDao.log;
 import com.healthit.dslservice.dto.PandemicIndicator;
 import com.healthit.dslservice.dto.dhis.IndicatorGoup;
+import com.healthit.dslservice.message.Message;
+import com.healthit.dslservice.message.MessageType;
 import com.healthit.dslservice.util.CacheKeys;
 import com.healthit.dslservice.util.Database;
 import com.healthit.dslservice.util.DslCache;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +30,7 @@ public class PandemicDao {
 
     final static Logger log = Logger.getLogger(PandemicDao.class);
     Cache cache = DslCache.getCache();
+    private boolean isPandemicDataWhereClauseAppended = false;
 
     private String selectPandemicIndicators = "Select pandemic_indicator_id as id, name FROM dim_pandemic_indicator";
     private String selectPandemicDataSql = "select fp.indicator_id as indicatorId,dim_pindc.name as indicator_name, dimp.date as date, \n"
@@ -33,7 +38,7 @@ public class PandemicDao {
             + ",fp.value as value from fact_pandemic fp \n"
             + "inner join dim_pandemic_period dimp on dimp.pandemic_period_id=fp.period_id\n"
             + "inner join pandemic_comm_org_unit porg on porg.pan_org_id =fp.orgunit_id\n"
-            + "inner join dim_pandemic_indicator dim_pindc on dim_pindc.pandemic_indicator_id =fp.indicator_id";
+            + "inner join dim_pandemic_indicator dim_pindc on dim_pindc.pandemic_indicator_id =fp.indicator_id ";
 
     /**
      * Gets a list of pandemics
@@ -83,6 +88,86 @@ public class PandemicDao {
         return pandemicList;
     }
 
+    private void addIndicatorFilterClause(String indicatorId) throws DslException {
+
+        try {
+            Integer.parseInt(indicatorId);
+        } catch (Exception ex) {
+            Message msg = new Message();
+            msg.setMesageContent("The indicator id should be a number");
+            msg.setMessageType(MessageType.NUMBER_FORMAT_ERROR);
+            throw new DslException(msg);
+        }
+        String indicatorFilter = " fp.indicator_id=" + Integer.parseInt(indicatorId);
+        if (!isPandemicDataWhereClauseAppended) {
+            selectPandemicDataSql = selectPandemicDataSql + " where " + indicatorFilter;
+            isPandemicDataWhereClauseAppended=true;
+        } else {
+            selectPandemicDataSql = selectPandemicDataSql + " and " + indicatorFilter;
+        }
+    }
+
+    private void addOrgunitFilterClause(String orgId) throws DslException {
+
+        try {
+            Integer.parseInt(orgId);
+        } catch (Exception ex) {
+            Message msg = new Message();
+            msg.setMesageContent("The organisation unit id should be a number");
+            msg.setMessageType(MessageType.NUMBER_FORMAT_ERROR);
+            throw new DslException(msg);
+        }
+        String orgunitFilter = " fp.orgunit_id=" + Integer.parseInt(orgId);
+        if (!isPandemicDataWhereClauseAppended) {
+            selectPandemicDataSql = selectPandemicDataSql + " where " + orgunitFilter;
+            isPandemicDataWhereClauseAppended=true;
+        } else {
+            selectPandemicDataSql = selectPandemicDataSql + " and " + orgunitFilter;
+        }
+    }
+
+    private void addStartDateFilterClause(String startDate) throws DslException {
+
+        try {
+
+            Date startD = new SimpleDateFormat("yyyy-MM-dd").parse(startDate);
+
+        } catch (Exception ex) {
+            Message msg = new Message();
+            msg.setMesageContent("Wrong startDate format, should be : yyyy-MM-dd");
+            msg.setMessageType(MessageType.YEAR_FORMAT_ERROR);
+            throw new DslException(msg);
+        }
+        String startDateFilter = " dimp.date>='" + startDate + "'";
+        if (!isPandemicDataWhereClauseAppended) {
+            selectPandemicDataSql = selectPandemicDataSql + " where " + startDateFilter;
+            isPandemicDataWhereClauseAppended=true;
+        } else {
+            selectPandemicDataSql = selectPandemicDataSql + " and " + startDateFilter;
+        }
+    }
+
+    private void addEndDateFilterClause(String endDate) throws DslException {
+
+        try {
+
+            Date startD = new SimpleDateFormat("yyyy-MM-dd").parse(endDate);
+
+        } catch (Exception ex) {
+            Message msg = new Message();
+            msg.setMesageContent("Wrong startDate format, should be : yyyy-MM-dd");
+            msg.setMessageType(MessageType.YEAR_FORMAT_ERROR);
+            throw new DslException(msg);
+        }
+        String endDateFilter = " dimp.date<='" + endDate + "'";
+        if (!isPandemicDataWhereClauseAppended) {
+            selectPandemicDataSql = selectPandemicDataSql + " where " + endDateFilter;
+            isPandemicDataWhereClauseAppended=true;
+        } else {
+            selectPandemicDataSql = selectPandemicDataSql + " and " + endDateFilter;
+        }
+    }
+
     public Map<String, Map> getPandemicData(String pandemicSource, String indicatorId, String orgId, String startDate, String endDate) throws DslException {
         String cacheName = pandemicSource + indicatorId + orgId + startDate + endDate;
         Element ele = cache.get(cacheName);
@@ -98,6 +183,23 @@ public class PandemicDao {
 
         if (ele == null) {
             Database db = new Database();
+
+            if (indicatorId != null) {
+                addIndicatorFilterClause(indicatorId);
+            }
+
+            if (orgId != null) {
+                addOrgunitFilterClause(orgId);
+            }
+
+            if (startDate != null) {
+                addStartDateFilterClause(startDate);
+            }
+
+            if (endDate != null) {
+                addEndDateFilterClause(endDate);
+            }
+
             ResultSet rs = db.executeQuery(selectPandemicDataSql);
             log.info("Fetching indicator groups");
             try {

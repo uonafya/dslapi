@@ -54,47 +54,14 @@ public class Pandemic {
     @RequestMapping(value = "pandemics/{pandemicSource}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getIndicatorValue(
             @RequestParam(value = "id", required = false) String indicatorId,
-            @RequestParam(value = "orgId", required = false) String orgId,
+            @RequestParam(value = "org_id", required = false) String orgId,
             @RequestParam(value = "start_date", required = false) String startDate,
             @RequestParam(value = "end_date", required = false) String endDate,
             @PathVariable(value = "pandemicSource", required = true) String pandemicSource
     ) {
-        
-        log.info("parameters ===>");
-        log.info(indicatorId);
-        log.info(orgId);
-        log.info(startDate);
-        log.info(endDate);
-        log.info(pandemicSource);
-        log.info("===========>");
-        
+
         PandemicDao pandemicDao = new PandemicDao();
         try {
-            if (startDate != null || endDate != null) {
-
-                try {
-                    if (startDate != null) {
-                        Date _startDate = new SimpleDateFormat("yyyy-MM-dd").parse(startDate);
-                    }
-                } catch (ParseException ex) {
-                    Message msg = new Message();
-                    msg.setMesageContent("Wrong start date format. Should be yyyy-MM-dd");
-                    msg.setMessageType(MessageType.YEAR_FORMAT_ERROR);
-                    throw new DslException(msg);
-                }
-
-                try {
-                    if (endDate != null) {
-                        Date _endDate = new SimpleDateFormat("yyyy-MM-dd").parse(endDate);
-                    }
-                } catch (ParseException ex) {
-                    Message msg = new Message();
-                    msg.setMesageContent("Wronf end date format. Should be yyyy-MM-dd");
-                    msg.setMessageType(MessageType.YEAR_FORMAT_ERROR);
-                    throw new DslException(msg);
-                }
-
-            }
 
             return new ResponseEntity(pandemicDao.getPandemicData(pandemicSource, indicatorId, orgId, startDate, endDate), HttpStatus.OK);
 
