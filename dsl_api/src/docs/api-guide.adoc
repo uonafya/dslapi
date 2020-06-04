@@ -240,7 +240,7 @@ include::{snippets}/test--survey-indicators-values-returned/response-fields.adoc
 // =======================Pandemic (covid)===========================>>>
 // =======================Pandemic===========================>>>
 
-== Getting a list of pandemics and there indicators.
+== Getting a list of pandemics and their indicators.
 
 Requesting a list of pandemics
 
