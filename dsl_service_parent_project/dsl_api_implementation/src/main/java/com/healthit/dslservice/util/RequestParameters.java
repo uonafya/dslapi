@@ -28,8 +28,8 @@ public class RequestParameters {
     Cache cache = DslCache.getCache();
 
     public static void isValidPeriod(String pe) throws DslException {
-        String[] periodList=pe.split(";");
-        for(int x=0;x<periodList.length;x++){
+        String[] periodList = pe.split(";");
+        for (int x = 0; x < periodList.length; x++) {
             try {
                 Integer.parseInt(periodList[x]);
             } catch (Exception e) {
@@ -61,14 +61,16 @@ public class RequestParameters {
         } else {
             log.debug("cache org level is null");
             String ogrunitLevel = "select level,dhis_organisation_unit_id as id from common_organisation_unit";
-                    
-            Database db = new Database();
+
+            Connection conn = null;
+            PreparedStatement ps = null;
+            ResultSet rs = null;
             try {
 
-                Connection conn = db.getConn();
-                PreparedStatement ps = conn.prepareStatement(ogrunitLevel);
-                ResultSet rs = ps.executeQuery();
-                log.debug("find org unti level query "+ps.toString());
+                conn = DatabaseSource.getConnection();
+                ps = conn.prepareStatement(ogrunitLevel);
+                rs = ps.executeQuery();
+                log.debug("find org unti level query " + ps.toString());
                 while (rs.next()) {
                     orgIdToOrgLevel.put(rs.getString("id"), rs.getString("level"));
                 }
@@ -76,7 +78,9 @@ public class RequestParameters {
             } catch (SQLException ex) {
                 log.error(ex);
             } finally {
-                db.CloseConnection();
+                DatabaseSource.close(rs);
+                DatabaseSource.close(ps);
+                DatabaseSource.close(conn);
             }
 
         }

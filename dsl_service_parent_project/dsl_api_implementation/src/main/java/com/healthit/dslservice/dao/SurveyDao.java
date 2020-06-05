@@ -12,8 +12,10 @@ import com.healthit.dslservice.dto.dhis.IndicatorValue;
 import com.healthit.dslservice.message.Message;
 import com.healthit.dslservice.message.MessageType;
 import com.healthit.dslservice.util.CacheKeys;
-import com.healthit.dslservice.util.Database;
+import com.healthit.dslservice.util.DatabaseSource;
 import com.healthit.dslservice.util.DslCache;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -41,9 +43,16 @@ public class SurveyDao {
         Element ele = cache.get(CacheKeys.surveySources);
         List<Map<String, String>> result = new ArrayList();
         if (ele == null) {
-            Database db = new Database();
-            ResultSet rs = db.executeQuery(sourceSql);
+
+            PreparedStatement ps = null;
+            ResultSet rs = null;
+            Connection conn = null;
             try {
+                conn = DatabaseSource.getConnection();
+                ps = conn.prepareStatement(sourceSql, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                log.info("Query to run: " + ps.toString());
+                rs = ps.executeQuery();
+
                 while (rs.next()) {
                     Map<String, String> payLoad = new HashMap();
                     payLoad.put("id", rs.getString("id"));
@@ -58,7 +67,9 @@ public class SurveyDao {
                 msg.setMessageType(MessageType.SQL_QUERY_ERROR);
                 throw new DslException(msg);
             } finally {
-                db.CloseConnection();
+                DatabaseSource.close(rs);
+                DatabaseSource.close(ps);
+                DatabaseSource.close(conn);
             }
         } else {
             long startTime = System.nanoTime();
@@ -93,9 +104,15 @@ public class SurveyDao {
             throw new DslException(msg);
         }
 
-        Database db = new Database();
-        ResultSet rs = db.executeQuery(indicatorQuery);
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        Connection conn = null;
         try {
+            conn = DatabaseSource.getConnection();
+            ps = conn.prepareStatement(indicatorQuery, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            log.info("Query to run: " + ps.toString());
+            rs = ps.executeQuery();
+
             while (rs.next()) {
                 Map<String, String> payLoad = new HashMap();
                 payLoad.put("id", rs.getString("id"));
@@ -106,12 +123,15 @@ public class SurveyDao {
                 result.add(payLoad);
             }
         } catch (SQLException ex) {
+            log.error(ex);
             Message msg = new Message();
-            msg.setMesageContent(ex.getMessage());
             msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+            msg.setMesageContent(ex.getMessage());
             throw new DslException(msg);
-        }finally{
-            db.CloseConnection();
+        } finally {
+            DatabaseSource.close(rs);
+            DatabaseSource.close(ps);
+            DatabaseSource.close(conn);
         }
 
         return result;
@@ -150,10 +170,16 @@ public class SurveyDao {
                     String genderFilter = "";
                     String ageFilter = "";
                     String getGenderDtailSQL = "select survey_age_id, survey_gender_id from survey_combine_category where id=" + catLength[x];
-                    Database db = new Database();
-                    ResultSet rs = db.executeQuery(getGenderDtailSQL);
 
+                    PreparedStatement ps = null;
+                    ResultSet rs = null;
+                    Connection conn = null;
                     try {
+                        conn = DatabaseSource.getConnection();
+                        ps = conn.prepareStatement(getGenderDtailSQL, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                        log.info("Query to run: " + ps.toString());
+                        rs = ps.executeQuery();
+
                         if (rs.next()) {
                             String ageID = rs.getString("survey_age_id");
                             String genderId = rs.getString("survey_gender_id");
@@ -172,8 +198,14 @@ public class SurveyDao {
                         }
                     } catch (SQLException ex) {
                         log.error(ex);
-                    }finally{
-                        db.CloseConnection();
+                        Message msg = new Message();
+                        msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+                        msg.setMesageContent(ex.getMessage());
+                        throw new DslException(msg);
+                    } finally {
+                        DatabaseSource.close(rs);
+                        DatabaseSource.close(ps);
+                        DatabaseSource.close(conn);
                     }
 
                 }
@@ -259,11 +291,16 @@ public class SurveyDao {
                     String ageFilter = "";
                     log.debug("Select steps categories");
                     String getGenderDtailSQL = "select steps_age_id, steps_gender_id from survey_combine_category where id=" + catLength[x];
-                    Database db = new Database();
-                    log.debug("Select steps categories sql: " + getGenderDtailSQL);
-                    ResultSet rs = db.executeQuery(getGenderDtailSQL);
 
+                    PreparedStatement ps = null;
+                    ResultSet rs = null;
+                    Connection conn = null;
                     try {
+                        conn = DatabaseSource.getConnection();
+                        ps = conn.prepareStatement(getGenderDtailSQL, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                        log.info("Query to run: " + ps.toString());
+                        rs = ps.executeQuery();
+
                         if (rs.next()) {
                             String ageID = rs.getString("steps_age_id");
                             String genderId = rs.getString("steps_gender_id");
@@ -284,8 +321,14 @@ public class SurveyDao {
                         }
                     } catch (SQLException ex) {
                         log.error(ex);
-                    }finally{
-                        db.CloseConnection();
+                        Message msg = new Message();
+                        msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+                        msg.setMesageContent(ex.getMessage());
+                        throw new DslException(msg);
+                    } finally {
+                        DatabaseSource.close(rs);
+                        DatabaseSource.close(ps);
+                        DatabaseSource.close(conn);
                     }
 
                 }
@@ -320,10 +363,16 @@ public class SurveyDao {
                 for (int x = 0; x < catLength.length; x++) {
                     String categoryFilter = "";
                     String getGenderDtailSQL = "select kdhs_category_id from survey_combine_category where id=" + catLength[x];
-                    Database db = new Database();
-                    ResultSet rs = db.executeQuery(getGenderDtailSQL);
 
+                    PreparedStatement ps = null;
+                    ResultSet rs = null;
+                    Connection conn = null;
                     try {
+                        conn = DatabaseSource.getConnection();
+                        ps = conn.prepareStatement(getGenderDtailSQL, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                        log.info("Query to run: " + ps.toString());
+                        rs = ps.executeQuery();
+
                         if (rs.next()) {
                             String kdhs_category_id = rs.getString("kdhs_category_id");
 
@@ -338,8 +387,14 @@ public class SurveyDao {
                         }
                     } catch (SQLException ex) {
                         log.error(ex);
-                    }finally{
-                        db.CloseConnection();
+                        Message msg = new Message();
+                        msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+                        msg.setMesageContent(ex.getMessage());
+                        throw new DslException(msg);
+                    } finally {
+                        DatabaseSource.close(rs);
+                        DatabaseSource.close(ps);
+                        DatabaseSource.close(conn);
                     }
 
                 }
@@ -505,8 +560,8 @@ public class SurveyDao {
         } else if (sourceId == 8) {//kdhs
 
             String orgFilter = orgId != null ? " and surv_org.id=" + orgId : "";
-            String peFilter = pe != null ? " and fs.period='" + pe +"'": "";
-            String categoryFilter="";
+            String peFilter = pe != null ? " and fs.period='" + pe + "'" : "";
+            String categoryFilter = "";
             if (category_id != null) {
                 try {
                     categoryFilter = getKdhsCategoryFilterQueryPart(category_id);
@@ -537,8 +592,11 @@ public class SurveyDao {
      */
     private Map<String, Object> getCoreSurveyData(String queryToRun, String survey_type) throws DslException {
         log.debug("get core survey data values");
-        Database db = new Database();
-        ResultSet rs = db.executeQuery(queryToRun);
+
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        Connection conn = null;
+
         Map<String, Object> result = new HashMap();
         List<Map> indicatorDetails = new ArrayList();
         List<Map> orgUnits = new ArrayList();
@@ -550,6 +608,10 @@ public class SurveyDao {
         List<Map> data = new ArrayList();
         log.debug("Build payload");
         try {
+            conn = DatabaseSource.getConnection();
+            ps = conn.prepareStatement(queryToRun, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            log.info("Query to run: " + ps.toString());
+            rs = ps.executeQuery();
             while (rs.next()) {
                 //indicator
 
@@ -656,12 +718,15 @@ public class SurveyDao {
 
             }
         } catch (SQLException ex) {
+            log.error(ex);
             Message msg = new Message();
-            msg.setMesageContent(ex.getMessage());
             msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+            msg.setMesageContent(ex.getMessage());
             throw new DslException(msg);
         } finally {
-            db.CloseConnection();
+            DatabaseSource.close(rs);
+            DatabaseSource.close(ps);
+            DatabaseSource.close(conn);
         }
 
         result.put("indicators", indicatorDetails);
@@ -676,8 +741,11 @@ public class SurveyDao {
 
     private Map<String, Object> getAvailableDimesionData(String queryToRun, String survey_type) throws DslException {
         log.debug("get available dimension data");
-        Database db = new Database();
-        ResultSet rs = db.executeQuery(queryToRun);
+
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        Connection conn = null;
+
         Map<String, Object> result = new HashMap();
         List<Map> orgUnits = new ArrayList();
         List<String> addedOrgsUnit = new ArrayList();
@@ -685,6 +753,10 @@ public class SurveyDao {
         List<List<Map<String, Object>>> categories = new ArrayList();
         List<String> periods = new ArrayList();
         try {
+            conn = DatabaseSource.getConnection();
+            ps = conn.prepareStatement(queryToRun, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            log.info("Query to run: " + ps.toString());
+            rs = ps.executeQuery();
             while (rs.next()) {
                 //orgunits
                 Map<String, Object> orgUnit = new HashMap();
@@ -754,12 +826,15 @@ public class SurveyDao {
 
             }
         } catch (SQLException ex) {
+            log.error(ex);
             Message msg = new Message();
-            msg.setMesageContent(ex.getMessage());
             msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+            msg.setMesageContent(ex.getMessage());
             throw new DslException(msg);
         } finally {
-            db.CloseConnection();
+            DatabaseSource.close(rs);
+            DatabaseSource.close(ps);
+            DatabaseSource.close(conn);
         }
         log.debug("build payload");
         result.put("orgunits", orgUnits);

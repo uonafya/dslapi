@@ -12,7 +12,7 @@ import com.healthit.dslservice.dto.ihris.CadreGroup;
 import com.healthit.dslservice.message.Message;
 import com.healthit.dslservice.message.MessageType;
 import com.healthit.dslservice.util.CacheKeys;
-import com.healthit.dslservice.util.Database;
+import com.healthit.dslservice.util.DatabaseSource;
 import com.healthit.dslservice.util.DslCache;
 import com.healthit.dslservice.util.RequestParameters;
 import java.sql.Connection;
@@ -209,11 +209,18 @@ public class IhrisDao {
         }
 
         List<CadreAllocation> cadreAllocationList = new ArrayList();
-        Database db = new Database();
 
-        ResultSet rs = db.executeQuery(nationalCadreGroupCount);
-        log.info("Fetching cadre groups");
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        Connection conn = null;
         try {
+            conn = DatabaseSource.getConnection();
+            ps = conn.prepareStatement(nationalCadreGroupCount, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            log.info("Query to run: " + ps.toString());
+            rs = ps.executeQuery();
+
+            log.info("Fetching cadre groups");
+
             while (rs.next()) {
                 CadreAllocation cadreAllocation = new CadreAllocation();
                 cadreAllocation.setCadre(rs.getString("cadre"));
@@ -225,7 +232,9 @@ public class IhrisDao {
         } catch (SQLException ex) {
             log.error(ex);
         } finally {
-            db.CloseConnection();
+            DatabaseSource.close(rs);
+            DatabaseSource.close(ps);
+            DatabaseSource.close(conn);
         }
 
         Map<String, Object> metadata = new HashMap();
@@ -451,32 +460,33 @@ public class IhrisDao {
         return nationalCadreCount;
     }
 
-    private Map<String, Object> getOrgUnitDetails(String ouid) {
+    private Map<String, Object> getOrgUnitDetails(String ouid) throws DslException {
         Map<String, Object> orgUnit = new HashMap();
-        Database db = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        Connection conn = null;
         try {
-            List paramsList = new ArrayList();
-            Map<String, String> ouidParam = new HashMap();
-            ouidParam.put("value", ouid);
-            ouidParam.put("type", "integer");
-            paramsList.add(ouidParam);
-            db = new Database();
-            ResultSet rs = db.executeQuery(getOrgUnit, paramsList);
+
+            conn = DatabaseSource.getConnection();
+            ps = conn.prepareStatement(getOrgUnit, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            ps.setInt(1, Integer.parseInt(ouid));
+            log.info("Query to run: " + ps.toString());
+            rs = ps.executeQuery();
 
             if (rs.next()) {
                 orgUnit.put("id", rs.getString("id"));
                 orgUnit.put("name", rs.getString("name"));
             }
 
-        } catch (DslException ex) {
-            log.error(ex);
         } catch (SQLException ex) {
-            log.error(ex);
+            Message msg = new Message();
+            msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+            msg.setMesageContent(ex.getMessage());
+            throw new DslException(msg);
         } finally {
-            try {
-                db.CloseConnection();
-            } catch (Exception ex) {
-            }
+            DatabaseSource.close(rs);
+            DatabaseSource.close(ps);
+            DatabaseSource.close(conn);
         }
         return orgUnit;
     }
@@ -506,10 +516,16 @@ public class IhrisDao {
         Map<String, Object> resultsetEnvelop = new HashMap();
         List<CadreAllocation> cadreAllocationList = new ArrayList();
         log.info("Fetching cadre allocations");
-        Database db = new Database();
-        ResultSet rs = db.executeQuery(nationalCadreCount);
 
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        Connection conn = null;
         try {
+            conn = DatabaseSource.getConnection();
+            ps = conn.prepareStatement(nationalCadreCount, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            log.info("Query to run: " + ps.toString());
+            rs = ps.executeQuery();
+
             if (periodtype != null && periodtype.equals("monthly")) {
                 log.debug("loop till last cadre count");
                 cadreAllocationList = formatCadreAllocationMonthly(rs, requestedPeriod);
@@ -524,7 +540,11 @@ public class IhrisDao {
                     }
                     nationalCadreCount = createsCadreCountQueryIfMonthlyTypePeriod(pe, ou, cadre, periodtype, true);
                     nationalCadreCount = appendCadresCountParts(pe, ou, cadre, periodtype);
-                    rs = db.executeQuery(nationalCadreCount);
+
+                    ps = conn.prepareStatement(nationalCadreCount, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                    log.info("Query to run: " + ps.toString());
+                    rs = ps.executeQuery();
+
                     cadreAllocationList = formatCadreAllocationMonthly(rs, requestedPeriod);
                 }
             } else {
@@ -540,8 +560,14 @@ public class IhrisDao {
 
         } catch (SQLException ex) {
             log.error(ex);
+            Message msg = new Message();
+            msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+            msg.setMesageContent(ex.getMessage());
+            throw new DslException(msg);
         } finally {
-            db.CloseConnection();
+            DatabaseSource.close(rs);
+            DatabaseSource.close(ps);
+            DatabaseSource.close(conn);
         }
         Map<String, Object> metadata = new HashMap();
         Map<String, Object> orgdetail = new HashMap();
@@ -564,10 +590,16 @@ public class IhrisDao {
         Element ele = cache.get(CacheKeys.cadreGroups);
         if (ele == null) {
             long startTime = System.nanoTime();
-            Database db = new Database();
-            ResultSet rs = db.executeQuery(aLlCadreGroup);
-            log.info("Fetching cadre groups");
+
+            PreparedStatement ps = null;
+            ResultSet rs = null;
+            Connection conn = null;
             try {
+                conn = DatabaseSource.getConnection();
+                ps = conn.prepareStatement(aLlCadreGroup, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                log.info("Query to run: " + ps.toString());
+                rs = ps.executeQuery();
+                log.info("Fetching cadre groups");
                 while (rs.next()) {
                     CadreGroup cadreGroup = new CadreGroup();
                     cadreGroup.setId(rs.getString("cadreid"));
@@ -577,8 +609,14 @@ public class IhrisDao {
                 cache.put(new Element(CacheKeys.cadreGroups, cadreGroupList));
             } catch (SQLException ex) {
                 log.error(ex);
+                Message msg = new Message();
+                msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+                msg.setMesageContent(ex.getMessage());
+                throw new DslException(msg);
             } finally {
-                db.CloseConnection();
+                DatabaseSource.close(rs);
+                DatabaseSource.close(ps);
+                DatabaseSource.close(conn);
             }
         } else {
             long startTime = System.nanoTime();
@@ -593,10 +631,18 @@ public class IhrisDao {
         List<Cadre> cadreList = new ArrayList();
         Element ele = cache.get(CacheKeys.cadres);
         if (ele == null) {
-            Database db = new Database();
-            ResultSet rs = db.executeQuery(aLlCadre);
-            log.info("Fetching cadres");
+
+            PreparedStatement ps = null;
+            ResultSet rs = null;
+            Connection conn = null;
             try {
+                conn = DatabaseSource.getConnection();
+                ps = conn.prepareStatement(aLlCadre, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                log.info("Query to run: " + ps.toString());
+                rs = ps.executeQuery();
+
+                log.info("Fetching cadres");
+
                 while (rs.next()) {
                     Cadre cadre = new Cadre();
                     cadre.setId(rs.getString("id"));
@@ -607,8 +653,14 @@ public class IhrisDao {
                 cache.put(new Element(CacheKeys.cadres, cadreList));
             } catch (SQLException ex) {
                 log.error(ex);
+                Message msg = new Message();
+                msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+                msg.setMesageContent(ex.getMessage());
+                throw new DslException(msg);
             } finally {
-                db.CloseConnection();
+                DatabaseSource.close(rs);
+                DatabaseSource.close(ps);
+                DatabaseSource.close(conn);
             }
         } else {
             long startTime = System.nanoTime();
@@ -624,30 +676,31 @@ public class IhrisDao {
 
         Element ele = cache.get("cadresByGroup" + groupId);
         if (ele == null) {
+            Connection conn = null;
+            PreparedStatement ps = null;
+            ResultSet rs = null;
             try {
-                Database db = new Database();
-                Connection conn = db.getConn();
-                PreparedStatement ps = conn.prepareStatement(cadresByGroup);
+                conn = DatabaseSource.getConnection();
+                ps = conn.prepareStatement(cadresByGroup);
                 ps.setInt(1, groupId);
-                ResultSet rs = ps.executeQuery();
+                rs = ps.executeQuery();
                 log.info("Fetching cadres");
-                try {
-                    while (rs.next()) {
-                        Cadre cadre = new Cadre();
-                        cadre.setId(rs.getString("id"));
-                        cadre.setName(rs.getString("cadrename"));
-                        cadre.setCadreGroupId(rs.getString("cadre_group_id"));
-                        cadreList.add(cadre);
-                    }
-                    cache.put(new Element("cadresByGroup" + groupId, cadreList));
-                } catch (SQLException ex) {
-                    log.error(ex);
-                } finally {
-                    db.CloseConnection();
+                while (rs.next()) {
+                    Cadre cadre = new Cadre();
+                    cadre.setId(rs.getString("id"));
+                    cadre.setName(rs.getString("cadrename"));
+                    cadre.setCadreGroupId(rs.getString("cadre_group_id"));
+                    cadreList.add(cadre);
                 }
+                cache.put(new Element("cadresByGroup" + groupId, cadreList));
             } catch (SQLException ex) {
-                java.util.logging.Logger.getLogger(IhrisDao.class.getName()).log(Level.SEVERE, null, ex);
+                log.error(ex);
+            } finally {
+                DatabaseSource.close(rs);
+                DatabaseSource.close(ps);
+                DatabaseSource.close(conn);
             }
+
         } else {
             long startTime = System.nanoTime();
             cadreList = (List<Cadre>) ele.getObjectValue();

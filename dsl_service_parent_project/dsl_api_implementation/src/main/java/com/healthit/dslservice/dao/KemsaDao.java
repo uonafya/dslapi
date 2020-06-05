@@ -7,12 +7,15 @@ package com.healthit.dslservice.dao;
 
 import com.healthit.dslservice.DslException;
 import com.healthit.dslservice.Filter;
-import static com.healthit.dslservice.dao.IhrisDao.log;
 import com.healthit.dslservice.dto.ihris.CadreGroup;
 import com.healthit.dslservice.dto.kemsa.Commodity;
+import com.healthit.dslservice.message.Message;
+import com.healthit.dslservice.message.MessageType;
 import com.healthit.dslservice.util.CacheKeys;
-import com.healthit.dslservice.util.Database;
+import com.healthit.dslservice.util.DatabaseSource;
 import com.healthit.dslservice.util.DslCache;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -63,10 +66,18 @@ public class KemsaDao {
         getALlCommoditiesBuilder.append(orderBy + " OFFSET " + filter.getOffset() + " " + " LIMIT " + filter.getLimit());
 
         List<Commodity> cadreGroupList = new ArrayList();
-        Database db = new Database();
-        ResultSet rs = db.executeQuery(getALlCommoditiesBuilder.toString());
-        log.info("Fetching Commodities");
+
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        Connection conn = null;
         try {
+            conn = DatabaseSource.getConnection();
+            ps = conn.prepareStatement(getALlCommoditiesBuilder.toString(), ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            log.info("Query to run: " + ps.toString());
+            rs = ps.executeQuery();
+
+            log.info("Fetching Commodities");
+
             while (rs.next()) {
                 Commodity commodity = new Commodity();
                 commodity.setId(rs.getString("id"));
@@ -80,8 +91,14 @@ public class KemsaDao {
             }
         } catch (SQLException ex) {
             log.error(ex);
+            Message msg = new Message();
+            msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+            msg.setMesageContent(ex.getMessage());
+            throw new DslException(msg);
         } finally {
-            db.CloseConnection();
+            DatabaseSource.close(rs);
+            DatabaseSource.close(ps);
+            DatabaseSource.close(conn);
         }
         return cadreGroupList;
     }
@@ -91,10 +108,18 @@ public class KemsaDao {
         Element ele = cache.get(CacheKeys.commodityNames);
         if (ele == null) {
             long startTime = System.nanoTime();
-            Database db = new Database();
-            ResultSet rs = db.executeQuery(getCommodityNames);
-            log.info("Fetching commodity names");
+
+            PreparedStatement ps = null;
+            ResultSet rs = null;
+            Connection conn = null;
             try {
+                conn = DatabaseSource.getConnection();
+                ps = conn.prepareStatement(getCommodityNames, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                log.info("Query to run: " + ps.toString());
+                rs = ps.executeQuery();
+
+                log.info("Fetching commodity names");
+
                 while (rs.next()) {
 
                     commodityNames.add(rs.getString("commodity_name"));
@@ -102,8 +127,14 @@ public class KemsaDao {
                 cache.put(new Element(CacheKeys.commodityNames, commodityNames));
             } catch (SQLException ex) {
                 log.error(ex);
+                Message msg = new Message();
+                msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+                msg.setMesageContent(ex.getMessage());
+                throw new DslException(msg);
             } finally {
-                db.CloseConnection();
+                DatabaseSource.close(rs);
+                DatabaseSource.close(ps);
+                DatabaseSource.close(conn);
             }
         } else {
             long startTime = System.nanoTime();

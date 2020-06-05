@@ -14,7 +14,7 @@ import com.healthit.dslservice.dto.kmfl.FacilityType;
 import com.healthit.dslservice.message.Message;
 import com.healthit.dslservice.message.MessageType;
 import com.healthit.dslservice.util.CacheKeys;
-import com.healthit.dslservice.util.Database;
+import com.healthit.dslservice.util.DatabaseSource;
 import com.healthit.dslservice.util.DslCache;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Element;
 import org.apache.log4j.Logger;
@@ -140,13 +141,19 @@ public class FacilityDao {
 
         log.info("Fetching facilities");
         Element ele = cache.get(CacheKeys.facilityList);
-        String output = (ele == null ? null : ele.getObjectValue().toString());
         //log.info("Element from cache " + output);
         if (ele == null) {
             long startTime = System.nanoTime();
-            Database db = new Database();
-            ResultSet rs = db.executeQuery(getALlFacilties);
+
+            PreparedStatement ps = null;
+            ResultSet rs = null;
+            Connection conn = null;
             try {
+                conn = DatabaseSource.getConnection();
+                ps = conn.prepareStatement(getALlFacilties, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                log.info("Query to run: " + ps.toString());
+                rs = ps.executeQuery();
+
                 while (rs.next()) {
                     Facility facility = new Facility();
                     facility.setParentid(rs.getString("parentid"));
@@ -168,7 +175,9 @@ public class FacilityDao {
                 msg.setMesageContent(ex.getMessage());
                 throw new DslException(msg);
             } finally {
-                db.CloseConnection();
+                DatabaseSource.close(rs);
+                DatabaseSource.close(ps);
+                DatabaseSource.close(conn);
             }
             long endTime = System.nanoTime();
             log.info("Time taken to fetch data " + (endTime - startTime) / 1000000);
@@ -187,12 +196,17 @@ public class FacilityDao {
         log.info("Fetching facilities level");
         Element ele = cache.get(CacheKeys.facilityLevel);
         String output = (ele == null ? null : ele.getObjectValue().toString());
-        //log.info("Element from cache " + output);
         if (ele == null) {
-            long startTime = System.nanoTime();
-            Database db = new Database();
-            ResultSet rs = db.executeQuery(getFacilityLevels);
+            PreparedStatement ps = null;
+            ResultSet rs = null;
+            Connection conn = null;
+
             try {
+                conn = DatabaseSource.getConnection();
+                ps = conn.prepareStatement(getFacilityLevels, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                log.info("Query to run: " + ps.toString());
+                rs = ps.executeQuery();
+
                 while (rs.next()) {
                     FacilityLevel facilityLevel = new FacilityLevel();
                     facilityLevel.setId(rs.getString("id"));
@@ -208,10 +222,10 @@ public class FacilityDao {
                 msg.setMesageContent(ex.getMessage());
                 throw new DslException(msg);
             } finally {
-                db.CloseConnection();
+                DatabaseSource.close(rs);
+                DatabaseSource.close(ps);
+                DatabaseSource.close(conn);
             }
-            long endTime = System.nanoTime();
-            log.info("Time taken to fetch data " + (endTime - startTime) / 1000000);
         } else {
             long startTime = System.nanoTime();
             facilityLevelList = (List<FacilityLevel>) ele.getObjectValue();
@@ -226,13 +240,16 @@ public class FacilityDao {
 
         log.info("Fetching facilities types");
         Element ele = cache.get(CacheKeys.facilityType);
-        String output = (ele == null ? null : ele.getObjectValue().toString());
-        //log.info("Element from cache " + output);
         if (ele == null) {
-            long startTime = System.nanoTime();
-            Database db = new Database();
-            ResultSet rs = db.executeQuery(getFacilityTypes);
+            PreparedStatement ps = null;
+            ResultSet rs = null;
+            Connection conn = null;
             try {
+                conn = DatabaseSource.getConnection();
+                ps = conn.prepareStatement(getFacilityTypes, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                log.info("Query to run: " + ps.toString());
+                rs = ps.executeQuery();
+
                 while (rs.next()) {
                     FacilityType facilityType = new FacilityType();
                     facilityType.setId(rs.getString("id"));
@@ -249,10 +266,10 @@ public class FacilityDao {
                 throw new DslException(msg);
 
             } finally {
-                db.CloseConnection();
+                DatabaseSource.close(rs);
+                DatabaseSource.close(ps);
+                DatabaseSource.close(conn);
             }
-            long endTime = System.nanoTime();
-            log.info("Time taken to fetch data " + (endTime - startTime) / 1000000);
         } else {
             long startTime = System.nanoTime();
             facilityTypeList = (List<FacilityType>) ele.getObjectValue();
@@ -267,12 +284,14 @@ public class FacilityDao {
         Element ele = cache.get("AllfaclitiesByType");
         Map facilityCount = new HashMap();
         if (ele == null) {
-            long startTime = System.nanoTime();
-            Database db = new Database();
+            Connection conn = null;
+            PreparedStatement ps = null;
+            ResultSet rs = null;
+
             try {
-                Connection conn = db.getConn();
-                PreparedStatement ps = conn.prepareStatement(getAllFaciltiesCountByType);
-                ResultSet rs = ps.executeQuery();
+                conn = DatabaseSource.getConnection();
+                ps = conn.prepareStatement(getAllFaciltiesCountByType);
+                rs = ps.executeQuery();
                 while (rs.next()) {
                     facilityCount.put(rs.getString("name"), rs.getString("count"));
                 }
@@ -285,10 +304,11 @@ public class FacilityDao {
                 msg.setMesageContent(ex.getMessage());
                 throw new DslException(msg);
             } finally {
-                db.CloseConnection();
+                DatabaseSource.close(rs);
+                DatabaseSource.close(ps);
+                DatabaseSource.close(conn);
             }
-            long endTime = System.nanoTime();
-            log.info("Time taken to fetch data " + (endTime - startTime) / 1000000);
+
         } else {
             long startTime = System.nanoTime();
             facilityCount = (Map<String, Integer>) ele.getObjectValue();
@@ -302,15 +322,15 @@ public class FacilityDao {
         List<Facility> facilityList = new ArrayList();
         log.info("Fetching facilities by type");
         Element ele = cache.get("faclitiesByType" + typeId);
-        String output = (ele == null ? null : ele.getObjectValue().toString());
         if (ele == null) {
-            long startTime = System.nanoTime();
-            Database db = new Database();
+            Connection conn = null;
+            PreparedStatement ps = null;
+            ResultSet rs = null;
             try {
-                Connection conn = db.getConn();
-                PreparedStatement ps = conn.prepareStatement(getALlFaciltiesByType);
+                conn = DatabaseSource.getConnection();
+                ps = conn.prepareStatement(getALlFaciltiesByType);
                 ps.setInt(1, typeId);
-                ResultSet rs = ps.executeQuery();
+                rs = ps.executeQuery();
                 while (rs.next()) {
                     Facility facility = new Facility();
                     facility.setParentid(rs.getString("parentid"));
@@ -328,10 +348,12 @@ public class FacilityDao {
                 msg.setMesageContent(ex.getMessage());
                 throw new DslException(msg);
             } finally {
-                db.CloseConnection();
+
+                DatabaseSource.close(rs);
+                DatabaseSource.close(ps);
+                DatabaseSource.close(conn);
             }
-            long endTime = System.nanoTime();
-            log.info("Time taken to fetch data " + (endTime - startTime) / 1000000);
+
         } else {
             long startTime = System.nanoTime();
             facilityList = (List<Facility>) ele.getObjectValue();
@@ -345,15 +367,16 @@ public class FacilityDao {
         List<Facility> facilityList = new ArrayList();
         log.info("Fetching facilities by level");
         Element ele = cache.get("faciltiesByLevels" + levelId);
-        String output = (ele == null ? null : ele.getObjectValue().toString());
         if (ele == null) {
             long startTime = System.nanoTime();
-            Database db = new Database();
+            Connection conn = null;
+            PreparedStatement ps = null;
+            ResultSet rs = null;
             try {
-                Connection conn = db.getConn();
-                PreparedStatement ps = conn.prepareStatement(getFaciltiesByLevels);
+                conn = DatabaseSource.getConnection();
+                ps = conn.prepareStatement(getFaciltiesByLevels);
                 ps.setInt(1, levelId);
-                ResultSet rs = ps.executeQuery();
+                rs = ps.executeQuery();
                 while (rs.next()) {
                     Facility facility = new Facility();
                     facility.setParentid(rs.getString("parentid"));
@@ -370,10 +393,12 @@ public class FacilityDao {
                 msg.setMesageContent(ex.getMessage());
                 throw new DslException(msg);
             } finally {
-                db.CloseConnection();
+
+                DatabaseSource.close(rs);
+                DatabaseSource.close(ps);
+                DatabaseSource.close(conn);
             }
-            long endTime = System.nanoTime();
-            log.info("Time taken to fetch data " + (endTime - startTime) / 1000000);
+
         } else {
             long startTime = System.nanoTime();
             facilityList = (List<Facility>) ele.getObjectValue();
@@ -392,10 +417,16 @@ public class FacilityDao {
         String output = (ele == null ? null : ele.getObjectValue().toString());
         //log.info("Element from cache " + output);
         if (ele == null) {
-            long startTime = System.nanoTime();
-            Database db = new Database();
-            ResultSet rs = db.executeQuery(getFacilityRegulatingBody);
+
+            PreparedStatement ps = null;
+            ResultSet rs = null;
+            Connection conn = null;
             try {
+                conn = DatabaseSource.getConnection();
+                ps = conn.prepareStatement(getFacilityRegulatingBody, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                log.info("Query to run: " + ps.toString());
+                rs = ps.executeQuery();
+
                 while (rs.next()) {
                     FacilityType facilityType = new FacilityType();
                     facilityType.setId(rs.getString("id"));
@@ -412,10 +443,10 @@ public class FacilityDao {
                 throw new DslException(msg);
 
             } finally {
-                db.CloseConnection();
+                DatabaseSource.close(rs);
+                DatabaseSource.close(ps);
+                DatabaseSource.close(conn);
             }
-            long endTime = System.nanoTime();
-            log.info("Time taken to fetch data " + (endTime - startTime) / 1000000);
         } else {
             long startTime = System.nanoTime();
             facilityTypeList = (List<FacilityType>) ele.getObjectValue();
@@ -431,13 +462,14 @@ public class FacilityDao {
         Element ele = cache.get("faciltiesByregulatingBody" + regulatingBodyId);
         String output = (ele == null ? null : ele.getObjectValue().toString());
         if (ele == null) {
-            long startTime = System.nanoTime();
-            Database db = new Database();
+            Connection conn = null;
+            PreparedStatement ps = null;
+            ResultSet rs = null;
             try {
-                Connection conn = db.getConn();
-                PreparedStatement ps = conn.prepareStatement(getFaciltiesByRegulatingBody);
+                conn = conn = DatabaseSource.getConnection();
+                ps = conn.prepareStatement(getFaciltiesByRegulatingBody);
                 ps.setInt(1, regulatingBodyId);
-                ResultSet rs = ps.executeQuery();
+                rs = ps.executeQuery();
                 while (rs.next()) {
                     Facility facility = new Facility();
                     facility.setParentid(rs.getString("parentid"));
@@ -453,10 +485,10 @@ public class FacilityDao {
                 msg.setMesageContent(ex.getMessage());
                 throw new DslException(msg);
             } finally {
-                db.CloseConnection();
+                DatabaseSource.close(rs);
+                DatabaseSource.close(ps);
+                DatabaseSource.close(conn);
             }
-            long endTime = System.nanoTime();
-            log.info("Time taken to fetch data " + (endTime - startTime) / 1000000);
         } else {
             long startTime = System.nanoTime();
             facilityList = (List<Facility>) ele.getObjectValue();
@@ -473,12 +505,17 @@ public class FacilityDao {
         log.info("Fetching facilities owner type");
         Element ele = cache.get(CacheKeys.facilityOwnerType);
         String output = (ele == null ? null : ele.getObjectValue().toString());
-        //log.info("Element from cache " + output);
         if (ele == null) {
-            long startTime = System.nanoTime();
-            Database db = new Database();
-            ResultSet rs = db.executeQuery(getFacilityOwnerType);
+
+            PreparedStatement ps = null;
+            ResultSet rs = null;
+            Connection conn = null;
             try {
+                conn = DatabaseSource.getConnection();
+                ps = conn.prepareStatement(getFacilityOwnerType, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                log.info("Query to run: " + ps.toString());
+                rs = ps.executeQuery();
+
                 while (rs.next()) {
                     FacilityType facilityType = new FacilityType();
                     facilityType.setId(rs.getString("id"));
@@ -495,10 +532,11 @@ public class FacilityDao {
                 throw new DslException(msg);
 
             } finally {
-                db.CloseConnection();
+                DatabaseSource.close(rs);
+                DatabaseSource.close(ps);
+                DatabaseSource.close(conn);
             }
-            long endTime = System.nanoTime();
-            log.info("Time taken to fetch data " + (endTime - startTime) / 1000000);
+
         } else {
             long startTime = System.nanoTime();
             facilityTypeList = (List<FacilityType>) ele.getObjectValue();
@@ -508,7 +546,7 @@ public class FacilityDao {
         return facilityTypeList;
     }
 
-    private Map<Integer, List> getOrgIdAndTheirLevels(Database db, String ouid) throws DslException {
+    private Map<Integer, List> getOrgIdAndTheirLevels(String ouid) throws DslException {
 
         StringBuilder qToRun = new StringBuilder("Select hierarchylevel,dhis_organisation_unit_id from common_organisation_unit where dhis_organisation_unit_id in(");
         String ouidList[] = ouid.split(";");
@@ -519,9 +557,16 @@ public class FacilityDao {
                 qToRun.append("," + Integer.parseInt(ouidList[x]));
             }
         }
-        ResultSet rs = db.executeQuery(qToRun.toString() + ")");
+
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        Connection conn = null;
         Map<Integer, List> orgLevel = new HashMap();
         try {
+            conn = DatabaseSource.getConnection();
+            ps = conn.prepareStatement(qToRun.toString() + ")", ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            log.info("Query to run: " + ps.toString());
+            rs = ps.executeQuery();
             while (rs.next()) {
                 int hierarchylevel = rs.getInt("hierarchylevel");
                 if (orgLevel.containsKey(hierarchylevel)) {
@@ -538,6 +583,10 @@ public class FacilityDao {
             msg.setMessageType(MessageType.SQL_QUERY_ERROR);
             msg.setMesageContent(ex.getMessage());
             throw new DslException(msg);
+        } finally {
+            DatabaseSource.close(rs);
+            DatabaseSource.close(ps);
+            DatabaseSource.close(conn);
         }
 
         return orgLevel;
@@ -558,147 +607,221 @@ public class FacilityDao {
         return orgUnitParameters.toString();
     }
 
-    
-    private List<OrgUnitAmenities> getCotCapacity(Map<Integer, List> orgLevel, Database db) throws SQLException {
+    private List<OrgUnitAmenities> getCotCapacity(Map<Integer, List> orgLevel) throws DslException {
         List<OrgUnitAmenities> orgUnitCotCapacityList = new ArrayList();
-        for (Map.Entry<Integer, List> entry : orgLevel.entrySet()) {
-            System.out.println(entry.getKey() + "/" + entry.getValue());
 
-            log.info("org unit level: " + entry.getKey());
-            if (entry.getKey() == 1 || entry.getKey() == null) {
-                ResultSet rsCout = db.executeQuery(getNumberOfCots);
-                while (rsCout.next()) {
-                    OrgUnitAmenities orgAmenities = new OrgUnitAmenities();
-                    orgAmenities.setCount(rsCout.getInt("count"));
-                    orgAmenities.setId("18");
-                    orgAmenities.setLevel(1);
-                    orgAmenities.setName("Kenya");
-                    orgAmenities.setParentid("0");
-                    orgUnitCotCapacityList.add(orgAmenities);
-                }
-            } else if (entry.getKey() == 2) {
-                countyNoOfCotsSeg = countyNoOfCotsSeg.replaceAll("@orgunit@", orgUnitsList(entry.getValue().toString().replace("[", "").replace("]", "").replaceAll("\"", "")));
-                ResultSet rsCout = db.executeQuery(countyNoOfCotsSeg);
-                while (rsCout.next()) {
-                    OrgUnitAmenities orgAmenities = new OrgUnitAmenities();
-                    orgAmenities.setCount(rsCout.getInt("count"));
-                    orgAmenities.setId(rsCout.getString("code"));
-                    orgAmenities.setLevel(rsCout.getInt("level"));
-                    orgAmenities.setName(rsCout.getString("name"));
-                    orgAmenities.setParentid("18");
-                    orgUnitCotCapacityList.add(orgAmenities);
-                }
+        PreparedStatement ps = null;
+        ResultSet rsCout = null;
+        Connection conn = null;
+        try {
+            conn = DatabaseSource.getConnection();
 
-            } else if (entry.getKey() == 3) {
-                subCountyNoOfCotsSeg = subCountyNoOfCotsSeg.replaceAll("@orgunit@", orgUnitsList(entry.getValue().toString().replace("[", "").replace("]", "").replaceAll("\"", "")));
-                ResultSet rsCout = db.executeQuery(subCountyNoOfCotsSeg);
-                while (rsCout.next()) {
-                    OrgUnitAmenities orgAmenities = new OrgUnitAmenities();
-                    orgAmenities.setCount(rsCout.getInt("count"));
-                    orgAmenities.setId(rsCout.getString("code"));
-                    orgAmenities.setLevel(rsCout.getInt("level"));
-                    orgAmenities.setName(rsCout.getString("name"));
-                    orgAmenities.setParentid(rsCout.getString("parentid"));
-                    orgUnitCotCapacityList.add(orgAmenities);
-                }
-            } else if (entry.getKey() == 4) {
-                wardNoOfCotsSeg = wardNoOfCotsSeg.replaceAll("@orgunit@", orgUnitsList(entry.getValue().toString().replace("[", "").replace("]", "").replaceAll("\"", "")));
-                ResultSet rsCout = db.executeQuery(wardNoOfCotsSeg);
-                while (rsCout.next()) {
-                    OrgUnitAmenities orgAmenities = new OrgUnitAmenities();
-                    orgAmenities.setCount(rsCout.getInt("count"));
-                    orgAmenities.setId(rsCout.getString("code"));
-                    orgAmenities.setLevel(rsCout.getInt("level"));
-                    orgAmenities.setName(rsCout.getString("name"));
-                    orgAmenities.setParentid(rsCout.getString("parentid"));
-                    orgUnitCotCapacityList.add(orgAmenities);
-                }
-            } else if (entry.getKey() == 5) {
+            for (Map.Entry<Integer, List> entry : orgLevel.entrySet()) {
+                System.out.println(entry.getKey() + "/" + entry.getValue());
 
-                getNumberOfCotsPerFacility = getNumberOfCotsPerFacility.replaceAll("@orgunit@", orgUnitsList(entry.getValue().toString().replace("[", "").replace("]", "").replaceAll("\"", "")));
-                ResultSet rsCout = db.executeQuery(getNumberOfCotsPerFacility);
-                while (rsCout.next()) {
-                    OrgUnitAmenities orgAmenities = new OrgUnitAmenities();
-                    orgAmenities.setCount(rsCout.getInt("count"));
-                    orgAmenities.setId(rsCout.getString("code"));
-                    orgAmenities.setLevel(rsCout.getInt("level"));
-                    orgAmenities.setName(rsCout.getString("name"));
-                    orgAmenities.setParentid(rsCout.getString("parentid"));
-                    orgUnitCotCapacityList.add(orgAmenities);
+                log.info("org unit level: " + entry.getKey());
+                if (entry.getKey() == 1 || entry.getKey() == null) {
+
+                    ps = conn.prepareStatement(getNumberOfCots, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                    log.info("Query to run: " + ps.toString());
+                    rsCout = ps.executeQuery();
+
+                    while (rsCout.next()) {
+                        OrgUnitAmenities orgAmenities = new OrgUnitAmenities();
+                        orgAmenities.setCount(rsCout.getInt("count"));
+                        orgAmenities.setId("18");
+                        orgAmenities.setLevel(1);
+                        orgAmenities.setName("Kenya");
+                        orgAmenities.setParentid("0");
+                        orgUnitCotCapacityList.add(orgAmenities);
+                    }
+                } else if (entry.getKey() == 2) {
+                    countyNoOfCotsSeg = countyNoOfCotsSeg.replaceAll("@orgunit@", orgUnitsList(entry.getValue().toString().replace("[", "").replace("]", "").replaceAll("\"", "")));
+
+                    ps = conn.prepareStatement(countyNoOfCotsSeg, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                    log.info("Query to run: " + ps.toString());
+                    rsCout = ps.executeQuery();
+
+                    while (rsCout.next()) {
+                        OrgUnitAmenities orgAmenities = new OrgUnitAmenities();
+                        orgAmenities.setCount(rsCout.getInt("count"));
+                        orgAmenities.setId(rsCout.getString("code"));
+                        orgAmenities.setLevel(rsCout.getInt("level"));
+                        orgAmenities.setName(rsCout.getString("name"));
+                        orgAmenities.setParentid("18");
+                        orgUnitCotCapacityList.add(orgAmenities);
+                    }
+
+                } else if (entry.getKey() == 3) {
+                    subCountyNoOfCotsSeg = subCountyNoOfCotsSeg.replaceAll("@orgunit@", orgUnitsList(entry.getValue().toString().replace("[", "").replace("]", "").replaceAll("\"", "")));
+
+                    ps = conn.prepareStatement(subCountyNoOfCotsSeg, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                    log.info("Query to run: " + ps.toString());
+                    rsCout = ps.executeQuery();
+
+                    while (rsCout.next()) {
+                        OrgUnitAmenities orgAmenities = new OrgUnitAmenities();
+                        orgAmenities.setCount(rsCout.getInt("count"));
+                        orgAmenities.setId(rsCout.getString("code"));
+                        orgAmenities.setLevel(rsCout.getInt("level"));
+                        orgAmenities.setName(rsCout.getString("name"));
+                        orgAmenities.setParentid(rsCout.getString("parentid"));
+                        orgUnitCotCapacityList.add(orgAmenities);
+                    }
+                } else if (entry.getKey() == 4) {
+                    wardNoOfCotsSeg = wardNoOfCotsSeg.replaceAll("@orgunit@", orgUnitsList(entry.getValue().toString().replace("[", "").replace("]", "").replaceAll("\"", "")));
+
+                    ps = conn.prepareStatement(wardNoOfCotsSeg, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                    log.info("Query to run: " + ps.toString());
+                    rsCout = ps.executeQuery();
+
+                    while (rsCout.next()) {
+                        OrgUnitAmenities orgAmenities = new OrgUnitAmenities();
+                        orgAmenities.setCount(rsCout.getInt("count"));
+                        orgAmenities.setId(rsCout.getString("code"));
+                        orgAmenities.setLevel(rsCout.getInt("level"));
+                        orgAmenities.setName(rsCout.getString("name"));
+                        orgAmenities.setParentid(rsCout.getString("parentid"));
+                        orgUnitCotCapacityList.add(orgAmenities);
+                    }
+                } else if (entry.getKey() == 5) {
+
+                    getNumberOfCotsPerFacility = getNumberOfCotsPerFacility.replaceAll("@orgunit@", orgUnitsList(entry.getValue().toString().replace("[", "").replace("]", "").replaceAll("\"", "")));
+
+                    ps = conn.prepareStatement(getNumberOfCotsPerFacility, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                    log.info("Query to run: " + ps.toString());
+                    rsCout = ps.executeQuery();
+
+                    while (rsCout.next()) {
+                        OrgUnitAmenities orgAmenities = new OrgUnitAmenities();
+                        orgAmenities.setCount(rsCout.getInt("count"));
+                        orgAmenities.setId(rsCout.getString("code"));
+                        orgAmenities.setLevel(rsCout.getInt("level"));
+                        orgAmenities.setName(rsCout.getString("name"));
+                        orgAmenities.setParentid(rsCout.getString("parentid"));
+                        orgUnitCotCapacityList.add(orgAmenities);
+                    }
                 }
             }
+        } catch (SQLException ex) {
+            Message msg = new Message();
+            msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+            msg.setMesageContent(ex.getMessage());
+            throw new DslException(msg);
+        } finally {
+            DatabaseSource.close(rsCout);
+            DatabaseSource.close(ps);
+            DatabaseSource.close(conn);
         }
         return orgUnitCotCapacityList;
     }
-    
-    private List<OrgUnitAmenities> getBedCapacity(Map<Integer, List> orgLevel, Database db) throws SQLException {
+
+    private List<OrgUnitAmenities> getBedCapacity(Map<Integer, List> orgLevel) throws DslException {
+
         List<OrgUnitAmenities> orgUnitBedCapacityList = new ArrayList();
-        for (Map.Entry<Integer, List> entry : orgLevel.entrySet()) {
-            System.out.println(entry.getKey() + "/" + entry.getValue());
+        PreparedStatement ps = null;
+        ResultSet rsCout = null;
+        Connection conn = null;
+        try {
+            conn = DatabaseSource.getConnection();
 
-            log.info("org unit level: " + entry.getKey());
-            if (entry.getKey() == 1 || entry.getKey() == null) {
-                ResultSet rsCout = db.executeQuery(getNumberOfBeds);
-                while (rsCout.next()) {
-                    OrgUnitAmenities orgAmenities = new OrgUnitAmenities();
-                    orgAmenities.setCount(rsCout.getInt("count"));
-                    orgAmenities.setId("18");
-                    orgAmenities.setLevel(1);
-                    orgAmenities.setName("Kenya");
-                    orgAmenities.setParentid("0");
-                    orgUnitBedCapacityList.add(orgAmenities);
-                }
-            } else if (entry.getKey() == 2) {
-                countyNoOfBedsSeg = countyNoOfBedsSeg.replaceAll("@orgunit@", orgUnitsList(entry.getValue().toString().replace("[", "").replace("]", "").replaceAll("\"", "")));
-                ResultSet rsCout = db.executeQuery(countyNoOfBedsSeg);
-                while (rsCout.next()) {
-                    OrgUnitAmenities orgAmenities = new OrgUnitAmenities();
-                    orgAmenities.setCount(rsCout.getInt("count"));
-                    orgAmenities.setId(rsCout.getString("code"));
-                    orgAmenities.setLevel(rsCout.getInt("level"));
-                    orgAmenities.setName(rsCout.getString("name"));
-                    orgAmenities.setParentid("18");
-                    orgUnitBedCapacityList.add(orgAmenities);
-                }
+            for (Map.Entry<Integer, List> entry : orgLevel.entrySet()) {
+                System.out.println(entry.getKey() + "/" + entry.getValue());
 
-            } else if (entry.getKey() == 3) {
-                subCountyNoOfBedsSeg = subCountyNoOfBedsSeg.replaceAll("@orgunit@", orgUnitsList(entry.getValue().toString().replace("[", "").replace("]", "").replaceAll("\"", "")));
-                ResultSet rsCout = db.executeQuery(subCountyNoOfBedsSeg);
-                while (rsCout.next()) {
-                    OrgUnitAmenities orgAmenities = new OrgUnitAmenities();
-                    orgAmenities.setCount(rsCout.getInt("count"));
-                    orgAmenities.setId(rsCout.getString("code"));
-                    orgAmenities.setLevel(rsCout.getInt("level"));
-                    orgAmenities.setName(rsCout.getString("name"));
-                    orgAmenities.setParentid(rsCout.getString("parentid"));
-                    orgUnitBedCapacityList.add(orgAmenities);
-                }
-            } else if (entry.getKey() == 4) {
-                wardNoOfBedsSeg = wardNoOfBedsSeg.replaceAll("@orgunit@", orgUnitsList(entry.getValue().toString().replace("[", "").replace("]", "").replaceAll("\"", "")));
-                ResultSet rsCout = db.executeQuery(wardNoOfBedsSeg);
-                while (rsCout.next()) {
-                    OrgUnitAmenities orgAmenities = new OrgUnitAmenities();
-                    orgAmenities.setCount(rsCout.getInt("count"));
-                    orgAmenities.setId(rsCout.getString("code"));
-                    orgAmenities.setLevel(rsCout.getInt("level"));
-                    orgAmenities.setName(rsCout.getString("name"));
-                    orgAmenities.setParentid(rsCout.getString("parentid"));
-                    orgUnitBedCapacityList.add(orgAmenities);
-                }
-            } else if (entry.getKey() == 5) {
+                log.info("org unit level: " + entry.getKey());
+                if (entry.getKey() == 1 || entry.getKey() == null) {
 
-                getNumberOfBedsPerFacility = getNumberOfBedsPerFacility.replaceAll("@orgunit@", orgUnitsList(entry.getValue().toString().replace("[", "").replace("]", "").replaceAll("\"", "")));
-                ResultSet rsCout = db.executeQuery(getNumberOfBedsPerFacility);
-                while (rsCout.next()) {
-                    OrgUnitAmenities orgAmenities = new OrgUnitAmenities();
-                    orgAmenities.setCount(rsCout.getInt("count"));
-                    orgAmenities.setId(rsCout.getString("code"));
-                    orgAmenities.setLevel(rsCout.getInt("level"));
-                    orgAmenities.setName(rsCout.getString("name"));
-                    orgAmenities.setParentid(rsCout.getString("parentid"));
-                    orgUnitBedCapacityList.add(orgAmenities);
+                    ps = conn.prepareStatement(getNumberOfBeds, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                    log.info("Query to run: " + ps.toString());
+                    rsCout = ps.executeQuery();
+
+                    while (rsCout.next()) {
+                        OrgUnitAmenities orgAmenities = new OrgUnitAmenities();
+                        orgAmenities.setCount(rsCout.getInt("count"));
+                        orgAmenities.setId("18");
+                        orgAmenities.setLevel(1);
+                        orgAmenities.setName("Kenya");
+                        orgAmenities.setParentid("0");
+                        orgUnitBedCapacityList.add(orgAmenities);
+                    }
+                } else if (entry.getKey() == 2) {
+                    countyNoOfBedsSeg = countyNoOfBedsSeg.replaceAll("@orgunit@", orgUnitsList(entry.getValue().toString().replace("[", "").replace("]", "").replaceAll("\"", "")));
+
+                    ps = conn.prepareStatement(countyNoOfBedsSeg, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                    log.info("Query to run: " + ps.toString());
+                    rsCout = ps.executeQuery();
+
+                    while (rsCout.next()) {
+                        OrgUnitAmenities orgAmenities = new OrgUnitAmenities();
+                        orgAmenities.setCount(rsCout.getInt("count"));
+                        orgAmenities.setId(rsCout.getString("code"));
+                        orgAmenities.setLevel(rsCout.getInt("level"));
+                        orgAmenities.setName(rsCout.getString("name"));
+                        orgAmenities.setParentid("18");
+                        orgUnitBedCapacityList.add(orgAmenities);
+                    }
+
+                } else if (entry.getKey() == 3) {
+                    subCountyNoOfBedsSeg = subCountyNoOfBedsSeg.replaceAll("@orgunit@", orgUnitsList(entry.getValue().toString().replace("[", "").replace("]", "").replaceAll("\"", "")));
+
+                    ps = conn.prepareStatement(subCountyNoOfBedsSeg, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                    log.info("Query to run: " + ps.toString());
+                    rsCout = ps.executeQuery();
+
+                    while (rsCout.next()) {
+                        OrgUnitAmenities orgAmenities = new OrgUnitAmenities();
+                        orgAmenities.setCount(rsCout.getInt("count"));
+                        orgAmenities.setId(rsCout.getString("code"));
+                        orgAmenities.setLevel(rsCout.getInt("level"));
+                        orgAmenities.setName(rsCout.getString("name"));
+                        orgAmenities.setParentid(rsCout.getString("parentid"));
+                        orgUnitBedCapacityList.add(orgAmenities);
+                    }
+                } else if (entry.getKey() == 4) {
+                    wardNoOfBedsSeg = wardNoOfBedsSeg.replaceAll("@orgunit@", orgUnitsList(entry.getValue().toString().replace("[", "").replace("]", "").replaceAll("\"", "")));
+
+                    ps = conn.prepareStatement(wardNoOfBedsSeg, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                    log.info("Query to run: " + ps.toString());
+                    rsCout = ps.executeQuery();
+
+                    while (rsCout.next()) {
+                        OrgUnitAmenities orgAmenities = new OrgUnitAmenities();
+                        orgAmenities.setCount(rsCout.getInt("count"));
+                        orgAmenities.setId(rsCout.getString("code"));
+                        orgAmenities.setLevel(rsCout.getInt("level"));
+                        orgAmenities.setName(rsCout.getString("name"));
+                        orgAmenities.setParentid(rsCout.getString("parentid"));
+                        orgUnitBedCapacityList.add(orgAmenities);
+                    }
+                } else if (entry.getKey() == 5) {
+
+                    getNumberOfBedsPerFacility = getNumberOfBedsPerFacility.replaceAll("@orgunit@", orgUnitsList(entry.getValue().toString().replace("[", "").replace("]", "").replaceAll("\"", "")));
+
+                    ps = conn.prepareStatement(getNumberOfBedsPerFacility, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                    log.info("Query to run: " + ps.toString());
+                    rsCout = ps.executeQuery();
+
+                    while (rsCout.next()) {
+                        OrgUnitAmenities orgAmenities = new OrgUnitAmenities();
+                        orgAmenities.setCount(rsCout.getInt("count"));
+                        orgAmenities.setId(rsCout.getString("code"));
+                        orgAmenities.setLevel(rsCout.getInt("level"));
+                        orgAmenities.setName(rsCout.getString("name"));
+                        orgAmenities.setParentid(rsCout.getString("parentid"));
+                        orgUnitBedCapacityList.add(orgAmenities);
+                    }
                 }
             }
+
+        } catch (SQLException ex) {
+            Message msg = new Message();
+            msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+            msg.setMesageContent(ex.getMessage());
+            throw new DslException(msg);
+        } finally {
+            DatabaseSource.close(rsCout);
+            DatabaseSource.close(ps);
+            DatabaseSource.close(conn);
         }
         return orgUnitBedCapacityList;
     }
@@ -710,26 +833,11 @@ public class FacilityDao {
         String output = (ele == null ? null : ele.getObjectValue().toString());
         //log.info("Element from cache " + output);
         if (ele == null) {
-            long startTime = System.nanoTime();
 
-            Database db = new Database();
+            Map<Integer, List> orgLevel = getOrgIdAndTheirLevels(ouid);
+            orgUnitBedCapacity = getBedCapacity(orgLevel);
+            cache.put(new Element("bed" + ouid, orgUnitBedCapacity));
 
-            try {
-                Map<Integer, List> orgLevel = getOrgIdAndTheirLevels(db, ouid);
-                orgUnitBedCapacity = getBedCapacity(orgLevel, db);
-                cache.put(new Element("bed" + ouid, orgUnitBedCapacity));
-            } catch (SQLException ex) {
-                log.error(ex);
-                Message msg = new Message();
-                msg.setMessageType(MessageType.SQL_QUERY_ERROR);
-                msg.setMesageContent(ex.getMessage());
-                throw new DslException(msg);
-
-            } finally {
-                db.CloseConnection();
-            }
-            long endTime = System.nanoTime();
-            log.info("Time taken to fetch data " + (endTime - startTime) / 1000000);
         } else {
             long startTime = System.nanoTime();
             orgUnitBedCapacity = (List<OrgUnitAmenities>) ele.getObjectValue();
@@ -749,22 +857,10 @@ public class FacilityDao {
         if (ele == null) {
             long startTime = System.nanoTime();
 
-            Database db = new Database();
+            Map<Integer, List> orgLevel = getOrgIdAndTheirLevels(ouid);
+            orgUnitCotCapacity = getCotCapacity(orgLevel);
+            cache.put(new Element("cot" + ouid, orgUnitCotCapacity));
 
-            try {
-                Map<Integer, List> orgLevel = getOrgIdAndTheirLevels(db, ouid);
-                orgUnitCotCapacity = getCotCapacity(orgLevel, db);
-                cache.put(new Element("cot" + ouid, orgUnitCotCapacity));
-            } catch (SQLException ex) {
-                log.error(ex);
-                Message msg = new Message();
-                msg.setMessageType(MessageType.SQL_QUERY_ERROR);
-                msg.setMesageContent(ex.getMessage());
-                throw new DslException(msg);
-
-            } finally {
-                db.CloseConnection();
-            }
             long endTime = System.nanoTime();
             log.info("Time taken to fetch data " + (endTime - startTime) / 1000000);
         } else {
@@ -783,12 +879,14 @@ public class FacilityDao {
         String output = (ele == null ? null : ele.getObjectValue().toString());
         if (ele == null) {
             long startTime = System.nanoTime();
-            Database db = new Database();
+            Connection conn = null;
+            PreparedStatement ps = null;
+            ResultSet rs = null;
             try {
-                Connection conn = db.getConn();
-                PreparedStatement ps = conn.prepareStatement(getFaciltiesByOwnerType);
+                conn = DatabaseSource.getConnection();
+                ps = conn.prepareStatement(getFaciltiesByOwnerType);
                 ps.setInt(1, ownerTypeId);
-                ResultSet rs = ps.executeQuery();
+                rs = ps.executeQuery();
                 while (rs.next()) {
                     Facility facility = new Facility();
                     facility.setParentid(rs.getString("parentid"));
@@ -805,7 +903,9 @@ public class FacilityDao {
                 msg.setMesageContent(ex.getMessage());
                 throw new DslException(msg);
             } finally {
-                db.CloseConnection();
+                DatabaseSource.close(rs);
+                DatabaseSource.close(ps);
+                DatabaseSource.close(conn);
             }
             long endTime = System.nanoTime();
             log.info("Time taken to fetch data " + (endTime - startTime) / 1000000);

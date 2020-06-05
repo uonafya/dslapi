@@ -13,7 +13,7 @@ import com.healthit.dslservice.dto.dhis.IndicatorValue;
 import com.healthit.dslservice.message.Message;
 import com.healthit.dslservice.message.MessageType;
 import com.healthit.dslservice.util.CacheKeys;
-import com.healthit.dslservice.util.Database;
+import com.healthit.dslservice.util.DatabaseSource;
 import com.healthit.dslservice.util.DslCache;
 import com.healthit.dslservice.util.RequestParameters;
 import java.sql.Connection;
@@ -82,7 +82,7 @@ public class DhisDao {
      * @throws DslException
      */
     private String insertPeriodPart(String pe, String sqlString) throws DslException {
-        Map<String,String> monthDays=new HashMap();
+        Map<String, String> monthDays = new HashMap();
         monthDays.put("01", "31");
         monthDays.put("02", "28");
         monthDays.put("03", "31");
@@ -95,83 +95,84 @@ public class DhisDao {
         monthDays.put("10", "31");
         monthDays.put("11", "30");
         monthDays.put("12", "31");
-        
+
         String periodYearSpanSql = " startdate between to_date(( @start_year@  || '-'|| 1 || '-'||'1'),'YYYY-MM-DD') and to_date((@end_year@ || '-'|| 12 || '-'||'31'),'YYYY-MM-DD') ";
         String periodPerMontSql = " startdate between to_date(( @start_year@  || '-'|| @month@ || '-'||1),'YYYY-MM-DD') and to_date((@end_year@ || '-'|| @month@ || '-'||@day@),'YYYY-MM-DD') ";
-        
+
         StringBuilder periodString = new StringBuilder();
         RequestParameters.isValidPeriod(pe);
-        
-        String[] periods=pe.split(";");
-        
-        for(int x=0;x<periods.length;x++){
+
+        String[] periods = pe.split(";");
+
+        for (int x = 0; x < periods.length; x++) {
             log.debug("periods replacer ===<");
-        
+
             if (periods[x].length() == 4) {
                 log.debug("periods replacer ===< 1");
                 String replacement = periodYearSpanSql.replace("@end_year@", periods[x]).replace("@start_year@", periods[x]);
-                if(x>0){
-                    periodString.append(" or "+replacement);
-                }else{
+                if (x > 0) {
+                    periodString.append(" or " + replacement);
+                } else {
                     periodString.append(replacement);
                 }
-                
+
             } else {
                 log.debug("periods replacer ===< 2");
                 String paramYear = periods[x].substring(0, 4);
                 String paramMonth = periods[x].substring(4, 6);
                 String replacement = periodPerMontSql.replace("@end_year@", paramYear).replace("@month@", paramMonth).replace("@start_year@", paramYear).replace("@day@", monthDays.get(paramMonth));
-                if(x>0){
-                    periodString.append(" or "+replacement);
-                }else{
+                if (x > 0) {
+                    periodString.append(" or " + replacement);
+                } else {
                     periodString.append(replacement);
                 }
             }
         }
-         
+
         log.debug("periods gotten ===<");
         log.debug(periodString.toString());
-        sqlString = sqlString.replace("@pe@", " ("+periodString.toString()+") ");
+        sqlString = sqlString.replace("@pe@", " (" + periodString.toString() + ") ");
         return sqlString;
 
     }
-    
-    
-    private String indicatorIdList(String id){
-        
-        String[] indicatorIds =id.split(";");
-        StringBuilder indicatorParameters=new StringBuilder();
 
-        for(int x=0;x<indicatorIds.length;x++){
-            if(x==0)
+    private String indicatorIdList(String id) {
+
+        String[] indicatorIds = id.split(";");
+        StringBuilder indicatorParameters = new StringBuilder();
+
+        for (int x = 0; x < indicatorIds.length; x++) {
+            if (x == 0) {
                 indicatorParameters.append(indicatorIds[x]);
-            else indicatorParameters.append(","+indicatorIds[x]);
+            } else {
+                indicatorParameters.append("," + indicatorIds[x]);
+            }
         }
         return indicatorParameters.toString();
     }
-    
-    private String orgUnitsList(String ouid){
-        
-        String[] orgUnits =ouid.split(";");
-        StringBuilder orgUnitParameters=new StringBuilder();
 
-        for(int x=0;x<orgUnits.length;x++){
-            if(x==0)
+    private String orgUnitsList(String ouid) {
+
+        String[] orgUnits = ouid.split(";");
+        StringBuilder orgUnitParameters = new StringBuilder();
+
+        for (int x = 0; x < orgUnits.length; x++) {
+            if (x == 0) {
                 orgUnitParameters.append(orgUnits[x]);
-            else orgUnitParameters.append(","+orgUnits[x]);
+            } else {
+                orgUnitParameters.append("," + orgUnits[x]);
+            }
         }
         return orgUnitParameters.toString();
     }
-    
+
     private String insertOrgUntiPart(String ouid, String sqlString) throws DslException {
-        
+
         String replacement;
-        String orgUnitParameters=orgUnitsList(ouid);
-        
-        log.info("Org units parameters : "+ orgUnitParameters);
-        
-        
-        
+        String orgUnitParameters = orgUnitsList(ouid);
+
+        log.info("Org units parameters : " + orgUnitParameters);
+
         if (appendAnd) {
             replacement = " and \"Org unit id\" in (@ouid@) ".replace("@ouid@", orgUnitParameters);
         } else {
@@ -179,7 +180,7 @@ public class DhisDao {
             appendAnd = true;
         }
         sqlString = sqlString.replace("@ouid@", replacement);
-        
+
         return sqlString;
     }
 
@@ -189,21 +190,20 @@ public class DhisDao {
      * @return qeuery string appended with org unit patameter
      * @throws DslException
      */
-    private String insertOrgUntiPartByLevel(String ouid, String level, String sqlString) throws DslException{
-        Database db = null;
-        try {
-            db = new Database();
-        } catch (DslException ex) {
-            throw ex;
-        }
-        List paramsList = new ArrayList();
-        Map params = new HashMap();
-        params.put("type", "integer");
-        params.put("value", ouid);
-        paramsList.add(params);
-        ResultSet rs = db.executeQuery(getOrgUnitLevelQry, paramsList);
+    private String insertOrgUntiPartByLevel(String ouid, String level, String sqlString) throws DslException {
+
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        Connection conn = null;
         int orgLevel = 1;
         try {
+            conn = DatabaseSource.getConnection();
+            ps = conn.prepareStatement(getOrgUnitLevelQry, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            ps.setInt(1, Integer.parseInt(ouid));
+
+            log.info("Query to run: " + ps.toString());
+            rs = ps.executeQuery();
+
             while (rs.next()) {
                 orgLevel = rs.getInt("hierarchylevel");
             }
@@ -212,6 +212,10 @@ public class DhisDao {
             msg.setMessageType(MessageType.SQL_QUERY_ERROR);
             msg.setMesageContent(ex.getMessage());
             throw new DslException(msg);
+        } finally {
+            DatabaseSource.close(rs);
+            DatabaseSource.close(ps);
+            DatabaseSource.close(conn);
         }
         try {
             Integer.parseInt(level);
@@ -234,7 +238,7 @@ public class DhisDao {
             throw new DslException(msg);
         }
 
-        int levelToDrill = Integer.parseInt(level)-orgLevel;
+        int levelToDrill = Integer.parseInt(level) - orgLevel;
         log.debug("levels ========>");
         log.debug(Integer.parseInt(level));
         log.debug(orgLevel);
@@ -300,11 +304,11 @@ public class DhisDao {
      */
     private String insertIdPart(String id, String sqlString) throws DslException {
         String replacement;
-        
-        String idParameters=indicatorIdList(id);
-        
-        log.info("indicator id parameters : "+ idParameters);
-    
+
+        String idParameters = indicatorIdList(id);
+
+        log.info("indicator id parameters : " + idParameters);
+
         if (appendAnd) {
             replacement = " and \"Indicator ID\" in (@indicator@) ".replace("@indicator@", idParameters);
         } else {
@@ -345,44 +349,55 @@ public class DhisDao {
      */
     public List<Indicator> getIndicators() throws DslException {
         List<Indicator> indicatorList = new ArrayList();
-        
+
         Element ele = cache.get(CacheKeys.indicatorName);
 
         if (ele == null) {
-        Database db = new Database();
-        ResultSet rs = db.executeQuery(getIndicatorNames);
-        log.info("Fetching ndicators");
-        try {
-            while (rs.next()) {
-                Indicator indicator = new Indicator();
-                indicator.setId(rs.getString("id"));
-                indicator.setName(rs.getString("name"));
-                indicator.setGroupId(rs.getString("groupId"));
-                String desc = rs.getString("description");
-                if (desc == null) {
-                    desc = "";
-                } else {
-                    desc = desc;
+
+            PreparedStatement ps = null;
+            ResultSet rs = null;
+            Connection conn = null;
+
+            try {
+                conn = DatabaseSource.getConnection();
+                ps = conn.prepareStatement(getIndicatorNames, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                log.info("Query to run: " + ps.toString());
+                rs = ps.executeQuery();
+                log.info("Fetching ndicators");
+
+                while (rs.next()) {
+                    Indicator indicator = new Indicator();
+                    indicator.setId(rs.getString("id"));
+                    indicator.setName(rs.getString("name"));
+                    indicator.setGroupId(rs.getString("groupId"));
+                    String desc = rs.getString("description");
+                    if (desc == null) {
+                        desc = "";
+                    } else {
+                        desc = desc;
+                    }
+                    indicator.setDescription(desc);
+                    indicatorList.add(indicator);
                 }
-                indicator.setDescription(desc);
-                indicatorList.add(indicator);
+                cache.put(new Element(CacheKeys.indicatorName, indicatorList));
+            } catch (SQLException ex) {
+                log.error(ex);
+            } finally {
+                DatabaseSource.close(rs);
+                DatabaseSource.close(ps);
+                DatabaseSource.close(conn);
             }
-            cache.put(new Element(CacheKeys.indicatorName, indicatorList));
-        } catch (SQLException ex) {
-            log.error(ex);
-        } finally {
-            db.CloseConnection();
-        } 
-        }else {
+        } else {
             long startTime = System.nanoTime();
-            indicatorList =  (List<Indicator>) ele.getObjectValue();
+            indicatorList = (List<Indicator>) ele.getObjectValue();
             long endTime = System.nanoTime();
             log.info("Time taken to fetch data from cache " + (endTime - startTime) / 1000000);
         }
         return indicatorList;
     }
 
-    private Map<String, Object> getDictionary(String peSpan, String peType, String ouid, String id) throws SQLException, DslException {
+    private Map<String, Object> getDictionary(String peSpan, String peType, String ouid, String id) throws DslException {
+
         if (ouid == null) {
             ouid = "18";
         }
@@ -400,83 +415,96 @@ public class DhisDao {
         List<String> addedOuid = new ArrayList();
         List<String> addedIndicators = new ArrayList();
 
-        List paramsList = new ArrayList();
-        Map<String, String> ouidParam = new HashMap();
-        ouidParam.put("value", ouid);
-        ouidParam.put("type", "integer");
-        paramsList.add(ouidParam);
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        Connection conn = null;
 
-        Database db = new Database();
+        try {
+            conn = DatabaseSource.getConnection();
 
-        if (ouid.equals("18")) {
-            Map<String, Object> orgUnitMetadata = new HashMap();
-            orgUnitMetadata.put("id", ouid);
-            orgUnitMetadata.put("name", "Kenya");
-            orgUnits.add(orgUnitMetadata);
-            addedOuid.add(ouid);
-
-        } else {
-            //private String getOrgUnit = "select dhis_organisation_unit_name as name,dhis_organisation_unit_id as id from common_organisation_unit where dhis_organisation_unit_id=?";
-
-            ResultSet rs = db.executeQuery(getOrgUnit, paramsList);
-            while (rs.next()) {
+            if (ouid.equals("18")) {
                 Map<String, Object> orgUnitMetadata = new HashMap();
-                String _ouid = rs.getString("id");
-                if (!addedOuid.contains(_ouid)) {
-                    orgUnitMetadata.put("id", rs.getString("id"));
-                    orgUnitMetadata.put("name", rs.getString("name"));
-                    orgUnits.add(orgUnitMetadata);
-                    addedOuid.add(_ouid);
+                orgUnitMetadata.put("id", ouid);
+                orgUnitMetadata.put("name", "Kenya");
+                orgUnits.add(orgUnitMetadata);
+                addedOuid.add(ouid);
+
+            } else {
+                //private String getOrgUnit = "select dhis_organisation_unit_name as name,dhis_organisation_unit_id as id from common_organisation_unit where dhis_organisation_unit_id=?";
+
+                ps = conn.prepareStatement(getOrgUnit, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                ps.setInt(1, Integer.parseInt(ouid));
+
+                log.info("Query to run: " + ps.toString());
+                rs = ps.executeQuery();
+
+                while (rs.next()) {
+                    Map<String, Object> orgUnitMetadata = new HashMap();
+                    String _ouid = rs.getString("id");
+                    if (!addedOuid.contains(_ouid)) {
+                        orgUnitMetadata.put("id", rs.getString("id"));
+                        orgUnitMetadata.put("name", rs.getString("name"));
+                        orgUnits.add(orgUnitMetadata);
+                        addedOuid.add(_ouid);
+                    }
                 }
             }
-        }
 
-        List<String> periodsParams = new ArrayList();
-        periodsParams.add(peSpan);
-        parameters.put("periodspan", periodsParams);
+            List<String> periodsParams = new ArrayList();
+            periodsParams.add(peSpan);
+            parameters.put("periodspan", periodsParams);
 
-        List<String> locationParams = new ArrayList();
-        locationParams.add(ouid);
-        parameters.put("location", locationParams);
+            List<String> locationParams = new ArrayList();
+            locationParams.add(ouid);
+            parameters.put("location", locationParams);
 
-        List<String> indicatorParams = new ArrayList();
-        indicatorParams.add(id);
-        parameters.put("indicators", indicatorParams);
+            List<String> indicatorParams = new ArrayList();
+            indicatorParams.add(id);
+            parameters.put("indicators", indicatorParams);
 
-        List<String> periodsType = new ArrayList();
-        periodsType.add(peType);
-        parameters.put("periodtype", periodsType);
+            List<String> periodsType = new ArrayList();
+            periodsType.add(peType);
+            parameters.put("periodtype", periodsType);
 
-        paramsList = new ArrayList();
-        Map<String, String> indicaParam = new HashMap();
-        indicaParam.put("value", id);
-        indicaParam.put("type", "integer");
-        paramsList.add(indicaParam);
-        ResultSet indicatorRs = db.executeQuery(getIndicatorData, paramsList);
+            ps = conn.prepareStatement(getIndicatorData, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            ps.setInt(1, Integer.parseInt(id));
 
-        while (indicatorRs.next()) {
+            log.info("Query to run: " + ps.toString());
+            rs = ps.executeQuery();
 
-            String _ouid = indicatorRs.getString("id");
+            while (rs.next()) {
 
-            Map<String, Object> indicatorMetadata = new HashMap();
-            String _indicatorId = indicatorRs.getString("id");
-            if (!addedIndicators.contains(_indicatorId)) {
-                indicatorMetadata.put("id", _indicatorId);
-                indicatorMetadata.put("name", indicatorRs.getString("name"));
-                indicatorMetadata.put("last_updated", indicatorRs.getString("lastupdated"));
-                indicatorMetadata.put("date_created", indicatorRs.getString("_datecreated"));
-                indicatorMetadata.put("description", indicatorRs.getString("description"));
-                indicatorMetadata.put("source", "KHIS");
-                indicators.add(indicatorMetadata);
-                addedIndicators.add(_ouid);
+                String _ouid = rs.getString("id");
+
+                Map<String, Object> indicatorMetadata = new HashMap();
+                String _indicatorId = rs.getString("id");
+                if (!addedIndicators.contains(_indicatorId)) {
+                    indicatorMetadata.put("id", _indicatorId);
+                    indicatorMetadata.put("name", rs.getString("name"));
+                    indicatorMetadata.put("last_updated", rs.getString("lastupdated"));
+                    indicatorMetadata.put("date_created", rs.getString("_datecreated"));
+                    indicatorMetadata.put("description", rs.getString("description"));
+                    indicatorMetadata.put("source", "KHIS");
+                    indicators.add(indicatorMetadata);
+                    addedIndicators.add(_ouid);
+                }
+
             }
 
-        }
+            dictionary.put("orgunits", orgUnits);
+            dictionary.put("indicators", indicators);
+            dictionary.put("parameters", parameters);
 
-        dictionary.put("orgunits", orgUnits);
-        dictionary.put("indicators", indicators);
-        dictionary.put("parameters", parameters);
-        db.CloseConnection();
+        } catch (SQLException ex) {
+            Message msg = new Message();
+            msg.setMesageContent(ex.getMessage());
+            msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+            throw new DslException(msg);
+        } finally {
+            DatabaseSource.close(rs);
+            DatabaseSource.close(ps);
+            DatabaseSource.close(conn);
+        }
         return dictionary;
     }
 
@@ -486,15 +514,7 @@ public class DhisDao {
         Map<String, Object> result = new HashMap();
         Map<String, List> prdictData = new HashMap();
         log.info("get preictor dictionary");
-        try {
-            dictionary = getDictionary(periodspan, periodtype, ouid, indicatorid);
-        } catch (SQLException | NumberFormatException ex) {
-            log.error(ex);
-            Message msg = new Message();
-            msg.setMesageContent(ex.getMessage());
-            msg.setMessageType(MessageType.SQL_QUERY_ERROR);
-            throw new DslException(msg);
-        }
+        dictionary = getDictionary(periodspan, periodtype, ouid, indicatorid);
         String propFileName = "settings.properties";
         log.info("get preictor server url settings");
         InputStream inputStream = getClass().getClassLoader().getResourceAsStream(propFileName);
@@ -575,6 +595,7 @@ public class DhisDao {
         List<Map> indicatorList;
         List<String> addedOuid = new ArrayList();
         List<String> addedIndicators = new ArrayList();
+
         while (rs.next()) {
 
             Map<String, Object> orgUnitMetadata = new HashMap();
@@ -603,52 +624,51 @@ public class DhisDao {
             List<String> periodsParams = Arrays.asList(pe.split(";"));
             parameters.put("period", periodsParams);
 
-            
             List<Map> locationParams = new ArrayList();
-            
-            if(ouid!=null){
-                if(ouid.trim().equals("18")){
-                    Map<String,String> locationP= new HashMap();
+
+            if (ouid != null) {
+                if (ouid.trim().equals("18")) {
+                    Map<String, String> locationP = new HashMap();
                     locationP.put("ouid", "18");
                     locationP.put("name", "Kenya");
                     locationParams.add(locationP);
-                    
-                }else{
-                    Database db=null;
+
+                } else {
+                    List paramsList = new ArrayList();
+                    Map params = new HashMap();
+                    paramsList.add(params);
+                    String queryToRUn = "Select dhis_organisation_unit_name as name,dhis_organisation_unit_id as ouid from common_organisation_unit where dhis_organisation_unit_id in(#)";
+                    queryToRUn = queryToRUn.replace("#", orgUnitsList(ouid).replaceAll("\"", ""));
+                    log.debug(queryToRUn);
+
+                    PreparedStatement ps = null;
+                    ResultSet rsOuidName = null;
+                    Connection conn = null;
+
                     try {
-                        db = new Database();
-                        
-                        List paramsList = new ArrayList();
-                        Map params = new HashMap();
-                        //params.put("type", "string");
-                        //params.put("value", );
-                        paramsList.add(params);
-                        String queryToRUn="Select dhis_organisation_unit_name as name,dhis_organisation_unit_id as ouid from common_organisation_unit where dhis_organisation_unit_id in(#)";
-                        queryToRUn=queryToRUn.replace("#", orgUnitsList(ouid).replaceAll("\"", ""));
-                        log.debug("logg");
-                        log.debug(queryToRUn);
-                        ResultSet rsOuidName = 
-                                db.executeQuery(queryToRUn);
-                        while(rsOuidName.next()){
-                            Map<String,String> locationP= new HashMap();
-                            locationP.put("ouid",rsOuidName.getString("ouid"));
+                        conn = DatabaseSource.getConnection();
+                        ps = conn.prepareStatement(queryToRUn, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                        log.info("Query to run: " + ps.toString());
+
+                        rsOuidName = rsOuidName = ps.executeQuery();
+                        while (rsOuidName.next()) {
+                            Map<String, String> locationP = new HashMap();
+                            locationP.put("ouid", rsOuidName.getString("ouid"));
                             locationP.put("name", rsOuidName.getString("name"));
                             locationParams.add(locationP);
                         }
-                       
-                    } catch (DslException ex) {
-                        log.error(ex);
-                    }finally{
-                        if(db!=null){
-                            db.CloseConnection();
-                        }
+                    } catch (Exception ex) {
+
+                    } finally {
+                        DatabaseSource.close(rsOuidName);
+                        DatabaseSource.close(ps);
+                        DatabaseSource.close(conn);
                     }
-                    
+
                 }
-                
+
             }
-            
-            
+
             parameters.put("location", locationParams);
 
             List<String> indicatorParams = Arrays.asList(id.split(";"));
@@ -708,9 +728,9 @@ public class DhisDao {
                 appendAnd = true;
             }
             if (ouid != null) {
-                String[] orgUnits=ouid.split(";"); //how many orgunits have been passed
-                
-                if (level == null || orgUnits.length>1) {
+                String[] orgUnits = ouid.split(";"); //how many orgunits have been passed
+
+                if (level == null || orgUnits.length > 1) {
                     getKPIWholeYear = insertOrgUntiPart(ouid, getKPIWholeYear);
                 } else if (level == "1" && ouid == "18") {
                     ouid = "18"; //kenya (default national id ) = 18
@@ -721,7 +741,7 @@ public class DhisDao {
                 }
             } else {
                 ouid = "18"; //kenya (default national id ) = 18
-                if (level == "1" || level==null) {
+                if (level == "1" || level == null) {
                     appendNationalQuerySegment();
                 } else {
                     getKPIWholeYear = insertOrgUntiPartByLevel(ouid, level, getKPIWholeYear);
@@ -738,11 +758,17 @@ public class DhisDao {
             }
             log.info("indicator query to run: " + getKPIWholeYear);
             List<IndicatorValue> kpiList = new ArrayList();
-            Database db = new Database();
-            ResultSet rs = db.executeQuery(getKPIWholeYear);
-            log.info("Fetching KPI values");
+
+            PreparedStatement ps = null;
+            ResultSet rs = null;
+            Connection conn = null;
 
             try {
+                conn = DatabaseSource.getConnection();
+                ps = conn.prepareStatement(getKPIWholeYear, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                log.info("Query to run: " + ps.toString());
+                rs = ps.executeQuery();
+                log.info("Fetching KPI values");
                 Map<String, Map> result;
                 result = preparePayload(pe, ouid, id, rs);
                 envelop.put("result", result);
@@ -751,7 +777,9 @@ public class DhisDao {
             } catch (SQLException ex) {
                 log.error(ex);
             } finally {
-                db.CloseConnection();
+                DatabaseSource.close(rs);
+                DatabaseSource.close(ps);
+                DatabaseSource.close(conn);
             }
             cache.put(new Element(pe + ouid + id, envelop));
             return envelop;
@@ -769,39 +797,39 @@ public class DhisDao {
 
         Element ele = cache.get("indicatorByGroup" + groupId);
         if (ele == null) {
+            Connection conn = null;
+            PreparedStatement ps = null;
+            ResultSet rs = null;
             try {
-                Database db = new Database();
-                Connection conn = db.getConn();
-                PreparedStatement ps = conn.prepareStatement(getIndicatorGroup);
+                conn = DatabaseSource.getConnection();
+                ps = conn.prepareStatement(getIndicatorGroup, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
                 ps.setInt(1, groupId);
-                log.info("Fetching indicators");
-                log.info(ps.toString());
-                ResultSet rs = ps.executeQuery();
+                log.info("Query to run: " + ps.toString());
+                rs = ps.executeQuery();
 
-                try {
-                    while (rs.next()) {
-                        Indicator indicator = new Indicator();
-                        indicator.setId(rs.getString("id"));
-                        indicator.setGroupId(rs.getString("groupId"));
-                        String desc = rs.getString("description");
-                        if (desc == null) {
-                            desc = "";
-                        } else {
-                            desc = desc;
-                        }
-                        indicator.setDescription(desc);
-                        String name = rs.getString("name");
-                        indicator.setName(name);
-                        indicatorList.add(indicator);
+                while (rs.next()) {
+                    Indicator indicator = new Indicator();
+                    indicator.setId(rs.getString("id"));
+                    indicator.setGroupId(rs.getString("groupId"));
+                    String desc = rs.getString("description");
+                    if (desc == null) {
+                        desc = "";
+                    } else {
+                        desc = desc;
                     }
-                    cache.put(new Element("indicatorByGroup" + groupId, indicatorList));
-                } catch (SQLException ex) {
-                    log.error(ex);
-                } finally {
-                    db.CloseConnection();
+                    indicator.setDescription(desc);
+                    String name = rs.getString("name");
+                    indicator.setName(name);
+                    indicatorList.add(indicator);
                 }
+                cache.put(new Element("indicatorByGroup" + groupId, indicatorList));
+
             } catch (SQLException ex) {
                 log.error(ex);
+            } finally {
+                DatabaseSource.close(rs);
+                DatabaseSource.close(ps);
+                DatabaseSource.close(conn);
             }
         } else {
             long startTime = System.nanoTime();
@@ -818,10 +846,17 @@ public class DhisDao {
         Element ele = cache.get(CacheKeys.indicatorGroup);
 
         if (ele == null) {
-            Database db = new Database();
-            ResultSet rs = db.executeQuery(getIndicatorGroups);
             log.info("Fetching indicator groups");
+            PreparedStatement ps = null;
+            ResultSet rs = null;
+            Connection conn = null;
+
             try {
+                conn = DatabaseSource.getConnection();
+                ps = conn.prepareStatement(getIndicatorGroups, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                log.info("Query to run: " + ps.toString());
+                rs = ps.executeQuery();
+
                 int count = 1;
                 while (rs.next()) {
                     IndicatorGoup indGroup = new IndicatorGoup();
@@ -833,7 +868,9 @@ public class DhisDao {
             } catch (SQLException ex) {
                 log.error(ex);
             } finally {
-                db.CloseConnection();
+                DatabaseSource.close(rs);
+                DatabaseSource.close(ps);
+                DatabaseSource.close(conn);
             }
         } else {
             long startTime = System.nanoTime();

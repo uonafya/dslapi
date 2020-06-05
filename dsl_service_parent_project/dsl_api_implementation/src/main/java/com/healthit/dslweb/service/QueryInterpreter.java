@@ -1,13 +1,18 @@
 package com.healthit.dslweb.service;
 
 import com.healthit.dslservice.DslException;
+import com.healthit.dslservice.message.Message;
+import com.healthit.dslservice.message.MessageType;
 import com.healthit.dslservice.service.query.QueryParameterPopulator;
-import com.healthit.dslservice.util.Database;
+import com.healthit.dslservice.util.DatabaseSource;
 import com.healthit.dslservice.util.PropertiesLoader;
 import com.healthit.dslservice.util.strings.RandomStringGenerator;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -60,8 +65,8 @@ public class QueryInterpreter {
         log.info("calling query populator " + array.length());
         finalQuery = populatQueryParameters(finalQuery, _httpJsonArray);
         Map<String, List<Object>> results = runSqlQuery(finalQuery);
-        return results; 
-   }
+        return results;
+    }
 
     /**
      * Replace http filter values to placeholders in the sql queries
@@ -362,14 +367,27 @@ public class QueryInterpreter {
     }
 
     public Map<String, List<Object>> runSqlQuery(String sqlQuery) throws DslException {
-        Database db = new Database();
         List<List> reslts1 = null;
         Map<String, List<Object>> wrapperMap = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        Connection conn = null;
         try {
             String[][] reslts;
             wrapperMap = new HashMap();
-            Map<String, Object> results = db.executeQueryWithColumnCount(sqlQuery);
-            ResultSet rs = (ResultSet) results.get("resultset");
+
+            Map<String, Object> results = new HashMap();
+
+            conn = DatabaseSource.getConnection();
+            Statement s = conn.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            rs = s.executeQuery(sqlQuery);
+            rs.last();
+            int count = rs.getRow();
+            rs.beforeFirst();
+            results.put("resultset", rs);
+            results.put("columncount", count);
+
+            rs = (ResultSet) results.get("resultset");
             int rowsCount = (int) results.get("columncount");
             log.info("total row count from results " + rowsCount);
             ResultSetMetaData rsMetaData = rs.getMetaData();
@@ -385,8 +403,11 @@ public class QueryInterpreter {
 
         } catch (SQLException ex) {
             log.error(ex);
+
         } finally {
-            db.CloseConnection();
+            DatabaseSource.close(rs);
+            DatabaseSource.close(ps);
+            DatabaseSource.close(conn);
         }
         return wrapperMap;
     }
@@ -455,7 +476,7 @@ public class QueryInterpreter {
         //String alias = (String) _queriesToRun.get(0).get("alias");
         log.debug("the join length " + sqlJoinValues.size());
         for (int x = 0; x <= sqlJoinValues.get(1).length - 1; x++) {
-            if(sqlJoinValues.get(1)[x].trim().length()==0){ //check if join value is empty
+            if (sqlJoinValues.get(1)[x].trim().length() == 0) { //check if join value is empty
                 continue;
             }
             StringBuilder addCoalesce = new StringBuilder();
@@ -478,8 +499,7 @@ public class QueryInterpreter {
         log.debug("The coalesed string " + finalQueryToRun);
         return finalQueryToRun;
     }
-    
-    
+
     /**
      *
      * @param finalQueryToRun String builder object for stiching different parts
@@ -634,8 +654,8 @@ public class QueryInterpreter {
     private Map<String, Object> getQueryAndItsAttributesFromFile(Properties prop, String propertyFileKey) {
         PropertiesLoader propLoader = new PropertiesLoader();
         String queryAttributes = prop.getProperty(propertyFileKey); //get the properties file of the query and the key(name)
-        log.info("the query attributes 2 "+queryAttributes);
-        log.info("Properties file of the query "+propertyFileKey);
+        log.info("the query attributes 2 " + queryAttributes);
+        log.info("Properties file of the query " + propertyFileKey);
         String[] qAttributes = queryAttributes.split(":");
         Properties queryFile = null;
         prop = propLoader.getPropertiesFile(queryFile, qAttributes[1]);

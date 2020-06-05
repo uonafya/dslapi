@@ -1,14 +1,15 @@
 package com.healthit.dslservice.dao;
 
 import com.healthit.dslservice.DslException;
-import static com.healthit.dslservice.dao.DhisDao.log;
 import com.healthit.dslservice.dto.PandemicIndicator;
 import com.healthit.dslservice.dto.dhis.IndicatorGoup;
 import com.healthit.dslservice.message.Message;
 import com.healthit.dslservice.message.MessageType;
 import com.healthit.dslservice.util.CacheKeys;
-import com.healthit.dslservice.util.Database;
+import com.healthit.dslservice.util.DatabaseSource;
 import com.healthit.dslservice.util.DslCache;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -57,10 +58,18 @@ public class PandemicDao {
         Element ele = cache.get(CacheKeys.pandemicsList);
 
         if (ele == null) {
-            Database db = new Database();
-            ResultSet rs = db.executeQuery(selectPandemicIndicators);
-            log.info("Fetching indicator groups");
+
+            PreparedStatement ps = null;
+            ResultSet rs = null;
+            Connection conn = null;
             try {
+                conn = DatabaseSource.getConnection();
+                ps = conn.prepareStatement(selectPandemicIndicators, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                log.info("Query to run: " + ps.toString());
+                rs = ps.executeQuery();
+
+                log.info("Fetching indicator groups");
+
                 while (rs.next()) {
                     PandemicIndicator pandemicIndicator = new PandemicIndicator();
                     pandemicIndicator.setId(rs.getInt("id"));
@@ -72,12 +81,14 @@ public class PandemicDao {
                 cache.put(new Element(CacheKeys.pandemicsList, pandemicList));
             } catch (SQLException ex) {
                 log.error(ex);
+                Message msg = new Message();
+                msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+                msg.setMesageContent(ex.getMessage());
+                throw new DslException(msg);
             } finally {
-                try {
-                    rs.close();
-                } catch (SQLException ex) {
-                    log.error(ex);
-                }
+                DatabaseSource.close(rs);
+                DatabaseSource.close(ps);
+                DatabaseSource.close(conn);
             }
         } else {
             long startTime = System.nanoTime();
@@ -101,7 +112,7 @@ public class PandemicDao {
         String indicatorFilter = " fp.indicator_id=" + Integer.parseInt(indicatorId);
         if (!isPandemicDataWhereClauseAppended) {
             selectPandemicDataSql = selectPandemicDataSql + " where " + indicatorFilter;
-            isPandemicDataWhereClauseAppended=true;
+            isPandemicDataWhereClauseAppended = true;
         } else {
             selectPandemicDataSql = selectPandemicDataSql + " and " + indicatorFilter;
         }
@@ -120,7 +131,7 @@ public class PandemicDao {
         String orgunitFilter = " fp.orgunit_id=" + Integer.parseInt(orgId);
         if (!isPandemicDataWhereClauseAppended) {
             selectPandemicDataSql = selectPandemicDataSql + " where " + orgunitFilter;
-            isPandemicDataWhereClauseAppended=true;
+            isPandemicDataWhereClauseAppended = true;
         } else {
             selectPandemicDataSql = selectPandemicDataSql + " and " + orgunitFilter;
         }
@@ -141,7 +152,7 @@ public class PandemicDao {
         String startDateFilter = " dimp.date>='" + startDate + "'";
         if (!isPandemicDataWhereClauseAppended) {
             selectPandemicDataSql = selectPandemicDataSql + " where " + startDateFilter;
-            isPandemicDataWhereClauseAppended=true;
+            isPandemicDataWhereClauseAppended = true;
         } else {
             selectPandemicDataSql = selectPandemicDataSql + " and " + startDateFilter;
         }
@@ -162,7 +173,7 @@ public class PandemicDao {
         String endDateFilter = " dimp.date<='" + endDate + "'";
         if (!isPandemicDataWhereClauseAppended) {
             selectPandemicDataSql = selectPandemicDataSql + " where " + endDateFilter;
-            isPandemicDataWhereClauseAppended=true;
+            isPandemicDataWhereClauseAppended = true;
         } else {
             selectPandemicDataSql = selectPandemicDataSql + " and " + endDateFilter;
         }
@@ -182,7 +193,6 @@ public class PandemicDao {
         List<Map<String, String>> period = new ArrayList();
 
         if (ele == null) {
-            Database db = new Database();
 
             if (indicatorId != null) {
                 addIndicatorFilterClause(indicatorId);
@@ -200,9 +210,17 @@ public class PandemicDao {
                 addEndDateFilterClause(endDate);
             }
 
-            ResultSet rs = db.executeQuery(selectPandemicDataSql);
-            log.info("Fetching indicator groups");
+            PreparedStatement ps = null;
+            ResultSet rs = null;
+            Connection conn = null;
             try {
+                conn = DatabaseSource.getConnection();
+                ps = conn.prepareStatement(selectPandemicDataSql, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                log.info("Query to run: " + ps.toString());
+                rs = ps.executeQuery();
+
+                log.info("Fetching indicator groups");
+
                 while (rs.next()) {
                     Map dataUnit = new HashMap(); // keys: period, ouid, value
                     int dbIndicatorId = rs.getInt("indicatorId");
@@ -251,12 +269,14 @@ public class PandemicDao {
                 cache.put(new Element(cacheName, envelop));
             } catch (SQLException ex) {
                 log.error(ex);
+                Message msg = new Message();
+                msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+                msg.setMesageContent(ex.getMessage());
+                throw new DslException(msg);
             } finally {
-                try {
-                    rs.close();
-                } catch (SQLException ex) {
-                    log.error(ex);
-                }
+                DatabaseSource.close(rs);
+                DatabaseSource.close(ps);
+                DatabaseSource.close(conn);
             }
         } else {
             long startTime = System.nanoTime();
