@@ -229,7 +229,7 @@ public class PandemicDao {
                     String dbIndicatorName = rs.getString("indicator_name");
                     if (data.containsKey(dbIndicatorId)) {
 
-                        dataUnit.put("period", rs.getDate("date"));
+                        dataUnit.put("period", rs.getString("date"));
                         dataUnit.put("ou", dbOrgId);
                         dataUnit.put("value", rs.getInt("value"));
                         data.get(dbIndicatorId).add(dataUnit);
@@ -241,7 +241,7 @@ public class PandemicDao {
                         pIndic.setName(dbIndicatorName);
                         indicatorList.add(pIndic);
 
-                        dataUnit.put("period", rs.getDate("date"));
+                        dataUnit.put("period", rs.getString("date"));
                         dataUnit.put("ou", rs.getInt("orgId"));
                         dataUnit.put("value", rs.getInt("value"));
                         dataList.add(dataUnit);
