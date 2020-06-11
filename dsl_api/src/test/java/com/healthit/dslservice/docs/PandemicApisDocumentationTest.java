@@ -84,7 +84,7 @@ public class PandemicApisDocumentationTest {
     public void testPandemicsValuesReturned() throws Exception {
         String avail = "availble that, can be requested through the request parameters";
         this.mockMvc.perform( //covid19
-                RestDocumentationRequestBuilders.get("/pandemics/{pandemic_id}?id=6074&start_date=2020-04-01&end_date=2020-06-02&org_id=6241", "covid19").accept(MediaType.APPLICATION_JSON))
+                RestDocumentationRequestBuilders.get("/pandemics/{pandemic_id}?id=6074&start_date=2020-04-01&end_date=2020-06-02&org_id=10277", "covid19").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()).andDo(document("test-pandemics-values-returned", pathParameters(
                 parameterWithName("pandemic_id").description("Pandemic id")
         ), requestParameters(
