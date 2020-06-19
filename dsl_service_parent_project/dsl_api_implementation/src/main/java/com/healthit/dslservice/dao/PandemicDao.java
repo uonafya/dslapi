@@ -35,7 +35,7 @@ public class PandemicDao {
 
     private String selectPandemicIndicators = "Select pandemic_indicator_id as id, name FROM dim_pandemic_indicator";
     private String selectPandemicDataSql = "select fp.indicator_id as indicatorId,dim_pindc.name as indicator_name, dimp.date as date, \n"
-            + "porg.name as orgUnit, fp.orgunit_id as orgId ,porg.latitude as org_latitude, porg.longitude as org_longitude"
+            + "porg.name as orgUnit, porg.id as orgId ,porg.latitude as org_latitude, porg.longitude as org_longitude"
             + ",fp.value as value from fact_pandemic fp \n"
             + "inner join dim_pandemic_period dimp on dimp.pandemic_period_id=fp.period_id\n"
             + "inner join pandemic_comm_org_unit porg on porg.pan_org_id =fp.orgunit_id\n"
