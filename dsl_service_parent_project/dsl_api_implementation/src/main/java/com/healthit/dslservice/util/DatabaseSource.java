@@ -16,15 +16,17 @@ import org.apache.commons.dbcp2.BasicDataSource;
  */
 public class DatabaseSource {
 
-    private static BasicDataSource dataSource = new BasicDataSource();
-    private static final String DB_USERNAME = "db.username";
-    private static final String DB_PASSWORD = "db.password";
-    private static final String DB_URL = "db.url";
-    private static final String DB_DRIVER_CLASS = "driver.class.name";
+    private static BasicDataSource dataSource;
+
     final static org.apache.log4j.Logger log
             = org.apache.log4j.Logger.getLogger(DatabaseSource.class.getCanonicalName());
 
     static {
+        dataSource = new BasicDataSource();
+        String DB_USERNAME = "db.username";
+        String DB_PASSWORD = "db.password";
+        String DB_URL = "db.url";
+        String DB_DRIVER_CLASS = "driver.class.name";
 
         try {
             Properties properties = new Properties();
@@ -46,7 +48,7 @@ public class DatabaseSource {
     }
 
     public static Connection getConnection() throws SQLException {
-        log.info("Active db connection from pool: "+dataSource.getNumActive());
+        log.info("Active db connection from pool: " + dataSource.getNumActive());
         return dataSource.getConnection();
     }
 

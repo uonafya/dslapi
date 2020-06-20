@@ -55,47 +55,37 @@ public class PandemicDao {
         pandemics.put("name", "covid 19");
         pandemics.put("initial_report_date", "2020-03-17");
 
-        Element ele = cache.get(CacheKeys.pandemicsList);
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        Connection conn = null;
+        try {
+            conn = DatabaseSource.getConnection();
+            ps = conn.prepareStatement(selectPandemicIndicators, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            log.info("Query to run: " + ps.toString());
+            rs = ps.executeQuery();
 
-        if (ele == null) {
+            log.info("Fetching indicator groups");
 
-            PreparedStatement ps = null;
-            ResultSet rs = null;
-            Connection conn = null;
-            try {
-                conn = DatabaseSource.getConnection();
-                ps = conn.prepareStatement(selectPandemicIndicators, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
-                log.info("Query to run: " + ps.toString());
-                rs = ps.executeQuery();
-
-                log.info("Fetching indicator groups");
-
-                while (rs.next()) {
-                    PandemicIndicator pandemicIndicator = new PandemicIndicator();
-                    pandemicIndicator.setId(rs.getInt("id"));
-                    pandemicIndicator.setName(rs.getString("name"));
-                    pandemicIndicatorList.add(pandemicIndicator);
-                }
-                pandemics.put("indicators", pandemicIndicatorList);
-                pandemicList.add(pandemics);
-                cache.put(new Element(CacheKeys.pandemicsList, pandemicList));
-            } catch (SQLException ex) {
-                log.error(ex);
-                Message msg = new Message();
-                msg.setMessageType(MessageType.SQL_QUERY_ERROR);
-                msg.setMesageContent(ex.getMessage());
-                throw new DslException(msg);
-            } finally {
-                DatabaseSource.close(rs);
-                DatabaseSource.close(ps);
-                DatabaseSource.close(conn);
+            while (rs.next()) {
+                PandemicIndicator pandemicIndicator = new PandemicIndicator();
+                pandemicIndicator.setId(rs.getInt("id"));
+                pandemicIndicator.setName(rs.getString("name"));
+                pandemicIndicatorList.add(pandemicIndicator);
             }
-        } else {
-            long startTime = System.nanoTime();
-            pandemicList = (List<Map>) ele.getObjectValue();
-            long endTime = System.nanoTime();
-            log.info("Time taken to fetch data from cache " + (endTime - startTime) / 1000000);
+            pandemics.put("indicators", pandemicIndicatorList);
+            pandemicList.add(pandemics);
+        } catch (SQLException ex) {
+            log.error(ex);
+            Message msg = new Message();
+            msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+            msg.setMesageContent(ex.getMessage());
+            throw new DslException(msg);
+        } finally {
+            DatabaseSource.close(rs);
+            DatabaseSource.close(ps);
+            DatabaseSource.close(conn);
         }
+
         return pandemicList;
     }
 
