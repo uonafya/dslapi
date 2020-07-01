@@ -696,7 +696,7 @@ public class SurveyDao {
 
                 }
 
-                if (!gender.equals("n/a") && gender.trim().length()!=0) {
+                if (!gender.equals("n/a") && gender.trim().length() != 0) {
                     try {
                         Map<String, Object> categoryHolder = new HashMap();
                         int genderId = rs.getInt("gender_id");
@@ -710,7 +710,7 @@ public class SurveyDao {
 
                 }
 
-                if (!age.equals("n/a")  && age.trim().length()!=0) {
+                if (!age.equals("n/a") && age.trim().length() != 0) {
 
                     try {
                         Map<String, Object> categoryHolder = new HashMap();
@@ -724,7 +724,7 @@ public class SurveyDao {
                     }
 
                 }
-                if (!kdhs_category.equals("n/a")   && kdhs_category.trim().length()!=0) {
+                if (!kdhs_category.equals("n/a") && kdhs_category.trim().length() != 0) {
 
                     try {
                         Map<String, Object> categoryHolder = new HashMap();
@@ -838,7 +838,7 @@ public class SurveyDao {
 
                 }
 
-                if (!gender.equals("n/a") && gender.trim().length()!=0) {
+                if (!gender.equals("n/a") && gender.trim().length() != 0) {
                     try {
                         Map<String, Object> categoryHolder = new HashMap();
                         categoryHolder.put("name", gender);
@@ -851,7 +851,7 @@ public class SurveyDao {
                     }
 
                 }
-                if (!age.equals("n/a") && age.trim().length()!=0) {
+                if (!age.equals("n/a") && age.trim().length() != 0) {
                     try {
                         Map<String, Object> categoryHolder = new HashMap();
                         categoryHolder.put("name", age);
@@ -864,7 +864,7 @@ public class SurveyDao {
                     }
 
                 }
-                if (!results_category.equals("n/a") && results_category.trim().length()!=0) {
+                if (!results_category.equals("n/a") && results_category.trim().length() != 0) {
 
                     try {
                         Map<String, Object> categoryHolder = new HashMap();
@@ -942,54 +942,70 @@ public class SurveyDao {
     }
 
     public Map<String, Object> getIndicatorValue(String sId, String iId, String orgId, String pe, String category_id) throws DslException {
-        log.info("get survey data values");
-        int sourceId = Integer.parseInt(sId);
-        int indicatorId = Integer.parseInt(iId);
-        if (sourceId == 2 || sourceId == 3 || sourceId == 4 || sourceId == 5 || sourceId == 6) {
-            String indicatorQuery = getSurveySql(sourceId, indicatorId, orgId, category_id);
-            Map<String, Object> coreSurvey = getCoreSurveyData(indicatorQuery, "others");
-            String availableDataDimesions = getSurveyAvailableDimesions(sourceId, indicatorId, orgId, pe, category_id);
-            Map<String, Object> surveyDimensions = getAvailableDimesionData(availableDataDimesions, "others");
+        String cacheName = sId + iId + orgId + pe + category_id;
+        Element ele = cache.get(sId + iId + orgId + pe + category_id);
+        Map<String, Object> result = new HashMap();
+        if (ele == null) {
 
-            log.info("assemble survey payload");
-            Map<String, Object> survMeta = (Map<String, Object>) coreSurvey.get("metadata");
+            log.info("get survey data values");
+            int sourceId = Integer.parseInt(sId);
+            int indicatorId = Integer.parseInt(iId);
+            if (sourceId == 2 || sourceId == 3 || sourceId == 4 || sourceId == 5 || sourceId == 6) {
+                String indicatorQuery = getSurveySql(sourceId, indicatorId, orgId, category_id);
+                Map<String, Object> coreSurvey = getCoreSurveyData(indicatorQuery, "others");
+                String availableDataDimesions = getSurveyAvailableDimesions(sourceId, indicatorId, orgId, pe, category_id);
+                Map<String, Object> surveyDimensions = getAvailableDimesionData(availableDataDimesions, "others");
 
-            Map<String, Object> survData = new HashMap();
-            survData.put("metadata", survMeta);
-            survData.put("available", surveyDimensions.get("available"));
-            survData.put("data", coreSurvey.get("data"));
+                log.info("assemble survey payload");
+                Map<String, Object> survMeta = (Map<String, Object>) coreSurvey.get("metadata");
 
-            return resultAssember(survData);
-        } else if (sourceId == 7) {
-            String indicatorQuery = getStepsSurveySql(sourceId, indicatorId, orgId, category_id);
-            Map<String, Object> coreSurvey = getCoreSurveyData(indicatorQuery, "steps");
-            String availableDataDimesions = getSurveyAvailableDimesions(sourceId, indicatorId, orgId, pe, category_id);
-            Map<String, Object> surveyDimensions = getAvailableDimesionData(availableDataDimesions, "steps");
-            Map<String, Object> survMeta = (Map<String, Object>) coreSurvey.get("metadata");
+                Map<String, Object> survData = new HashMap();
+                survData.put("metadata", survMeta);
+                survData.put("available", surveyDimensions.get("available"));
+                survData.put("data", coreSurvey.get("data"));
+                result = resultAssember(survData);
+                cache.put(new Element(cacheName, result));
+                return result;
+            } else if (sourceId == 7) {
+                String indicatorQuery = getStepsSurveySql(sourceId, indicatorId, orgId, category_id);
+                Map<String, Object> coreSurvey = getCoreSurveyData(indicatorQuery, "steps");
+                String availableDataDimesions = getSurveyAvailableDimesions(sourceId, indicatorId, orgId, pe, category_id);
+                Map<String, Object> surveyDimensions = getAvailableDimesionData(availableDataDimesions, "steps");
+                Map<String, Object> survMeta = (Map<String, Object>) coreSurvey.get("metadata");
 
-            Map<String, Object> survData = new HashMap();
-            survData.put("metadata", survMeta);
-            survData.put("available", surveyDimensions.get("available"));
-            survData.put("data", coreSurvey.get("data"));
-            return resultAssember(survData);
-        } else if (sourceId == 8) {
-            String indicatorQuery = getKdhsSurveySql(sourceId, indicatorId, orgId, category_id, pe);
-            Map<String, Object> coreSurvey = getCoreSurveyData(indicatorQuery, "kdhs");
-            String availableDataDimesions = getSurveyAvailableDimesions(sourceId, indicatorId, orgId, pe, category_id);
-            Map<String, Object> surveyDimensions = getAvailableDimesionData(availableDataDimesions, "kdhs");
-            Map<String, Object> survMeta = (Map<String, Object>) coreSurvey.get("metadata");
+                Map<String, Object> survData = new HashMap();
+                survData.put("metadata", survMeta);
+                survData.put("available", surveyDimensions.get("available"));
+                survData.put("data", coreSurvey.get("data"));
+                result = resultAssember(survData);
+                cache.put(new Element(cacheName, result));
+                return result;
+            } else if (sourceId == 8) {
+                String indicatorQuery = getKdhsSurveySql(sourceId, indicatorId, orgId, category_id, pe);
+                Map<String, Object> coreSurvey = getCoreSurveyData(indicatorQuery, "kdhs");
+                String availableDataDimesions = getSurveyAvailableDimesions(sourceId, indicatorId, orgId, pe, category_id);
+                Map<String, Object> surveyDimensions = getAvailableDimesionData(availableDataDimesions, "kdhs");
+                Map<String, Object> survMeta = (Map<String, Object>) coreSurvey.get("metadata");
 
-            Map<String, Object> survData = new HashMap();
-            survData.put("metadata", survMeta);
-            survData.put("available", surveyDimensions.get("available"));
-            survData.put("data", coreSurvey.get("data"));
-            return resultAssember(survData);
-
+                Map<String, Object> survData = new HashMap();
+                survData.put("metadata", survMeta);
+                survData.put("available", surveyDimensions.get("available"));
+                survData.put("data", coreSurvey.get("data"));
+                result = resultAssember(survData);
+                cache.put(new Element(cacheName, result));
+                return result;
+            } else {
+                Message msg = new Message();
+                msg.setMesageContent("This id does not exist ");
+                msg.setMessageType(MessageType.MISSING_DB_ENRTY_VALUE);
+                throw new DslException(msg);
+            }
         } else {
-            Message msg = new Message();
-            msg.setMesageContent("This id does not exist ");
-            msg.setMessageType(MessageType.MISSING_DB_ENRTY_VALUE);
-            throw new DslException(msg);
+            long startTime = System.nanoTime();
+            result = (Map<String, Object>) ele.getObjectValue();
+            long endTime = System.nanoTime();
+            log.info("Time taken to fetch data from cache " + (endTime - startTime) / 1000000);
+            return result;
         }
 
     }
