@@ -585,7 +585,7 @@ public class DhisDao {
         return envelop;
     }
 
-    private Map<String, Map> preparePayload(String pe, String ouid, String id, ResultSet rs) throws SQLException {
+    private Map<String, Map> preparePayload(String pe, String ouid, String id, ResultSet rs, boolean isMeta) throws SQLException {
         Map<String, Map> result = new HashMap();
         Map<String, Object> dictionary = new HashMap();
         List<Map> orgUnits = new ArrayList();
@@ -676,17 +676,21 @@ public class DhisDao {
 
             //data
             Map<String, String> dataValues = new HashMap();
-            dataValues.put("value", rs.getString("value"));
-            String mnth = rs.getString("month");
-            dataValues.put("period", rs.getString("year") + ((mnth.length() > 1) ? mnth : "0" + mnth)); // ensure leading 0 if month is single digit eg. 20191 > 201901
-            dataValues.put("ou", rs.getString("ouid"));
+            if (!isMeta) {
+                dataValues.put("value", rs.getString("value"));
+                String mnth = rs.getString("month");
+                dataValues.put("period", rs.getString("year") + ((mnth.length() > 1) ? mnth : "0" + mnth)); // ensure leading 0 if month is single digit eg. 20191 > 201901
+                dataValues.put("ou", rs.getString("ouid"));
 
-            if (data.containsKey(rs.getString("id"))) {
-                indicatorList = data.get(rs.getString("id"));
-                indicatorList.add(dataValues);
+                if (data.containsKey(rs.getString("id"))) {
+                    indicatorList = data.get(rs.getString("id"));
+                    indicatorList.add(dataValues);
+                } else {
+                    indicatorList = new ArrayList();
+                    indicatorList.add(dataValues);
+                }
             } else {
                 indicatorList = new ArrayList();
-                indicatorList.add(dataValues);
             }
 
             data.put(rs.getString("id"), indicatorList);
@@ -710,6 +714,52 @@ public class DhisDao {
             getKPIWholeYear = getKPIWholeYear.replace("@ouid@", " \"Org unit id\"=18 "); //kenya (national id ) = 18
             appendAnd = true;
         }
+    }
+
+    private String getIndicatorMeta(String pe, String ouid, String id, String level) throws DslException {
+        appendAnd = false;
+        getKPIWholeYear = "select \"Indicator name\" as indicator_name,\"Indicator description\" as description, "
+                + "cast(to_char(startdate, 'YYYY') as int) as year \n"
+                + ",cast(to_char(startdate, 'MM') as int) as month,_datecreated, lastupdated, \"Indicator ID\" as id,\"Org unit id\" as ouid,dhis.\"Organisation Unit Name\" as ouname \n"
+                + "from vw_mohdsl_dhis_indicators dhis "
+                + "where "
+                + "@ouid@"
+                + " @id@ "
+                + " group by year,month,\"Indicator name\",\"Indicator description\",kpivalue,\"Org unit id\",ouname,id,_datecreated, lastupdated"
+                + " order by month ";
+
+        if (ouid != null) {
+            String[] orgUnits = ouid.split(";"); //how many orgunits have been passed
+
+            if (level == null || orgUnits.length > 1) {
+                getKPIWholeYear = insertOrgUntiPart(ouid, getKPIWholeYear);
+            } else if (level == "1" && ouid == "18") {
+                ouid = "18"; //kenya (default national id ) = 18
+                appendNationalQuerySegment();
+            } else {
+                getKPIWholeYear = insertOrgUntiPartByLevel(ouid, level, getKPIWholeYear);
+                log.info(getKPIWholeYear);
+            }
+        } else {
+            ouid = "18"; //kenya (default national id ) = 18
+            if (level == "1" || level == null) {
+                appendNationalQuerySegment();
+            } else {
+                getKPIWholeYear = insertOrgUntiPartByLevel(ouid, level, getKPIWholeYear);
+                log.info(getKPIWholeYear);
+            }
+        }
+        if (id != null) {
+            getKPIWholeYear = insertIdPart(id, getKPIWholeYear);
+        } else {
+            Message msg = new Message();
+            msg.setMesageContent("please add indicator id paramerter, '?id=xxx'");
+            msg.setMessageType(MessageType.MISSING_PARAMETER_VALUE);
+            throw new DslException(msg);
+        }
+
+        return getKPIWholeYear;
+
     }
 
     public Map<String, Map> getKPIValue(String pe, String ouid, String id, String level) throws DslException {
@@ -766,11 +816,20 @@ public class DhisDao {
             try {
                 conn = DatabaseSource.getConnection();
                 ps = conn.prepareStatement(getKPIWholeYear, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
-                log.info("Query to run: " + ps.toString());
+                log.info("Query to run round one: " + ps.toString());
                 rs = ps.executeQuery();
                 log.info("Fetching KPI values");
                 Map<String, Map> result;
-                result = preparePayload(pe, ouid, id, rs);
+                result = preparePayload(pe, ouid, id, rs, false);
+                log.info(result.get("data"));
+                if (result.get("data").size() == 0) {
+                    getKPIWholeYear = getIndicatorMeta(pe, ouid, id, level);
+                    ps = conn.prepareStatement(getKPIWholeYear, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+                    log.info("Query to run round two: " + ps.toString());
+                    rs = ps.executeQuery();
+                    log.info("Fetching KPI values");
+                    result = preparePayload(pe, ouid, id, rs, true);
+                }
                 envelop.put("result", result);
                 cache.put(new Element(pe + ouid + id + level, envelop));
                 return envelop;
