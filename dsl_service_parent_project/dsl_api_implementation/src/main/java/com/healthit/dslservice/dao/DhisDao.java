@@ -28,16 +28,20 @@ import java.util.List;
 import java.util.Map;
 import net.sf.ehcache.Cache;
 import net.sf.ehcache.Element;
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Properties;
 import java.util.logging.Level;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import org.apache.log4j.Logger;
+import org.glassfish.jersey.client.ClientResponse;
 
 /**
  *
@@ -508,83 +512,6 @@ public class DhisDao {
         return dictionary;
     }
 
-    public Map<String, Map> predict(String indicatorid, String ouid, String periodtype, String periodspan) throws DslException {
-        Properties prop = new Properties();
-        Map<String, Object> dictionary = null;
-        Map<String, Object> result = new HashMap();
-        Map<String, List> prdictData = new HashMap();
-        log.info("get preictor dictionary");
-        dictionary = getDictionary(periodspan, periodtype, ouid, indicatorid);
-        String propFileName = "settings.properties";
-        log.info("get preictor server url settings");
-        InputStream inputStream = getClass().getClassLoader().getResourceAsStream(propFileName);
-
-        if (inputStream != null) {
-            try {
-                prop.load(inputStream);
-            } catch (IOException ex) {
-                java.util.logging.Logger.getLogger(DhisDao.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        } else {
-            log.error("property file '" + propFileName + "' not found in the classpath");
-        }
-
-        String host = prop.getProperty("predictor_host");
-        String predictor_port = prop.getProperty("predictor_port");
-
-        log.info("connect to predictor server");
-        try {
-            log.debug("predictor server client instance");
-            Client client = Client.create();
-            log.debug("ouid: " + ouid + " periodspan: " + periodspan);
-            if (ouid == null || ouid.isEmpty()) {
-                ouid = "18";
-            }
-            String predictor_url = "http://" + host + ":" + predictor_port + "/forecast/" + indicatorid + "?ouid=" + ouid;
-            if (periodtype != null) {
-                if (!periodtype.isEmpty()) {
-                    predictor_url = predictor_url + "&periodtype=" + periodtype;
-                }
-            }
-
-            if (periodspan != null) {
-                if (!periodspan.isEmpty()) {
-                    predictor_url = predictor_url + "&periodspan=" + periodspan;
-                }
-            }
-            //verse_url=URLEncoder.encode(verse_url, "UTF-8");
-            log.info("The url: " + predictor_url);
-            WebResource webResource = client
-                    .resource(predictor_url);
-
-            ClientResponse response = webResource.accept(MediaType.APPLICATION_XML)
-                    .get(ClientResponse.class);
-
-            if (response.getStatus() != 200) {
-                log.error("Failed to predict data : "
-                        + response.getStatus() + ":" + response.toString() + " : " + response.getEntity(String.class));
-                throw new RuntimeException();
-            }
-
-//            Map dataMap = response.getEntity(Map.class);
-            Gson gson = new Gson();
-            String output = response.getEntity(String.class);
-            prdictData = gson.fromJson(output, Map.class);
-
-            log.info("Output from Server .... \n");
-            log.info(prdictData);
-
-        } catch (Exception e) {
-            log.error(e);
-        }
-        result.put("dictionary", dictionary);
-        result.put("data", prdictData.get("data"));
-
-        Map<String, Map> envelop = new HashMap();
-        envelop.put("result", result);
-        return envelop;
-    }
-
     private Map<String, Map> preparePayload(String pe, String ouid, String id, ResultSet rs, boolean isMeta) throws SQLException {
         Map<String, Map> result = new HashMap();
         Map<String, Object> dictionary = new HashMap();
@@ -968,7 +895,6 @@ public class DhisDao {
         log.info("connect to predictor server");
         try {
             log.debug("predictor server client instance");
-            Client client = Client.create();
             if (ouid == null || ouid.isEmpty()) {
                 ouid = "18";
             }
@@ -976,21 +902,26 @@ public class DhisDao {
 
             //verse_url=URLEncoder.encode(verse_url, "UTF-8");
             log.info("The url: " + correlation_url);
-            WebResource webResource = client
-                    .resource(correlation_url);
+            Client client = ClientBuilder.newClient();
 
-            ClientResponse response = webResource.accept(MediaType.APPLICATION_XML)
-                    .get(ClientResponse.class);
+            WebTarget webResource = client
+                    .target(correlation_url);
+
+            Invocation.Builder invocationBuilder
+                    = webResource.request(MediaType.APPLICATION_JSON);
+
+            Response response = invocationBuilder.get();
 
             if (response.getStatus() != 200) {
-                log.error("Failed to correlate indic-indic data : "
-                        + response.getStatus() + ":" + response.toString() + " : " + response.getEntity(String.class));
+                log.error("Failed to predict data : "
+                        + response.getStatus() + ":" + response.toString() + " : " + response.readEntity(String.class));
+
                 throw new RuntimeException();
             }
 
 //            Map dataMap = response.getEntity(Map.class);
             Gson gson = new Gson();
-            String output = response.getEntity(String.class);
+            String output = response.readEntity(String.class);
             correlateData = gson.fromJson(output, Map.class);
 
             log.info("Output from Server .... \n");
@@ -1004,8 +935,7 @@ public class DhisDao {
         envelop.put("result", correlateData);
         return envelop;
     }
-    
-    
+
     public Map<String, Map> getWeatherToIndicatorCorrelation(String indicatorId, String ouid) throws DslException {
         Properties prop = new Properties();
 
@@ -1032,35 +962,34 @@ public class DhisDao {
 
         log.info("connect to predictor server");
         try {
-            log.debug("predictor server client instance");
-            Client client = Client.create();
+            String correlation_url = "http://" + host + ":" + predictor_port + "/weather_correlation/" + indicatorId + "/" + ouid;
+            log.debug("predictor server client instance " + correlation_url);
+            log.debug("got this far");
             if (ouid == null || ouid.isEmpty()) {
                 ouid = "18";
             }
-            String correlation_url = "http://" + host + ":" + predictor_port + "/weather_correlation/" + indicatorId + "/" + ouid;
 
-            //verse_url=URLEncoder.encode(verse_url, "UTF-8");
-            log.info("The url: " + correlation_url);
-            WebResource webResource = client
-                    .resource(correlation_url);
-
-            ClientResponse response = webResource.accept(MediaType.APPLICATION_XML)
-                    .get(ClientResponse.class);
+            Client client = ClientBuilder.newClient();
+            WebTarget webResource = client
+                    .target(correlation_url);
+            Invocation.Builder invocationBuilder
+                    = webResource.request(MediaType.APPLICATION_JSON);
+            Response response = invocationBuilder.get();
 
             if (response.getStatus() != 200) {
-                log.error("Failed to correlate indic-indic data : "
-                        + response.getStatus() + ":" + response.toString() + " : " + response.getEntity(String.class));
+                log.error("Failed to predict data : "
+                        + response.getStatus() + ":" + response.toString() + " : " + response.readEntity(String.class));
+
                 throw new RuntimeException();
             }
 
 //            Map dataMap = response.getEntity(Map.class);
             Gson gson = new Gson();
-            String output = response.getEntity(String.class);
+            String output = response.readEntity(String.class);
             correlateData = gson.fromJson(output, Map.class);
 
             log.info("Output from Server .... \n");
             log.info(correlateData);
-
         } catch (Exception e) {
             log.error(e);
         }
@@ -1069,7 +998,87 @@ public class DhisDao {
         envelop.put("result", correlateData);
         return envelop;
     }
-    
-    
-    
+
+    public Map<String, Map> predict(String indicatorid, String ouid, String periodtype, String periodspan) throws DslException {
+        Properties prop = new Properties();
+        Map<String, Object> dictionary = null;
+        Map<String, Object> result = new HashMap();
+        Map<String, List> prdictData = new HashMap();
+        log.info("get preictor dictionary");
+        dictionary = getDictionary(periodspan, periodtype, ouid, indicatorid);
+        String propFileName = "settings.properties";
+        log.info("get preictor server url settings");
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream(propFileName);
+
+        if (inputStream != null) {
+            try {
+                prop.load(inputStream);
+            } catch (IOException ex) {
+                java.util.logging.Logger.getLogger(DhisDao.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            log.error("property file '" + propFileName + "' not found in the classpath");
+        }
+
+        String host = prop.getProperty("predictor_host");
+        String predictor_port = prop.getProperty("predictor_port");
+
+        log.info("connect to predictor server");
+        try {
+            log.debug("predictor server client instance");
+
+            log.debug("ouid: " + ouid + " periodspan: " + periodspan);
+            if (ouid == null || ouid.isEmpty()) {
+                ouid = "18";
+            }
+            String predictor_url = "http://" + host + ":" + predictor_port + "/forecast/" + indicatorid + "?ouid=" + ouid;
+            if (periodtype != null) {
+                if (!periodtype.isEmpty()) {
+                    predictor_url = predictor_url + "&periodtype=" + periodtype;
+                }
+            }
+
+            if (periodspan != null) {
+                if (!periodspan.isEmpty()) {
+                    predictor_url = predictor_url + "&periodspan=" + periodspan;
+                }
+            }
+            //verse_url=URLEncoder.encode(verse_url, "UTF-8");
+            log.info("The url: " + predictor_url);
+            Client client = ClientBuilder.newClient();
+
+            WebTarget webResource = client
+                    .target(predictor_url);
+
+            Invocation.Builder invocationBuilder
+                    = webResource.request(MediaType.APPLICATION_JSON);
+
+            Response response = invocationBuilder.get();
+
+            if (response.getStatus() != 200) {
+                log.error("Failed to predict data : "
+                        + response.getStatus() + ":" + response.toString() + " : " + response.readEntity(String.class));
+
+                throw new RuntimeException();
+            }
+
+//            Map dataMap = response.getEntity(Map.class);
+            Gson gson = new Gson();
+            String output = response.readEntity(String.class);
+            prdictData = gson.fromJson(output, Map.class);
+
+            log.info("Output from Server .... \n");
+            log.info(prdictData);
+
+        } catch (Exception e) {
+            log.error(e);
+        }
+        result.put("dictionary", dictionary);
+        result.put("data", prdictData.get("data"));
+
+        Map<String, Map> envelop = new HashMap();
+        envelop.put("result", result);
+        return envelop;
+    }
+
 }

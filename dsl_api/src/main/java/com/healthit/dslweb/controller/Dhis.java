@@ -55,7 +55,7 @@ public class Dhis {
                     || ouid != null
                     || id != null) {
                 log.info("indicators without filter");
-                Map<String, Map> indicatorValue = dhisDao.getKPIValue(pe, ouid, id,null);
+                Map<String, Map> indicatorValue = dhisDao.getKPIValue(pe, ouid, id, null);
                 log.debug(indicatorValue);
                 return new ResponseEntity<Map<String, Map>>(indicatorValue, HttpStatus.OK);
 
@@ -131,10 +131,10 @@ public class Dhis {
             @RequestParam(value = "periodtype", required = false) String periodType,
             @RequestParam(value = "ouid", required = false) String ouid,
             @PathVariable("indicatorid") String indicatorId
-    ) { 
+    ) {
         //for documentation pourpose
-        if(periodSpan!=null || periodType!=null){
-            if(periodSpan.trim().equals("x") || periodSpan.trim().equals("x")){
+        if (periodSpan != null || periodType != null) {
+            if (periodSpan.trim().equals("x") || periodSpan.trim().equals("x")) {
                 return forecastDummy();
             }
         }
@@ -148,27 +148,28 @@ public class Dhis {
         }
 
     }
-   
+
     /**
-     * This method is for documentation pourpose for predefined data returned by predictorr
+     * This method is for documentation pourpose for predefined data returned by
+     * predictorr
+     *
      * @param periodSpan
      * @param periodType
      * @param ouid
      * @param indicatorId
-     * @return 
+     * @return
      */
-
     private ResponseEntity<?> forecastDummy() {
         Gson gson = new Gson();
         BufferedReader br = new BufferedReader(new InputStreamReader(
-                           this.getClass().getResourceAsStream("/predict.json")));
-        Map results=gson.fromJson(br, Map.class);
+                this.getClass().getResourceAsStream("/predict.json")));
+        Map results = gson.fromJson(br, Map.class);
         log.info("got data =====> ");
         log.info(results);
         return new ResponseEntity<Map<String, Map>>(results, HttpStatus.OK);
 
     }
-    
+
     @CrossOrigin
     @ResponseBody
     @RequestMapping(value = "/indicator_correlation/{indicatorid}/{ouid}/{compareIndicators}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -176,33 +177,34 @@ public class Dhis {
             @PathVariable(value = "ouid", required = false) String ouid,
             @PathVariable(value = "compareIndicators", required = false) String compareIndicators,
             @PathVariable("indicatorid") String indicatorId
-    ) { 
-        
+    ) {
+
         try {
             DhisDao dhisDao = new DhisDao();
-            Map<String, Map> correlationData = dhisDao.getIndicatorToIndicatorCorrelation( indicatorId,  ouid,  compareIndicators);
+            Map<String, Map> correlationData = dhisDao.getIndicatorToIndicatorCorrelation(indicatorId, ouid, compareIndicators);
             return new ResponseEntity<Map<String, Map>>(correlationData, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
     }
-    
-        @CrossOrigin
+
+    @CrossOrigin
     @ResponseBody
     @RequestMapping(value = "/weather_correlation/{indicatorid}/{ouid}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> getIndicatorWeatherCorrelation(
             @PathVariable(value = "ouid", required = false) String ouid,
             @PathVariable("indicatorid") String indicatorId
-    ) { 
-        
+    ) {
+
         try {
             DhisDao dhisDao = new DhisDao();
-            Map<String, Map> correlationData = dhisDao.getWeatherToIndicatorCorrelation( indicatorId,  ouid);
+            Map<String, Map> correlationData = dhisDao.getWeatherToIndicatorCorrelation(indicatorId, ouid);
             return new ResponseEntity<Map<String, Map>>(correlationData, HttpStatus.OK);
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
     }
+
 }
