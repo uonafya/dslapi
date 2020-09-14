@@ -400,4 +400,286 @@ public class DhisApisDocumentationTest {
         ));
     }
 
+    @Test
+    public void testWeatherIndicatorCorrelation() throws Exception {
+        this.mockMvc.perform(
+                RestDocumentationRequestBuilders.get("/weather_correlation/{indicatorid}/{ouid}", 23185, 23408).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andDo(document("test-weather-indicator", pathParameters(
+                parameterWithName("indicatorid").description("Indicator ID which is mandatory"),
+                parameterWithName("ouid").description("Organisation ID which is mandatory")
+        ), responseFields(
+                fieldWithPath("result")
+                        .description("Response envelope object"),
+                //                Meta data section
+                fieldWithPath("result.dictionary")
+                        .description("Carries metadata for the payload"),
+                fieldWithPath("result.dictionary.orgunits")
+                        .description("Metadata for organization units contained in the reponse payload"),
+                fieldWithPath("result.dictionary.orgunits[]")
+                        .description("List of organisation unit(s)"),
+                fieldWithPath("result.dictionary.orgunits[].id")
+                        .description("Organisation unit id"),
+                fieldWithPath("result.dictionary.orgunits[].name")
+                        .description("Organisation unit name"),
+                fieldWithPath("result.dictionary.indicators")
+                        .description("Metadata for indicators contained in the reponse payload"),
+                fieldWithPath("result.dictionary.indicators[]")
+                        .description("List of indicator(s) in the payload"),
+                fieldWithPath("result.dictionary.indicators[].id")
+                        .description("Indicator ID"),
+                fieldWithPath("result.dictionary.indicators[].name")
+                        .description("Indicator name"),
+                fieldWithPath("result.dictionary.indicators[].description")
+                        .description("Indicator description"),
+                fieldWithPath("result.dictionary.indicators[].last_updated")
+                        .description("Indicator indicator update date"),
+                fieldWithPath("result.dictionary.indicators[].date_created")
+                        .description("Indicator creation date"),
+                fieldWithPath("result.dictionary.indicators[].source")
+                        .description("Source for this Indicator"),
+                //
+                fieldWithPath("result.dictionary.weather")
+                        .description("Holds weather entities used in analyses. Its a dictionary with key as weather type ID and value as weather type"),
+                
+                fieldWithPath("result.dictionary.weather.1")
+                        .description("Id for the temperature variable"),
+                fieldWithPath("result.dictionary.weather.2")
+                        .description("Id for the dew point variable"),
+                fieldWithPath("result.dictionary.weather.3")
+                        .description("Id for the humidity variable"),
+                fieldWithPath("result.dictionary.weather.5")
+                        .description("Id for the pressure variable"),
+                //
+
+                fieldWithPath("result.dictionary.analyses")
+                        .description("Holds metadata for the correlation model"),
+                fieldWithPath("result.dictionary.analyses.correlation_dimension")
+                        .description("Holds the order used for calculation of the covarience values in the same order as the returned correlation data in the payload"),
+                fieldWithPath("result.dictionary.analyses.variables")
+                        .description("dictionary of variables used in the correlation model. Key is ID, value is the name of the variable"),
+                fieldWithPath("result.dictionary.analyses.variables.23185")
+                        .description("Id for the indicator used in analysis"),
+                fieldWithPath("result.dictionary.analyses.variables.1")
+                        .description("Id for the temperature variable"),
+                fieldWithPath("result.dictionary.analyses.variables.2")
+                        .description("Id for the dew point variable"),
+                fieldWithPath("result.dictionary.analyses.variables.3")
+                        .description("Id for the humidity variable"),
+                fieldWithPath("result.dictionary.analyses.variables.5")
+                        .description("Id for the pressure variable"),
+                
+                
+                fieldWithPath("result.dictionary.analyses.period_type")
+                        .description("Data period frequency used in the analyses."),
+                fieldWithPath("result.dictionary.analyses.correlation_coeffient")
+                        .description("Correlation model used in the analysis"),
+                fieldWithPath("result.dictionary.analyses.period_span")
+                        .description("Shows the period range of data used in the analyses"),
+                fieldWithPath("result.dictionary.analyses.period_span.start_date")
+                        .description("Begining period for data used in analysis"),
+                fieldWithPath("result.dictionary.analyses.period_span.end_date")
+                        .description("End period for data used in analysis"),
+                //                data section 
+
+                fieldWithPath("result.data")
+                        .description("The reponse payload"),
+                fieldWithPath("result.data.weather")
+                        .description("Data payload for weather data"),
+                
+                fieldWithPath("result.data.weather.1")
+                        .description("Weather type id"),
+                fieldWithPath("result.data.weather.1[]")
+                        .description("List of data for this weather type"),
+                fieldWithPath("result.data.weather.1[].value")
+                        .description("Value for this period"),
+                fieldWithPath("result.data.weather.1[].date")
+                        .description("Period for this value"),
+                fieldWithPath("result.data.weather.1[].ouid")
+                        .description("The organisation unit for this value"),
+                
+                
+                fieldWithPath("result.data.weather.2")
+                        .description("Weather type id"),
+                fieldWithPath("result.data.weather.2[]")
+                        .description("List of data for this weather type"),
+                fieldWithPath("result.data.weather.2[].value")
+                        .description("Value for this period"),
+                fieldWithPath("result.data.weather.2[].date")
+                        .description("Period for this value"),
+                fieldWithPath("result.data.weather.2[].ouid")
+                        .description("The organisation unit for this value"),
+                
+                fieldWithPath("result.data.weather.3")
+                        .description("Weather type id"),
+                fieldWithPath("result.data.weather.3[]")
+                        .description("List of data for this weather type"),
+                fieldWithPath("result.data.weather.3[].value")
+                        .description("Value for this period"),
+                fieldWithPath("result.data.weather.3[].date")
+                        .description("Period for this value"),
+                fieldWithPath("result.data.weather.3[].ouid")
+                        .description("The organisation unit for this value"),
+                
+                fieldWithPath("result.data.weather.5")
+                        .description("Weather type id"),
+                fieldWithPath("result.data.weather.5[]")
+                        .description("List of data for this weather type"),
+                fieldWithPath("result.data.weather.5[].value")
+                        .description("Value for this period"),
+                fieldWithPath("result.data.weather.5[].date")
+                        .description("Period for this value"),
+                fieldWithPath("result.data.weather.5[].ouid")
+                        .description("The organisation unit for this value"),
+                
+                
+                fieldWithPath("result.data.indicator")
+                        .description("Data payload for weather data"),
+                fieldWithPath("result.data.indicator.23185")
+                        .description("Indicator id used in this correlation"),
+                fieldWithPath("result.data.indicator.23185.[]")
+                        .description("List of data for this indicator"),
+                fieldWithPath("result.data.indicator.23185.[].value")
+                        .description("Value for this period"),
+                fieldWithPath("result.data.indicator.23185.[].date")
+                        .description("Period for this value"),
+                fieldWithPath("result.data.indicator.23185.[].ouid")
+                        .description("The organisation unit for this value"),
+                
+                
+                fieldWithPath("result.data.correlation")
+                        .description("Correlation matrix - covariance scoring"),
+                fieldWithPath("result.data.correlation.kpivalue[]")
+                        .description("Covariance scoring for the indicator against other corr variables in order of correlation_dimension from the metadata element"),
+                fieldWithPath("result.data.correlation.dew_point[]")
+                        .description("Covariance scoring for dew point against other corr variables in order of correlation_dimension from the metadata element"),
+                fieldWithPath("result.data.correlation.humidity[]")
+                        .description("Covariance scoring for humidity against other corr variables in order of correlation_dimension from the metadata element"),
+                fieldWithPath("result.data.correlation.temperature[]")
+                        .description("Covariance scoring for temperature against other corr variables in order of correlation_dimension from the metadata element"),
+                fieldWithPath("result.data.correlation.pressure[]")
+                        .description("Covariance scoring for pressure against other corr variables in order of correlation_dimension from the metadata element")
+        )
+        ));
+    }
+    
+    
+    @Test
+    public void testIndicatorIndicatorCorrelation() throws Exception {
+        this.mockMvc.perform(
+                RestDocumentationRequestBuilders.get("/indicator_correlation/{indicatorid}/{ouid}/{correlationIndicators}", 23185,23408,"23191,31589").accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andDo(document("test-indicator-indicator", pathParameters(
+                parameterWithName("indicatorid").description("Indicator ID which is mandatory"),
+                parameterWithName("ouid").description("Organisation ID which is mandatory"),
+                parameterWithName("correlationIndicators").description("List of indicators to process correlation against (Mandatory)")
+        ), responseFields(
+                fieldWithPath("result")
+                        .description("Response envelope object"),
+                //                Meta data section
+                fieldWithPath("result.dictionary")
+                        .description("Carries metadata for the payload"),
+                fieldWithPath("result.dictionary.orgunits")
+                        .description("Metadata for organization units contained in the reponse payload"),
+                fieldWithPath("result.dictionary.orgunits[]")
+                        .description("List of organisation unit(s)"),
+                fieldWithPath("result.dictionary.orgunits[].id")
+                        .description("Organisation unit id"),
+                fieldWithPath("result.dictionary.orgunits[].name")
+                        .description("Organisation unit name"),
+                fieldWithPath("result.dictionary.indicators")
+                        .description("Metadata for indicators contained in the reponse payload"),
+                fieldWithPath("result.dictionary.indicators[]")
+                        .description("List of indicator(s) in the payload"),
+                fieldWithPath("result.dictionary.indicators[].id")
+                        .description("Indicator ID"),
+                fieldWithPath("result.dictionary.indicators[].name")
+                        .description("Indicator name"),
+                fieldWithPath("result.dictionary.indicators[].description")
+                        .description("Indicator description"),
+                fieldWithPath("result.dictionary.indicators[].last_updated")
+                        .description("Indicator indicator update date"),
+                fieldWithPath("result.dictionary.indicators[].date_created")
+                        .description("Indicator creation date"),
+                fieldWithPath("result.dictionary.indicators[].source")
+                        .description("Source for this Indicator"),
+
+                //
+
+                fieldWithPath("result.dictionary.analyses")
+                        .description("Holds metadata for the correlation model"),
+                fieldWithPath("result.dictionary.analyses.correlation_dimension")
+                        .description("Holds the order used for calculation of the covarience values in the same order as the returned correlation data in the payload"),
+                
+                fieldWithPath("result.dictionary.analyses.variables")
+                        .description("dictionary of variables used in the correlation model. Key is ID, value is the name of the variable"),
+                fieldWithPath("result.dictionary.analyses.variables.23185")
+                        .description("Indicator Id"),
+                fieldWithPath("result.dictionary.analyses.variables.23191")
+                        .description("Indicator Id"),
+                fieldWithPath("result.dictionary.analyses.variables.31589")
+                        .description("Indicator Id"),
+                
+                
+                fieldWithPath("result.dictionary.analyses.period_type")
+                        .description("Data period frequency used in the analyses."),
+                fieldWithPath("result.dictionary.analyses.correlation_coeffient")
+                        .description("Correlation model used in the analysis"),
+                fieldWithPath("result.dictionary.analyses.period_span")
+                        .description("Shows the period range of data used in the analyses"),
+                fieldWithPath("result.dictionary.analyses.period_span.start_date")
+                        .description("Begining period for data used in analysis"),
+                fieldWithPath("result.dictionary.analyses.period_span.end_date")
+                        .description("End period for data used in analysis"),
+               
+                //                data section 
+
+     
+                fieldWithPath("result.data.indicator")
+                        .description("Data payload for weather data"),
+                fieldWithPath("result.data.indicator.23185")
+                        .description("Indicator id used in this correlation"),
+                fieldWithPath("result.data.indicator.23185.[]")
+                        .description("List of data for this indicator"),
+                fieldWithPath("result.data.indicator.23185.[].value")
+                        .description("Value for this period"),
+                fieldWithPath("result.data.indicator.23185.[].date")
+                        .description("Period for this value"),
+                fieldWithPath("result.data.indicator.23185.[].ouid")
+                        .description("The organisation unit for this value"),
+                
+
+                fieldWithPath("result.data.indicator.23191")
+                        .description("Indicator id used in this correlation"),
+                fieldWithPath("result.data.indicator.23191.[]")
+                        .description("List of data for this indicator"),
+                fieldWithPath("result.data.indicator.23191.[].value")
+                        .description("Value for this period"),
+                fieldWithPath("result.data.indicator.23191.[].date")
+                        .description("Period for this value"),
+                fieldWithPath("result.data.indicator.23191.[].ouid")
+                        .description("The organisation unit for this value"),
+
+                fieldWithPath("result.data.indicator.31589")
+                        .description("Indicator id used in this correlation"),
+                fieldWithPath("result.data.indicator.31589.[]")
+                        .description("List of data for this indicator"),
+                fieldWithPath("result.data.indicator.31589.[].value")
+                        .description("Value for this period"),
+                fieldWithPath("result.data.indicator.31589.[].date")
+                        .description("Period for this value"),
+                fieldWithPath("result.data.indicator.31589.[].ouid")
+                        .description("The organisation unit for this value"),
+                
+                
+                fieldWithPath("result.data.correlation")
+                        .description("Correlation matrix - covariance scoring"),
+                fieldWithPath("result.data.correlation.23185[]")
+                        .description("Covariance scoring for this indicator against other corr variables in order of correlation_dimension from the metadata element"),
+                fieldWithPath("result.data.correlation.23191[]")
+                        .description("Covariance scoring for this indicator against other corr variables in order of correlation_dimension from the metadata element"),
+                fieldWithPath("result.data.correlation.31589[]")
+                        .description("Covariance scoring for this indicator against other corr variables in order of correlation_dimension from the metadata element")
+        )
+        ));
+    }
+
 }

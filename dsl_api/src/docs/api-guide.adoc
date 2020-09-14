@@ -758,3 +758,52 @@ include::{snippets}/test-predictor/http-response.adoc[]
 include::{snippets}/test-predictor/response-fields.adoc[]
 
 // ==================================================>>>
+
+
+== Perform indicator correlations
+
+Two correlation models are provided: (1). Indicator - Weather and (2). Indicator to Indicator
+
+1. Indicator - Weather
+
+=== Curl Request
+include::{snippets}/test-weather-indicator/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-weather-indicator/http-request.adoc[]
+
+
+=== Path parameter definition
+include::{snippets}/test-weather-indicator/path-parameters.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-weather-indicator/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-weather-indicator/response-fields.adoc[]
+
+// ==================================================>>>
+
+2. Indicator - Indicator
+
+=== Curl Request
+include::{snippets}/test-indicator-indicator/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-indicator-indicator/http-request.adoc[]
+
+
+=== Path parameter definition
+include::{snippets}/test-indicator-indicator/path-parameters.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-indicator-indicator/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-indicator-indicator/response-fields.adoc[]
+
+// ==================================================>>>
