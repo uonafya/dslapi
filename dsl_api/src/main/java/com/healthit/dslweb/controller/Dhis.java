@@ -168,5 +168,41 @@ public class Dhis {
         return new ResponseEntity<Map<String, Map>>(results, HttpStatus.OK);
 
     }
+    
+    @CrossOrigin
+    @ResponseBody
+    @RequestMapping(value = "/indicator_correlation/{indicatorid}/{ouid}/{compareIndicators}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getIndicatorIndicatorCorrelation(
+            @PathVariable(value = "ouid", required = false) String ouid,
+            @PathVariable(value = "compareIndicators", required = false) String compareIndicators,
+            @PathVariable("indicatorid") String indicatorId
+    ) { 
+        
+        try {
+            DhisDao dhisDao = new DhisDao();
+            Map<String, Map> correlationData = dhisDao.getIndicatorToIndicatorCorrelation( indicatorId,  ouid,  compareIndicators);
+            return new ResponseEntity<Map<String, Map>>(correlationData, HttpStatus.OK);
+        } catch (DslException ex) {
+            return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
 
+    }
+    
+        @CrossOrigin
+    @ResponseBody
+    @RequestMapping(value = "/weather_correlation/{indicatorid}/{ouid}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getIndicatorWeatherCorrelation(
+            @PathVariable(value = "ouid", required = false) String ouid,
+            @PathVariable("indicatorid") String indicatorId
+    ) { 
+        
+        try {
+            DhisDao dhisDao = new DhisDao();
+            Map<String, Map> correlationData = dhisDao.getWeatherToIndicatorCorrelation( indicatorId,  ouid);
+            return new ResponseEntity<Map<String, Map>>(correlationData, HttpStatus.OK);
+        } catch (DslException ex) {
+            return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
 }

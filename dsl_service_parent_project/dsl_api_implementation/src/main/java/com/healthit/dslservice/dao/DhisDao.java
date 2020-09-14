@@ -939,4 +939,137 @@ public class DhisDao {
         }
         return indicatorGroupList;
     }
+
+    public Map<String, Map> getIndicatorToIndicatorCorrelation(String indicatorId, String ouid, String compareIndicators) throws DslException {
+        Properties prop = new Properties();
+
+        Map<String, Object> dictionary = null;
+        Map<String, List> correlateData = new HashMap();
+
+        Map<String, Object> result = new HashMap();
+        log.info("get preictor dictionary");
+        String propFileName = "settings.properties";
+        log.info("get correlation server url settings");
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream(propFileName);
+
+        if (inputStream != null) {
+            try {
+                prop.load(inputStream);
+            } catch (IOException ex) {
+                java.util.logging.Logger.getLogger(DhisDao.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            log.error("property file '" + propFileName + "' not found in the classpath");
+        }
+
+        String host = prop.getProperty("predictor_host");
+        String predictor_port = prop.getProperty("predictor_port");
+
+        log.info("connect to predictor server");
+        try {
+            log.debug("predictor server client instance");
+            Client client = Client.create();
+            if (ouid == null || ouid.isEmpty()) {
+                ouid = "18";
+            }
+            String correlation_url = "http://" + host + ":" + predictor_port + "/indicator_correlation/" + indicatorId + "/" + ouid + "/" + compareIndicators;
+
+            //verse_url=URLEncoder.encode(verse_url, "UTF-8");
+            log.info("The url: " + correlation_url);
+            WebResource webResource = client
+                    .resource(correlation_url);
+
+            ClientResponse response = webResource.accept(MediaType.APPLICATION_XML)
+                    .get(ClientResponse.class);
+
+            if (response.getStatus() != 200) {
+                log.error("Failed to correlate indic-indic data : "
+                        + response.getStatus() + ":" + response.toString() + " : " + response.getEntity(String.class));
+                throw new RuntimeException();
+            }
+
+//            Map dataMap = response.getEntity(Map.class);
+            Gson gson = new Gson();
+            String output = response.getEntity(String.class);
+            correlateData = gson.fromJson(output, Map.class);
+
+            log.info("Output from Server .... \n");
+            log.info(correlateData);
+
+        } catch (Exception e) {
+            log.error(e);
+        }
+
+        Map<String, Map> envelop = new HashMap();
+        envelop.put("result", correlateData);
+        return envelop;
+    }
+    
+    
+    public Map<String, Map> getWeatherToIndicatorCorrelation(String indicatorId, String ouid) throws DslException {
+        Properties prop = new Properties();
+
+        Map<String, Object> dictionary = null;
+        Map<String, List> correlateData = new HashMap();
+
+        Map<String, Object> result = new HashMap();
+        String propFileName = "settings.properties";
+        log.info("get correlation server url settings");
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream(propFileName);
+
+        if (inputStream != null) {
+            try {
+                prop.load(inputStream);
+            } catch (IOException ex) {
+                java.util.logging.Logger.getLogger(DhisDao.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            log.error("property file '" + propFileName + "' not found in the classpath");
+        }
+
+        String host = prop.getProperty("predictor_host");
+        String predictor_port = prop.getProperty("predictor_port");
+
+        log.info("connect to predictor server");
+        try {
+            log.debug("predictor server client instance");
+            Client client = Client.create();
+            if (ouid == null || ouid.isEmpty()) {
+                ouid = "18";
+            }
+            String correlation_url = "http://" + host + ":" + predictor_port + "/weather_correlation/" + indicatorId + "/" + ouid;
+
+            //verse_url=URLEncoder.encode(verse_url, "UTF-8");
+            log.info("The url: " + correlation_url);
+            WebResource webResource = client
+                    .resource(correlation_url);
+
+            ClientResponse response = webResource.accept(MediaType.APPLICATION_XML)
+                    .get(ClientResponse.class);
+
+            if (response.getStatus() != 200) {
+                log.error("Failed to correlate indic-indic data : "
+                        + response.getStatus() + ":" + response.toString() + " : " + response.getEntity(String.class));
+                throw new RuntimeException();
+            }
+
+//            Map dataMap = response.getEntity(Map.class);
+            Gson gson = new Gson();
+            String output = response.getEntity(String.class);
+            correlateData = gson.fromJson(output, Map.class);
+
+            log.info("Output from Server .... \n");
+            log.info(correlateData);
+
+        } catch (Exception e) {
+            log.error(e);
+        }
+
+        Map<String, Map> envelop = new HashMap();
+        envelop.put("result", correlateData);
+        return envelop;
+    }
+    
+    
+    
 }
