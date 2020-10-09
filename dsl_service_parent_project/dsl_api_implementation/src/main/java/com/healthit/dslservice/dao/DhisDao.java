@@ -1149,5 +1149,71 @@ public class DhisDao {
         envelop.put("result", correlateData);
         return envelop;
     }
+    
+    
+     public Map<String, Map> getIndicatorToIndicatorForecast( String indicatorId, String ouid, String compareIndicators,String period_range) throws DslException {
+
+        Properties prop = new Properties();
+
+        Map<String, Object> dictionary = null;
+        Map<String, List> correlateData = new HashMap();
+
+        Map<String, Object> result = new HashMap();
+        String propFileName = "settings.properties";
+        log.info("get correlation server url settings");
+        InputStream inputStream = getClass().getClassLoader().getResourceAsStream(propFileName);
+
+        if (inputStream != null) {
+            try {
+                prop.load(inputStream);
+            } catch (IOException ex) {
+                java.util.logging.Logger.getLogger(DhisDao.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            log.error("property file '" + propFileName + "' not found in the classpath");
+        }
+
+        String host = prop.getProperty("predictor_host");
+        String predictor_port = prop.getProperty("predictor_port");
+
+        log.info("connect to predictor server");
+        try {
+            String forecast_url = "http://" + host + ":" + predictor_port + "/indicator_forecast/" + indicatorId + "/" + ouid
+                    + "/" + compareIndicators + "/" + period_range + "/";
+            log.debug("predictor server client instance " + forecast_url);
+            log.debug("got this far");
+            if (ouid == null || ouid.isEmpty()) {
+                ouid = "18";
+            }
+
+            Client client = ClientBuilder.newClient();
+            WebTarget webResource = client
+                    .target(forecast_url);
+            Invocation.Builder invocationBuilder
+                    = webResource.request(MediaType.APPLICATION_JSON);
+            Response response = invocationBuilder.get();
+
+            if (response.getStatus() != 200) {
+                log.error("Failed to predict data : "
+                        + response.getStatus() + ":" + response.toString() + " : " + response.readEntity(String.class));
+
+                throw new RuntimeException();
+            }
+
+//            Map dataMap = response.getEntity(Map.class);
+            Gson gson = new Gson();
+            String output = response.readEntity(String.class);
+            correlateData = gson.fromJson(output, Map.class);
+
+            log.info("Output from Server .... \n");
+            log.info(correlateData);
+        } catch (Exception e) {
+            log.error(e);
+        }
+
+        Map<String, Map> envelop = new HashMap();
+        envelop.put("result", correlateData);
+        return envelop;
+    }
 
 }
