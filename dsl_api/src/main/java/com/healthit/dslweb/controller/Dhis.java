@@ -213,7 +213,7 @@ public class Dhis {
     public ResponseEntity<?> getForecastIndicatorWeather(
             @PathVariable(value = "ouid", required = false) String ouid,
             @PathVariable("indicatorid") String indicatorId,
-            @PathVariable("weatherid") String weather_id,
+            @PathVariable("weather_id") String weather_id,
             @PathVariable("periodrange") String period_range
     ) {
 

@@ -6,10 +6,10 @@
     monitoring="autodetect" dynamicConfig="true">
 
     <cache name="dslCache"
-           maxEntriesLocalHeap="2"
-           maxEntriesLocalDisk="1"
+           maxBytesLocalHeap="1500000000"
+           maxBytesLocalDisk="6000000000"
            eternal="true"
-           diskSpoolBufferSizeMB="6"
+           diskSpoolBufferSizeMB="6000"
            timeToIdleSeconds="0" timeToLiveSeconds="0"
            memoryStoreEvictionPolicy="LFU"
            transactionalMode="off">

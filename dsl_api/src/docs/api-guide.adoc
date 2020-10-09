@@ -807,3 +807,55 @@ include::{snippets}/test-indicator-indicator/http-response.adoc[]
 include::{snippets}/test-indicator-indicator/response-fields.adoc[]
 
 // ==================================================>>>
+
+
+// ==================================================>>>
+
+
+== Perform multivariate indicator projections
+
+Two projection models are provided: (1). Indicator - Weather and (2). Indicator to Indicator
+
+1. Indicator - Weather projection
+
+=== Curl Request
+include::{snippets}/test-weather-indicator-projection/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-weather-indicator-projection/http-request.adoc[]
+
+
+=== Path parameter definition
+include::{snippets}/test-weather-indicator-projection/path-parameters.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-weather-indicator-projection/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-weather-indicator-projection/response-fields.adoc[]
+
+// ==================================================>>>
+
+2. Indicator - Indicator projection
+
+=== Curl Request
+include::{snippets}/test-indicator-indicator-projection/curl-request.adoc[]
+
+=== HTTP Request
+include::{snippets}/test-indicator-indicator-projection/http-request.adoc[]
+
+
+=== Path parameter definition
+include::{snippets}/test-indicator-indicator-projection/path-parameters.adoc[]
+
+Response given from the request
+
+=== HTTP Response
+include::{snippets}/test-indicator-indicator-projection/http-response.adoc[]
+
+=== Response fields definition
+include::{snippets}/test-indicator-indicator-projection/response-fields.adoc[]
+
+// ==================================================>>>

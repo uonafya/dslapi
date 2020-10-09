@@ -681,5 +681,221 @@ public class DhisApisDocumentationTest {
         )
         ));
     }
+    
+    
+    @Test
+    public void testIndicatorIndicatorForecast() throws Exception {
+        this.mockMvc.perform( 
+                RestDocumentationRequestBuilders.get("/forecast/indicator_indicator/{indicatorid}/{ouid}/{correlationIndicators}/{time_range}", 
+                        23185,23408,"23191,31589",10).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andDo(document("test-indicator-indicator-projection", pathParameters(
+                parameterWithName("indicatorid").description("Indicator ID which is mandatory"),
+                parameterWithName("ouid").description("Organisation ID which is mandatory"),
+                parameterWithName("correlationIndicators").description("List of indicators id forming independent variable(s) for the forecast model"),
+                parameterWithName("time_range").description("The number of period lenghts to do a forecast")
+        ), responseFields(
+                fieldWithPath("result")
+                        .description("Response envelope object"),
+                //                Meta data section
+                fieldWithPath("result.dictionary")
+                        .description("Carries metadata for the payload"),
+                fieldWithPath("result.dictionary.orgunits")
+                        .description("Metadata for organization units contained in the reponse payload"),
+                fieldWithPath("result.dictionary.orgunits[]")
+                        .description("List of organisation unit(s)"),
+                fieldWithPath("result.dictionary.orgunits[].id")
+                        .description("Organisation unit id"),
+                fieldWithPath("result.dictionary.orgunits[].name")
+                        .description("Organisation unit name"),
+                fieldWithPath("result.dictionary.indicators")
+                        .description("Metadata for indicators contained in the reponse payload"),
+                fieldWithPath("result.dictionary.indicators[]")
+                        .description("List of indicator(s) in the payload"),
+                fieldWithPath("result.dictionary.indicators[].id")
+                        .description("Indicator ID"),
+                fieldWithPath("result.dictionary.indicators[].name")
+                        .description("Indicator name"),
+                fieldWithPath("result.dictionary.indicators[].description")
+                        .description("Indicator description"),
+                fieldWithPath("result.dictionary.indicators[].last_updated")
+                        .description("Indicator indicator update date"),
+                fieldWithPath("result.dictionary.indicators[].date_created")
+                        .description("Indicator creation date"),
+                fieldWithPath("result.dictionary.indicators[].source")
+                        .description("Source for this Indicator"),
 
+                //
+
+                fieldWithPath("result.dictionary.analyses")
+                        .description("Holds metadata for the correlation model"),
+               
+                fieldWithPath("result.dictionary.analyses.variables")
+                        .description("dictionary of variables used in the forecast model. Key is ID, value is the name of the variable"),
+                fieldWithPath("result.dictionary.analyses.variables.23185")
+                        .description("Indicator Id"),
+                fieldWithPath("result.dictionary.analyses.variables.23191")
+                        .description("Indicator Id"),
+                fieldWithPath("result.dictionary.analyses.variables.31589")
+                        .description("Indicator Id"),
+                
+                
+                fieldWithPath("result.dictionary.analyses.period_type")
+                        .description("Data period frequency used in the analyses."),
+                fieldWithPath("result.dictionary.analyses.period_span")
+                        .description("Shows the period range of data used in the analyses"),
+                fieldWithPath("result.dictionary.analyses.precition_model")
+                        .description("The prediction model used"),
+                fieldWithPath("result.dictionary.analyses.period_span.start_date")
+                        .description("Begining period for data used in analysis"),
+                fieldWithPath("result.dictionary.analyses.period_span.end_date")
+                        .description("End period for data used in analysis"),
+               
+                //                data section 
+
+     
+                fieldWithPath("result.data.indicator")
+                        .description("Data payload for weather data"),
+                fieldWithPath("result.data.indicator.23185")
+                        .description("Indicator id used in this correlation"),
+                fieldWithPath("result.data.indicator.23185.[]")
+                        .description("List of data for this indicator"),
+                fieldWithPath("result.data.indicator.23185.[].value")
+                        .description("Value for this period"),
+                fieldWithPath("result.data.indicator.23185.[].date")
+                        .description("Period for this value"),
+                fieldWithPath("result.data.indicator.23185.[].ouid")
+                        .description("The organisation unit for this value"),
+                
+
+                fieldWithPath("result.data.indicator.23191")
+                        .description("Indicator id used in this correlation"),
+                fieldWithPath("result.data.indicator.23191.[]")
+                        .description("List of data for this indicator"),
+                fieldWithPath("result.data.indicator.23191.[].value")
+                        .description("Value for this period"),
+                fieldWithPath("result.data.indicator.23191.[].date")
+                        .description("Period for this value"),
+                fieldWithPath("result.data.indicator.23191.[].ouid")
+                        .description("The organisation unit for this value"),
+
+                fieldWithPath("result.data.indicator.31589")
+                        .description("Indicator id used in this correlation"),
+                fieldWithPath("result.data.indicator.31589.[]")
+                        .description("List of data for this indicator"),
+                fieldWithPath("result.data.indicator.31589.[].value")
+                        .description("Value for this period"),
+                fieldWithPath("result.data.indicator.31589.[].date")
+                        .description("Period for this value"),
+                fieldWithPath("result.data.indicator.31589.[].ouid")
+                        .description("The organisation unit for this value"),
+                
+                
+                fieldWithPath("result.data.forecast_values")
+                        .description("Indicator forecast results"),
+                fieldWithPath("result.data.forecast_values.23185[]")
+                        .description("Forecast values for this indicator against other indicator variables described in the metadata element"),
+                fieldWithPath("result.data.forecast_values.23185.[].date")
+                        .description("Period for this predicted value"),
+                fieldWithPath("result.data.forecast_values.23185.[].ouid")
+                        .description("The organisation unit for this predicted value"),
+                fieldWithPath("result.data.forecast_values.23185.[].value")
+                        .description("Value for this predicted indicator")
+            )
+        ));
+    }
+    
+    @Test
+    public void testIndicatorWeatherForecast() throws Exception {
+        this.mockMvc.perform(  
+                RestDocumentationRequestBuilders.get("/forecast/indicator_weather/{indicatorid}/{ouid}/{weather_id}/{time_range}", 
+                        23185,23408,2,10).accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk()).andDo(document("test-weather-indicator-projection", pathParameters(
+                parameterWithName("indicatorid").description("Indicator ID which is mandatory"),
+                parameterWithName("ouid").description("Organisation ID which is mandatory"),
+                parameterWithName("weather_id").description("weather id to use for the forecast model"),
+                parameterWithName("time_range").description("The number of period lenghts to do a forecast")
+        ), responseFields(
+                fieldWithPath("result")
+                        .description("Response envelope object"),
+                //                Meta data section
+                fieldWithPath("result.dictionary")
+                        .description("Carries metadata for the payload"),
+                fieldWithPath("result.dictionary.orgunits")
+                        .description("Metadata for organization units contained in the reponse payload"),
+                fieldWithPath("result.dictionary.orgunits[]")
+                        .description("List of organisation unit(s)"),
+                fieldWithPath("result.dictionary.orgunits[].id")
+                        .description("Organisation unit id"),
+                fieldWithPath("result.dictionary.orgunits[].name")
+                        .description("Organisation unit name"),
+                fieldWithPath("result.dictionary.indicators")
+                        .description("Metadata for indicators contained in the reponse payload"),
+                fieldWithPath("result.dictionary.indicators[]")
+                        .description("List of indicator(s) in the payload"),
+                fieldWithPath("result.dictionary.indicators[].id")
+                        .description("Indicator ID"),
+                fieldWithPath("result.dictionary.indicators[].name")
+                        .description("Indicator name"),
+                fieldWithPath("result.dictionary.indicators[].description")
+                        .description("Indicator description"),
+                fieldWithPath("result.dictionary.indicators[].last_updated")
+                        .description("Indicator indicator update date"),
+                fieldWithPath("result.dictionary.indicators[].date_created")
+                        .description("Indicator creation date"),
+                fieldWithPath("result.dictionary.indicators[].source")
+                        .description("Source for this Indicator"),
+
+                //
+
+                fieldWithPath("result.dictionary.analyses")
+                        .description("Holds metadata for the correlation model"),
+               
+                fieldWithPath("result.dictionary.analyses.variables")
+                        .description("dictionary of variables used in the forecast model. Key is ID, value is the name of the variable"),
+                fieldWithPath("result.dictionary.analyses.variables.23185")
+                        .description("Indicator Id"),
+                fieldWithPath("result.dictionary.analyses.variables.2")
+                        .description("Weather type Id"),
+                      
+                
+                fieldWithPath("result.dictionary.analyses.period_type")
+                        .description("Data period frequency used in the analyses."),
+                fieldWithPath("result.dictionary.analyses.period_span")
+                        .description("Shows the period range of data used in the analyses"),
+                fieldWithPath("result.dictionary.analyses.precition_model")
+                        .description("The prediction model used"),
+                fieldWithPath("result.dictionary.analyses.period_span.start_date")
+                        .description("Begining period for data used in analysis"),
+                fieldWithPath("result.dictionary.analyses.period_span.end_date")
+                        .description("End period for data used in analysis"),
+               
+                //                data section 
+
+
+                fieldWithPath("result.data.indicator.23185")
+                        .description("Indicator id used in this forecast"),
+                fieldWithPath("result.data.indicator.23185.[]")
+                        .description("List of data for this indicator"),
+                fieldWithPath("result.data.indicator.23185.[].value")
+                        .description("Value for this period"),
+                fieldWithPath("result.data.indicator.23185.[].date")
+                        .description("Period for this value"),
+                fieldWithPath("result.data.indicator.23185.[].ouid")
+                        .description("The organisation unit for this value"),
+                
+                
+                fieldWithPath("result.data.forecast_values")
+                        .description("Indicator forecast results"),
+                fieldWithPath("result.data.forecast_values.kpivalue[]")
+                        .description("Forecast values for this indicator against other indicator variables described in the metadata element"),
+                fieldWithPath("result.data.forecast_values.kpivalue.[].date")
+                        .description("Period for this predicted value"),
+                fieldWithPath("result.data.forecast_values.kpivalue.[].ouid")
+                        .description("The organisation unit for this predicted value"),
+                fieldWithPath("result.data.forecast_values.kpivalue.[].value")
+                        .description("Value for this predicted indicator")
+            )
+        ));
+    }
+    
 }
