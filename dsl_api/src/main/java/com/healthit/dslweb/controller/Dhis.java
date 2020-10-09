@@ -207,4 +207,24 @@ public class Dhis {
 
     }
 
+    @CrossOrigin
+    @ResponseBody
+    @RequestMapping(value = "/forecast/indicator_weather/{indicatorid}/{ouid}/{weatherid}/{periodrange}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> getForecastIndicatorWeather(
+            @PathVariable(value = "ouid", required = false) String ouid,
+            @PathVariable("indicatorid") String indicatorId,
+            @PathVariable("weatherid") String weather_id,
+            @PathVariable("periodrange") String period_range
+    ) {
+
+        try {
+            DhisDao dhisDao = new DhisDao();
+            Map<String, Map> forecastData = dhisDao.getWeatherToIndicatorForecast(indicatorId, ouid,weather_id,period_range);
+            return new ResponseEntity<Map<String, Map>>(forecastData, HttpStatus.OK);
+        } catch (DslException ex) {
+            return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+
 }
