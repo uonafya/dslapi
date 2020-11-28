@@ -35,6 +35,7 @@ import org.json.JSONObject;
 /**
  *
  * @author duncan
+ * @deprecated
  */
 public class QueryInterpreter {
 

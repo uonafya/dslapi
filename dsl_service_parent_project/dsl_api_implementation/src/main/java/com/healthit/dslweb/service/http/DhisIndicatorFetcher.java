@@ -23,6 +23,7 @@ import org.apache.http.ssl.SSLContextBuilder;
 /**
  *
  * @author duncan
+ * @deprecated
  */
 public class DhisIndicatorFetcher {
 

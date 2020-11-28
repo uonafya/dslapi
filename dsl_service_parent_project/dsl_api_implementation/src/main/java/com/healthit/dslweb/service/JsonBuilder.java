@@ -14,6 +14,7 @@ import java.util.Map;
 /**
  *
  * @author duncan
+ * @deprecated
  */
 public class JsonBuilder {
 

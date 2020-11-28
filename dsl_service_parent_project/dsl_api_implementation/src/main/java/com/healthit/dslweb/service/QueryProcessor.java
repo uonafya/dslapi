@@ -19,6 +19,7 @@ import net.sf.ehcache.Element;
 /**
  *
  * @author duncan
+ * @deprecated
  */
 public class QueryProcessor {
 

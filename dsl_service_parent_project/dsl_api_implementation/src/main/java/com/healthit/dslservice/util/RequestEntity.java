@@ -8,6 +8,7 @@ package com.healthit.dslservice.util;
 /**
  *
  * @author duncan
+ * @deprecated
  */
 public class RequestEntity {
 
