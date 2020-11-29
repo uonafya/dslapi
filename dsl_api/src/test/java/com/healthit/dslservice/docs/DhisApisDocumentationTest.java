@@ -789,7 +789,6 @@ public class DhisApisDocumentationTest {
                 fieldWithPath("result.data.indicator.31589.[].ouid")
                         .description("The organisation unit for this value"),
                 
-                
                 fieldWithPath("result.data.forecast_values")
                         .description("Indicator forecast results"),
                 fieldWithPath("result.data.forecast_values.23185[]")
@@ -799,7 +798,26 @@ public class DhisApisDocumentationTest {
                 fieldWithPath("result.data.forecast_values.23185.[].ouid")
                         .description("The organisation unit for this predicted value"),
                 fieldWithPath("result.data.forecast_values.23185.[].value")
+                        .description("Value for this predicted indicator"),
+                
+                fieldWithPath("result.data.forecast_values.23191[]")
+                        .description("Forecast values for this independent indicator whose data is used for regressing on the depedent variable"),
+                fieldWithPath("result.data.forecast_values.23191.[].date")
+                        .description("Period for this predicted value"),
+                fieldWithPath("result.data.forecast_values.23191.[].ouid")
+                        .description("The organisation unit for this predicted value"),
+                fieldWithPath("result.data.forecast_values.23191.[].value")
+                        .description("Value for this predicted indicator"),
+                
+                fieldWithPath("result.data.forecast_values.31589[]")
+                        .description("Forecast values for this independent indicator whose data is used for regressing on the depedent variable"),
+                fieldWithPath("result.data.forecast_values.31589.[].date")
+                        .description("Period for this predicted value"),
+                fieldWithPath("result.data.forecast_values.31589.[].ouid")
+                        .description("The organisation unit for this predicted value"),
+                fieldWithPath("result.data.forecast_values.31589.[].value")
                         .description("Value for this predicted indicator")
+                
             )
         ));
     }
