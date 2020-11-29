@@ -5,12 +5,12 @@
  */
 package com.healthit.dslservice.dao;
 
-import com.healthit.dslservice.DslException;
+import com.healthit.DslException;
 import com.healthit.dslservice.dto.ihris.Cadre;
 import com.healthit.dslservice.dto.ihris.CadreAllocation;
 import com.healthit.dslservice.dto.ihris.CadreGroup;
-import com.healthit.dslservice.message.Message;
-import com.healthit.dslservice.message.MessageType;
+import com.healthit.message.Message;
+import com.healthit.message.MessageType;
 import com.healthit.dslservice.util.CacheKeys;
 import com.healthit.dslservice.util.DatabaseSource;
 import com.healthit.dslservice.util.DslCache;

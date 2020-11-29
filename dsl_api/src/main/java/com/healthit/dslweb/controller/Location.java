@@ -5,13 +5,13 @@
  */
 package com.healthit.dslweb.controller;
 
-import com.healthit.dslservice.DslException;
+import com.healthit.DslException;
 import com.healthit.dslservice.dao.LocationDao;
 import com.healthit.dslservice.dto.adminstrationlevel.Constituency;
 import com.healthit.dslservice.dto.adminstrationlevel.County;
 import com.healthit.dslservice.dto.adminstrationlevel.Facility;
 import com.healthit.dslservice.dto.adminstrationlevel.Ward;
-import com.healthit.dslservice.message.Message;
+import com.healthit.message.Message;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;

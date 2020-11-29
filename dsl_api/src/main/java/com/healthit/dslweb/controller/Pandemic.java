@@ -1,12 +1,12 @@
 package com.healthit.dslweb.controller;
 
-import com.healthit.dslservice.DslException;
+import com.healthit.DslException;
 import com.healthit.dslservice.dao.LocationDao;
 import com.healthit.dslservice.dao.PandemicDao;
 import com.healthit.dslservice.dao.SurveyDao;
 import com.healthit.dslservice.dto.adminstrationlevel.Constituency;
-import com.healthit.dslservice.message.Message;
-import com.healthit.dslservice.message.MessageType;
+import com.healthit.message.Message;
+import com.healthit.message.MessageType;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Map;

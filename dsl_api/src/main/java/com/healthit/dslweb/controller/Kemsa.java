@@ -5,12 +5,12 @@
  */
 package com.healthit.dslweb.controller;
 
-import com.healthit.dslservice.DslException;
+import com.healthit.DslException;
 import com.healthit.dslservice.dao.FacilityDao;
 import com.healthit.dslservice.dao.KemsaDao;
 import com.healthit.dslservice.dto.adminstrationlevel.Facility;
 import com.healthit.dslservice.dto.kemsa.Commodity;
-import com.healthit.dslservice.message.Message;
+import com.healthit.message.Message;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;

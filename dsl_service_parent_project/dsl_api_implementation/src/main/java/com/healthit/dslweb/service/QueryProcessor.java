@@ -1,6 +1,6 @@
 package com.healthit.dslweb.service;
 
-import com.healthit.dslservice.DslException;
+import com.healthit.DslException;
 import com.healthit.dslservice.util.DslCache;
 import com.healthit.dslservice.util.PropertiesLoader;
 import com.healthit.dslservice.util.RequestEntity;

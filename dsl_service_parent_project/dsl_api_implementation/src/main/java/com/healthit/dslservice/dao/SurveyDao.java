@@ -6,11 +6,11 @@
 package com.healthit.dslservice.dao;
 
 import com.healthit.dslservice.DataSource;
-import com.healthit.dslservice.DslException;
+import com.healthit.DslException;
 import static com.healthit.dslservice.dao.DhisDao.log;
 import com.healthit.dslservice.dto.dhis.IndicatorValue;
-import com.healthit.dslservice.message.Message;
-import com.healthit.dslservice.message.MessageType;
+import com.healthit.message.Message;
+import com.healthit.message.MessageType;
 import com.healthit.dslservice.util.CacheKeys;
 import com.healthit.dslservice.util.DatabaseSource;
 import com.healthit.dslservice.util.DslCache;

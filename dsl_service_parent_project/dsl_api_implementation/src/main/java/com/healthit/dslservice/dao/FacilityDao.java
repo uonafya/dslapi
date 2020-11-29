@@ -5,14 +5,14 @@
  */
 package com.healthit.dslservice.dao;
 
-import com.healthit.dslservice.DslException;
+import com.healthit.DslException;
 import com.healthit.dslservice.dto.KephLevel;
 import com.healthit.dslservice.dto.OrgUnitAmenities;
 import com.healthit.dslservice.dto.adminstrationlevel.Facility;
 import com.healthit.dslservice.dto.kmfl.FacilityLevel;
 import com.healthit.dslservice.dto.kmfl.FacilityType;
-import com.healthit.dslservice.message.Message;
-import com.healthit.dslservice.message.MessageType;
+import com.healthit.message.Message;
+import com.healthit.message.MessageType;
 import com.healthit.dslservice.util.CacheKeys;
 import com.healthit.dslservice.util.DatabaseSource;
 import com.healthit.dslservice.util.DslCache;

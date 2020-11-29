@@ -5,14 +5,14 @@
  */
 package com.healthit.dslweb.controller;
 
-import com.healthit.dslservice.DslException;
+import com.healthit.DslException;
 import com.healthit.dslservice.dao.FacilityDao;
 import com.healthit.dslservice.dao.IhrisDao;
 import com.healthit.dslservice.dto.adminstrationlevel.Facility;
 import com.healthit.dslservice.dto.ihris.Cadre;
 import com.healthit.dslservice.dto.ihris.CadreAllocation;
 import com.healthit.dslservice.dto.ihris.CadreGroup;
-import com.healthit.dslservice.message.Message;
+import com.healthit.message.Message;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;

@@ -5,7 +5,7 @@
  */
 package com.healthit.dslweb.service;
 
-import com.healthit.dslservice.DslException;
+import com.healthit.DslException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

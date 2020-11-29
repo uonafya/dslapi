@@ -5,9 +5,9 @@
  */
 package com.healthit.dslservice.util;
 
-import com.healthit.dslservice.DslException;
-import com.healthit.dslservice.message.Message;
-import com.healthit.dslservice.message.MessageType;
+import com.healthit.DslException;
+import com.healthit.message.Message;
+import com.healthit.message.MessageType;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;

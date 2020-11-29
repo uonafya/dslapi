@@ -5,15 +5,15 @@
  */
 package com.healthit.dslservice.dao;
 
-import com.healthit.dslservice.DslException;
+import com.healthit.DslException;
 import com.healthit.dslservice.dto.adminstrationlevel.Constituency;
 import com.healthit.dslservice.dto.adminstrationlevel.County;
 import com.healthit.dslservice.dto.adminstrationlevel.SubCounty;
 import com.healthit.dslservice.dto.adminstrationlevel.Ward;
 import com.healthit.dslservice.dto.ihris.CadreGroup;
 import com.healthit.dslservice.dto.kemsa.Commodity;
-import com.healthit.dslservice.message.Message;
-import com.healthit.dslservice.message.MessageType;
+import com.healthit.message.Message;
+import com.healthit.message.MessageType;
 import com.healthit.dslservice.util.CacheKeys;
 import com.healthit.dslservice.util.DatabaseSource;
 import com.healthit.dslservice.util.DslCache;

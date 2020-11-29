@@ -1,8 +1,8 @@
 package com.healthit.dslweb.service;
 
-import com.healthit.dslservice.DslException;
-import com.healthit.dslservice.message.Message;
-import com.healthit.dslservice.message.MessageType;
+import com.healthit.DslException;
+import com.healthit.message.Message;
+import com.healthit.message.MessageType;
 import com.healthit.dslservice.service.query.QueryParameterPopulator;
 import com.healthit.dslservice.util.DatabaseSource;
 import com.healthit.dslservice.util.PropertiesLoader;

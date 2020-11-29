@@ -1,7 +1,7 @@
 package com.healthit.dslweb.controller;
 
 import com.google.gson.Gson;
-import com.healthit.dslservice.DslException;
+import com.healthit.DslException;
 import com.healthit.dslservice.dao.DhisDao;
 import com.healthit.dslservice.dao.FacilityDao;
 import com.healthit.dslservice.dao.IhrisDao;
@@ -11,7 +11,7 @@ import com.healthit.dslservice.dto.dhis.IndicatorGoup;
 import com.healthit.dslservice.dto.dhis.IndicatorValue;
 import com.healthit.dslservice.dto.ihris.Cadre;
 import com.healthit.dslservice.dto.ihris.CadreGroup;
-import com.healthit.dslservice.message.Message;
+import com.healthit.message.Message;
 import com.healthit.dslweb.service.JsonBuilder;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

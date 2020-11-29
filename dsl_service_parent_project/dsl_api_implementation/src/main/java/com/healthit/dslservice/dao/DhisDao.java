@@ -6,12 +6,12 @@
 package com.healthit.dslservice.dao;
 
 import com.google.gson.Gson;
-import com.healthit.dslservice.DslException;
+import com.healthit.DslException;
 import com.healthit.dslservice.dto.dhis.Indicator;
 import com.healthit.dslservice.dto.dhis.IndicatorGoup;
 import com.healthit.dslservice.dto.dhis.IndicatorValue;
-import com.healthit.dslservice.message.Message;
-import com.healthit.dslservice.message.MessageType;
+import com.healthit.message.Message;
+import com.healthit.message.MessageType;
 import com.healthit.dslservice.util.CacheKeys;
 import com.healthit.dslservice.util.DatabaseSource;
 import com.healthit.dslservice.util.DslCache;

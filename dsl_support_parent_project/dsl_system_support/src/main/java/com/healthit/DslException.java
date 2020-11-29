@@ -3,9 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.healthit.dslservice;
+package com.healthit;
 
-import com.healthit.dslservice.message.Message;
+import com.healthit.message.Message;
+
 
 /**
  *

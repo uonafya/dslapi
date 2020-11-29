@@ -1,4 +1,4 @@
-package com.healthit.dslservice.message;
+package com.healthit.message;
 
 /**
  * Hold message and status types
