@@ -92,7 +92,7 @@ public class PandemicDao {
 
     private void addIndicatorFilterClause(String indicatorId) throws DslException {
         String indicators = DslStringUtils.toCommaSperated(indicatorId);
-        String indicatorFilter = " fp.indicator_id in(" + indicators+ ") ";
+        String indicatorFilter = " fp.indicator_id in(" + indicators + ") ";
         if (!isPandemicDataWhereClauseAppended) {
             selectPandemicDataSql = selectPandemicDataSql + " where " + indicatorFilter;
             isPandemicDataWhereClauseAppended = true;
@@ -103,7 +103,7 @@ public class PandemicDao {
 
     private void addOrgunitFilterClause(String orgId) throws DslException {
         String orgIds = DslStringUtils.toCommaSperated(orgId);
-        String orgunitFilter = " fp.orgunit_id in(" + orgIds+ ")";
+        String orgunitFilter = " porg.id in(" + orgIds + ")";
         if (!isPandemicDataWhereClauseAppended) {
             selectPandemicDataSql = selectPandemicDataSql + " where " + orgunitFilter;
             isPandemicDataWhereClauseAppended = true;
@@ -111,17 +111,13 @@ public class PandemicDao {
             selectPandemicDataSql = selectPandemicDataSql + " and " + orgunitFilter;
         }
     }
-    
-    
+
     private void addLevelFilterClause(String level) throws DslException {
-        String orgIds = DslStringUtils.toCommaSperated(level);
-        String orgunitFilter = " fp.orgunit_id in(" + orgIds+ ")";
-        if (!isPandemicDataWhereClauseAppended) {
-            selectPandemicDataSql = selectPandemicDataSql + " where " + orgunitFilter;
-            isPandemicDataWhereClauseAppended = true;
-        } else {
-            selectPandemicDataSql = selectPandemicDataSql + " and " + orgunitFilter;
-        }
+        String levels = DslStringUtils.toCommaSperated(level);
+        String levelsFilter = " porg.level in(" + levels + ")";
+
+        selectPandemicDataSql = selectPandemicDataSql + " or " + levelsFilter;
+
     }
 
     private void addStartDateFilterClause(String startDate) throws DslException {
@@ -137,12 +133,9 @@ public class PandemicDao {
             throw new DslException(msg);
         }
         String startDateFilter = " dimp.date>='" + startDate + "'";
-        if (!isPandemicDataWhereClauseAppended) {
-            selectPandemicDataSql = selectPandemicDataSql + " where " + startDateFilter;
-            isPandemicDataWhereClauseAppended = true;
-        } else {
-            selectPandemicDataSql = selectPandemicDataSql + " and " + startDateFilter;
-        }
+
+        selectPandemicDataSql = selectPandemicDataSql + " and " + startDateFilter;
+
     }
 
     private void addEndDateFilterClause(String endDate) throws DslException {
@@ -158,12 +151,9 @@ public class PandemicDao {
             throw new DslException(msg);
         }
         String endDateFilter = " dimp.date<='" + endDate + "'";
-        if (!isPandemicDataWhereClauseAppended) {
-            selectPandemicDataSql = selectPandemicDataSql + " where " + endDateFilter;
-            isPandemicDataWhereClauseAppended = true;
-        } else {
-            selectPandemicDataSql = selectPandemicDataSql + " and " + endDateFilter;
-        }
+
+        selectPandemicDataSql = selectPandemicDataSql + " and " + endDateFilter;
+
     }
 
     public Map<String, Map> getPandemicData(String pandemicSource, String indicatorId, String orgId, String level, String startDate, String endDate) throws DslException {
@@ -186,11 +176,11 @@ public class PandemicDao {
             }
 
             addOrgunitFilterClause(orgId);
-            
-            if(level !=null){
+
+            if (level != null) {
                 addLevelFilterClause(level);
             }
-            
+
             if (startDate != null) {
                 addStartDateFilterClause(startDate);
             }
@@ -204,6 +194,7 @@ public class PandemicDao {
             Connection conn = null;
             try {
                 conn = DatabaseSource.getConnection();
+                selectPandemicDataSql = selectPandemicDataSql + " order by date asc ";
                 ps = conn.prepareStatement(selectPandemicDataSql, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
                 log.info("Query to run: " + ps.toString());
                 rs = ps.executeQuery();
