@@ -161,8 +161,8 @@ public class PandemicDao {
     }
 
     public Map<String, Map> getPandemicData(String pandemicSource, String indicatorId, String orgId, String level, String startDate, String endDate) throws DslException {
-        String cacheName = pandemicSource + indicatorId + orgId + level + startDate + endDate;
-        Element ele = cache.get(cacheName);
+//        String cacheName = pandemicSource + indicatorId + orgId + level + startDate + endDate;
+//        Element ele = cache.get(cacheName);
         Map<String, Map> envelop = new HashMap();
         Map<String, Map> result = new HashMap();
         Map<String, Object> dictionary = new HashMap();
@@ -173,98 +173,98 @@ public class PandemicDao {
         List<PandemicIndicator> indicatorList = new ArrayList();
         List<Map<String, String>> period = new ArrayList();
 
-        if (ele == null) {
+//        if (ele == null) {
 
-            if (indicatorId != null) {
-                addIndicatorFilterClause(indicatorId);
-            }
+        if (indicatorId != null) {
+            addIndicatorFilterClause(indicatorId);
+        }
 
-            addOrgunitFilterClause(orgId);
-            addLevelFilterClause(level);
+        addOrgunitFilterClause(orgId);
+        addLevelFilterClause(level);
 
-            if (startDate != null) {
-                addStartDateFilterClause(startDate);
-            }
+        if (startDate != null) {
+            addStartDateFilterClause(startDate);
+        }
 
-            if (endDate != null) {
-                addEndDateFilterClause(endDate);
-            }
+        if (endDate != null) {
+            addEndDateFilterClause(endDate);
+        }
 
-            PreparedStatement ps = null;
-            ResultSet rs = null;
-            Connection conn = null;
-            try {
-                conn = DatabaseSource.getConnection();
-                selectPandemicDataSql = selectPandemicDataSql + " order by date asc ";
-                ps = conn.prepareStatement(selectPandemicDataSql, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
-                log.info("Query to run: " + ps.toString());
-                rs = ps.executeQuery();
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        Connection conn = null;
+        try {
+            conn = DatabaseSource.getConnection();
+            selectPandemicDataSql = selectPandemicDataSql + " order by date asc ";
+            ps = conn.prepareStatement(selectPandemicDataSql, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
+            log.info("Query to run: " + ps.toString());
+            rs = ps.executeQuery();
 
-                log.info("Fetching indicator groups");
+            log.info("Fetching indicator groups");
 
-                while (rs.next()) {
-                    Map dataUnit = new HashMap(); // keys: period, ouid, value
-                    int dbIndicatorId = rs.getInt("indicatorId");
-                    int dbOrgId = rs.getInt("orgId");
-                    String dbOrgUnitName = rs.getString("orgUnit");
-                    String dbIndicatorName = rs.getString("indicator_name");
-                    if (data.containsKey(dbIndicatorId)) {
+            while (rs.next()) {
+                Map dataUnit = new HashMap(); // keys: period, ouid, value
+                int dbIndicatorId = rs.getInt("indicatorId");
+                int dbOrgId = rs.getInt("orgId");
+                String dbOrgUnitName = rs.getString("orgUnit");
+                String dbIndicatorName = rs.getString("indicator_name");
+                if (data.containsKey(dbIndicatorId)) {
 
-                        dataUnit.put("period", rs.getString("date"));
-                        dataUnit.put("ou", dbOrgId);
-                        dataUnit.put("value", rs.getInt("value"));
-                        data.get(dbIndicatorId).add(dataUnit);
+                    dataUnit.put("period", rs.getString("date"));
+                    dataUnit.put("ou", dbOrgId);
+                    dataUnit.put("value", rs.getInt("value"));
+                    data.get(dbIndicatorId).add(dataUnit);
 
-                    } else {
-                        List<Map> dataList = new ArrayList();
-                        PandemicIndicator pIndic = new PandemicIndicator();
-                        pIndic.setId(dbIndicatorId);
-                        pIndic.setName(dbIndicatorName);
-                        indicatorList.add(pIndic);
+                } else {
+                    List<Map> dataList = new ArrayList();
+                    PandemicIndicator pIndic = new PandemicIndicator();
+                    pIndic.setId(dbIndicatorId);
+                    pIndic.setName(dbIndicatorName);
+                    indicatorList.add(pIndic);
 
-                        dataUnit.put("period", rs.getString("date"));
-                        dataUnit.put("ou", rs.getInt("orgId"));
-                        dataUnit.put("value", rs.getInt("value"));
-                        dataList.add(dataUnit);
-                        data.put(dbIndicatorId, dataList);
-
-                    }
-                    if (!addedOrgUnits.contains(dbOrgId)) {
-                        Map<String, Object> orgMapUnit = new HashMap();
-                        orgMapUnit.put("id", dbOrgId);
-                        orgMapUnit.put("name", dbOrgUnitName);
-                        orgMapUnit.put("latitude", rs.getString("org_latitude"));
-                        orgMapUnit.put("longitude", rs.getString("org_longitude"));
-                        orgUnitsList.add(orgMapUnit);
-                        addedOrgUnits.add(dbOrgId);
-                    }
+                    dataUnit.put("period", rs.getString("date"));
+                    dataUnit.put("ou", rs.getInt("orgId"));
+                    dataUnit.put("value", rs.getInt("value"));
+                    dataList.add(dataUnit);
+                    data.put(dbIndicatorId, dataList);
 
                 }
+                if (!addedOrgUnits.contains(dbOrgId)) {
+                    Map<String, Object> orgMapUnit = new HashMap();
+                    orgMapUnit.put("id", dbOrgId);
+                    orgMapUnit.put("name", dbOrgUnitName);
+                    orgMapUnit.put("latitude", rs.getString("org_latitude"));
+                    orgMapUnit.put("longitude", rs.getString("org_longitude"));
+                    orgUnitsList.add(orgMapUnit);
+                    addedOrgUnits.add(dbOrgId);
+                }
 
-                dictionary.put("orgunits", orgUnitsList);
-                dictionary.put("indicators", indicatorList);
-
-                result.put("data", data);
-                result.put("dictionary", dictionary);
-                envelop.put("result", result);
-                cache.put(new Element(cacheName, envelop));
-            } catch (SQLException ex) {
-                log.error(ex);
-                Message msg = new Message();
-                msg.setMessageType(MessageType.SQL_QUERY_ERROR);
-                msg.setMesageContent(ex.getMessage());
-                throw new DslException(msg);
-            } finally {
-                DatabaseSource.close(rs);
-                DatabaseSource.close(ps);
-                DatabaseSource.close(conn);
             }
-        } else {
-            long startTime = System.nanoTime();
-            envelop = (Map<String, Map>) ele.getObjectValue();
-            long endTime = System.nanoTime();
-            log.info("Time taken to fetch data from cache " + (endTime - startTime) / 1000000);
+
+            dictionary.put("orgunits", orgUnitsList);
+            dictionary.put("indicators", indicatorList);
+
+            result.put("data", data);
+            result.put("dictionary", dictionary);
+            envelop.put("result", result);
+//            cache.put(new Element(cacheName, envelop));
+        } catch (SQLException ex) {
+            log.error(ex);
+            Message msg = new Message();
+            msg.setMessageType(MessageType.SQL_QUERY_ERROR);
+            msg.setMesageContent(ex.getMessage());
+            throw new DslException(msg);
+        } finally {
+            DatabaseSource.close(rs);
+            DatabaseSource.close(ps);
+            DatabaseSource.close(conn);
         }
+//        } else {
+//            long startTime = System.nanoTime();
+//            envelop = (Map<String, Map>) ele.getObjectValue();
+//            long endTime = System.nanoTime();
+//            log.info("Time taken to fetch data from cache " + (endTime - startTime) / 1000000);
+//        }
         return envelop;
     }
 }
