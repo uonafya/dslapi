@@ -105,18 +105,21 @@ public class PandemicDao {
         String orgIds = DslStringUtils.toCommaSperated(orgId);
         String orgunitFilter = " porg.id in(" + orgIds + ")";
         if (!isPandemicDataWhereClauseAppended) {
-            selectPandemicDataSql = selectPandemicDataSql + " where " + orgunitFilter;
+            selectPandemicDataSql = selectPandemicDataSql + " where (" + orgunitFilter;
             isPandemicDataWhereClauseAppended = true;
         } else {
-            selectPandemicDataSql = selectPandemicDataSql + " and " + orgunitFilter;
+            selectPandemicDataSql = selectPandemicDataSql + " and (" + orgunitFilter;
         }
     }
 
     private void addLevelFilterClause(String level) throws DslException {
         String levels = DslStringUtils.toCommaSperated(level);
         String levelsFilter = " porg.level in(" + levels + ")";
-
-        selectPandemicDataSql = selectPandemicDataSql + " or " + levelsFilter;
+        if (level != null) {
+            selectPandemicDataSql = selectPandemicDataSql + " or " + levelsFilter + " )";
+        } else {
+            selectPandemicDataSql = selectPandemicDataSql + " ) ";
+        }
 
     }
 
@@ -176,10 +179,7 @@ public class PandemicDao {
             }
 
             addOrgunitFilterClause(orgId);
-
-            if (level != null) {
-                addLevelFilterClause(level);
-            }
+            addLevelFilterClause(level);
 
             if (startDate != null) {
                 addStartDateFilterClause(startDate);
