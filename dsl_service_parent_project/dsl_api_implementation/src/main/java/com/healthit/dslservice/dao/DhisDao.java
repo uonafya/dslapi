@@ -16,6 +16,7 @@ import com.healthit.dslservice.util.CacheKeys;
 import com.healthit.dslservice.util.DatabaseSource;
 import com.healthit.dslservice.util.DslCache;
 import com.healthit.dslservice.util.RequestParameters;
+import com.healthit.utils.string.DslStringUtils;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -155,25 +156,10 @@ public class DhisDao {
         return indicatorParameters.toString();
     }
 
-    private String orgUnitsList(String ouid) {
-
-        String[] orgUnits = ouid.split(";");
-        StringBuilder orgUnitParameters = new StringBuilder();
-
-        for (int x = 0; x < orgUnits.length; x++) {
-            if (x == 0) {
-                orgUnitParameters.append(orgUnits[x]);
-            } else {
-                orgUnitParameters.append("," + orgUnits[x]);
-            }
-        }
-        return orgUnitParameters.toString();
-    }
-
     private String insertOrgUntiPart(String ouid, String sqlString) throws DslException {
 
         String replacement;
-        String orgUnitParameters = orgUnitsList(ouid);
+        String orgUnitParameters = DslStringUtils.toCommaSperated(ouid);
 
         log.info("Org units parameters : " + orgUnitParameters);
 
@@ -565,7 +551,7 @@ public class DhisDao {
                     Map params = new HashMap();
                     paramsList.add(params);
                     String queryToRUn = "Select dhis_organisation_unit_name as name,dhis_organisation_unit_id as ouid from common_organisation_unit where dhis_organisation_unit_id in(#)";
-                    queryToRUn = queryToRUn.replace("#", orgUnitsList(ouid).replaceAll("\"", ""));
+                    queryToRUn = queryToRUn.replace("#", DslStringUtils.toCommaSperated(ouid).replaceAll("\"", ""));
                     log.debug(queryToRUn);
 
                     PreparedStatement ps = null;
