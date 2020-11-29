@@ -84,14 +84,15 @@ public class PandemicApisDocumentationTest {
     public void testPandemicsValuesReturned() throws Exception {
         String avail = "availble that, can be requested through the request parameters";
         this.mockMvc.perform( //covid19
-                RestDocumentationRequestBuilders.get("/pandemics/{pandemic_id}?id=6074&start_date=2020-04-01&end_date=2020-06-02&org_id=10277", "covid19").accept(MediaType.APPLICATION_JSON))
+                RestDocumentationRequestBuilders.get("/pandemics/{pandemic_id}?id=6074&start_date=2020-04-01&end_date=2020-06-02&org_id=10277&level=1", "covid19").accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()).andDo(document("test-pandemics-values-returned", pathParameters(
                 parameterWithName("pandemic_id").description("Pandemic id")
         ), requestParameters(
-                parameterWithName("id").description("Pandemic indicator id gotten from $/pandemics"),
+                parameterWithName("id").description("List of comma seperated pandemic indicator id gotten from $/pandemics"),
                 parameterWithName("start_date").description("Start period to return data from"),
                 parameterWithName("end_date").description("End period of data to return"),
-                parameterWithName("org_id").description("The organisation id for returned data, only at county level. id gotten from  gotten from $/counties  ")
+                parameterWithName("org_id").description("List of comma seperated organisation id for returned data, only at county level. id gotten from  gotten from $/counties  "),
+                parameterWithName("level").description("List of comma seperated organisation unit level (from dsl_api/counties). ")
         ), responseFields(
                 fieldWithPath("result")
                         .description("Response envelope object"),
