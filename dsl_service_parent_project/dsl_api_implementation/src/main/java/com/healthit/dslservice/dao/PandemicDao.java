@@ -1,13 +1,14 @@
 package com.healthit.dslservice.dao;
 
-import com.healthit.dslservice.DslException;
+import com.healthit.DslException;
 import com.healthit.dslservice.dto.PandemicIndicator;
 import com.healthit.dslservice.dto.dhis.IndicatorGoup;
-import com.healthit.dslservice.message.Message;
-import com.healthit.dslservice.message.MessageType;
+import com.healthit.message.Message;
+import com.healthit.message.MessageType;
 import com.healthit.dslservice.util.CacheKeys;
 import com.healthit.dslservice.util.DatabaseSource;
 import com.healthit.dslservice.util.DslCache;
+import com.healthit.utils.string.DslStringUtils;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -90,16 +91,8 @@ public class PandemicDao {
     }
 
     private void addIndicatorFilterClause(String indicatorId) throws DslException {
-
-        try {
-            Integer.parseInt(indicatorId);
-        } catch (Exception ex) {
-            Message msg = new Message();
-            msg.setMesageContent("The indicator id should be a number");
-            msg.setMessageType(MessageType.NUMBER_FORMAT_ERROR);
-            throw new DslException(msg);
-        }
-        String indicatorFilter = " fp.indicator_id=" + Integer.parseInt(indicatorId);
+        String indicators = DslStringUtils.toCommaSperated(indicatorId);
+        String indicatorFilter = " fp.indicator_id in(" + indicators+ ") ";
         if (!isPandemicDataWhereClauseAppended) {
             selectPandemicDataSql = selectPandemicDataSql + " where " + indicatorFilter;
             isPandemicDataWhereClauseAppended = true;
@@ -109,16 +102,20 @@ public class PandemicDao {
     }
 
     private void addOrgunitFilterClause(String orgId) throws DslException {
-
-        try {
-            Integer.parseInt(orgId);
-        } catch (Exception ex) {
-            Message msg = new Message();
-            msg.setMesageContent("The organisation unit id should be a number");
-            msg.setMessageType(MessageType.NUMBER_FORMAT_ERROR);
-            throw new DslException(msg);
+        String orgIds = DslStringUtils.toCommaSperated(orgId);
+        String orgunitFilter = " fp.orgunit_id in(" + orgIds+ ")";
+        if (!isPandemicDataWhereClauseAppended) {
+            selectPandemicDataSql = selectPandemicDataSql + " where " + orgunitFilter;
+            isPandemicDataWhereClauseAppended = true;
+        } else {
+            selectPandemicDataSql = selectPandemicDataSql + " and " + orgunitFilter;
         }
-        String orgunitFilter = " fp.orgunit_id=" + Integer.parseInt(orgId);
+    }
+    
+    
+    private void addLevelFilterClause(String level) throws DslException {
+        String orgIds = DslStringUtils.toCommaSperated(level);
+        String orgunitFilter = " fp.orgunit_id in(" + orgIds+ ")";
         if (!isPandemicDataWhereClauseAppended) {
             selectPandemicDataSql = selectPandemicDataSql + " where " + orgunitFilter;
             isPandemicDataWhereClauseAppended = true;
@@ -169,8 +166,8 @@ public class PandemicDao {
         }
     }
 
-    public Map<String, Map> getPandemicData(String pandemicSource, String indicatorId, String orgId, String startDate, String endDate) throws DslException {
-        String cacheName = pandemicSource + indicatorId + orgId + startDate + endDate;
+    public Map<String, Map> getPandemicData(String pandemicSource, String indicatorId, String orgId, String level, String startDate, String endDate) throws DslException {
+        String cacheName = pandemicSource + indicatorId + orgId + level + startDate + endDate;
         Element ele = cache.get(cacheName);
         Map<String, Map> envelop = new HashMap();
         Map<String, Map> result = new HashMap();
@@ -188,10 +185,12 @@ public class PandemicDao {
                 addIndicatorFilterClause(indicatorId);
             }
 
-            if (orgId != null) {
-                addOrgunitFilterClause(orgId);
+            addOrgunitFilterClause(orgId);
+            
+            if(level !=null){
+                addLevelFilterClause(level);
             }
-
+            
             if (startDate != null) {
                 addStartDateFilterClause(startDate);
             }
