@@ -55,6 +55,7 @@ public class Pandemic {
     public ResponseEntity<?> getIndicatorValue(
             @RequestParam(value = "id", required = false) String indicatorId,
             @RequestParam(value = "org_id", required = false) String orgId,
+            @RequestParam(value = "level", required = false) String level,
             @RequestParam(value = "start_date", required = false) String startDate,
             @RequestParam(value = "end_date", required = false) String endDate,
             @PathVariable(value = "pandemicSource", required = true) String pandemicSource
@@ -63,7 +64,11 @@ public class Pandemic {
         PandemicDao pandemicDao = new PandemicDao();
         try {
 
-            return new ResponseEntity(pandemicDao.getPandemicData(pandemicSource, indicatorId, orgId, startDate, endDate), HttpStatus.OK);
+            if (orgId == null) {
+                orgId = "18"; // Default to National
+            }
+            
+            return new ResponseEntity(pandemicDao.getPandemicData(pandemicSource, indicatorId, orgId,level, startDate, endDate), HttpStatus.OK);
 
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
