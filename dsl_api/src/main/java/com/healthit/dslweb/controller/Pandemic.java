@@ -7,6 +7,7 @@ import com.healthit.dslservice.dao.SurveyDao;
 import com.healthit.dslservice.dto.adminstrationlevel.Constituency;
 import com.healthit.message.Message;
 import com.healthit.message.MessageType;
+import com.healthit.utils.string.DslStringUtils;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
@@ -66,9 +67,19 @@ public class Pandemic {
 
             if (orgId == null) {
                 orgId = "18"; // Default to National
+            } else {
+                DslStringUtils.validateIntFromString(orgId, ",");
             }
-            
-            return new ResponseEntity(pandemicDao.getPandemicData(pandemicSource, indicatorId, orgId,level, startDate, endDate), HttpStatus.OK);
+
+            if (level != null) {
+                DslStringUtils.validateIntFromString(level, ",");
+            }
+
+            if (indicatorId != null) {
+                DslStringUtils.validateIntFromString(indicatorId, ",");
+            }
+
+            return new ResponseEntity(pandemicDao.getPandemicData(pandemicSource, indicatorId, orgId, level, startDate, endDate), HttpStatus.OK);
 
         } catch (DslException ex) {
             return new ResponseEntity<Message>(ex.getMsg(), HttpStatus.INTERNAL_SERVER_ERROR);
