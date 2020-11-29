@@ -112,10 +112,11 @@ public class PandemicDao {
         }
     }
 
-    private void addLevelFilterClause(String level) throws DslException {
-        String levels = DslStringUtils.toCommaSperated(level);
-        String levelsFilter = " porg.level in(" + levels + ")";
+    private void addLevelFilterClause(String level){
+
         if (level != null) {
+            String levels = DslStringUtils.toCommaSperated(level);
+            String levelsFilter = " porg.level in(" + levels + ")";
             selectPandemicDataSql = selectPandemicDataSql + " or " + levelsFilter + " )";
         } else {
             selectPandemicDataSql = selectPandemicDataSql + " ) ";
